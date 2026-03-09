@@ -1,0 +1,12 @@
+V1.1.0 Update:
+
+✅ Added SQLite/MySQL database - combat stats now persist across restarts
+✅ Fixed config reload bug - all settings update instantly without restart
+✅ Added newbie protection system with admin commands
+✅ Optimized plugin size by 83% (14.6MB → 2.4MB)
+✅ Added WorldGuard safe zone integration
+✅ Enhanced admin tools (/combat protection, /combat stats, /combat reload)
+✅ Improved default config with better balanced settings
+✅ Fixed memory leaks and performance issues
+
+Database support means player statistics are now saved permanently. No setup required - works out of the box with SQLite!

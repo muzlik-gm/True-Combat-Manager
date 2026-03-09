@@ -1,0 +1,42 @@
+V1.1.0 Update - What's New:
+
+Database & Persistence:
+- Added SQLite/MySQL support for persistent combat statistics
+- Player stats now saved across server restarts
+- Automatic database migration and backup
+
+Bug Fixes:
+- Fixed config reload not updating settings in real-time
+- Fixed timer synchronization issues
+- Fixed memory leaks in combat session tracking
+- Fixed concurrent modification exceptions
+
+New Features:
+- Newbie protection system with timed immunity
+- Admin protection commands (/combat protection)
+- Disconnect tracker for combat logging prevention
+- WorldGuard integration for safe zones
+- Enhanced weapon-specific damage tracking
+
+Performance:
+- Optimized JAR size from 14.6MB to 2.4MB (83% smaller)
+- Improved caching and memory usage
+- Better database connection pooling
+
+Config Improvements:
+- More balanced default settings
+- Added config examples (casual, balanced, hardcore)
+- Enhanced validation with detailed error messages
+- All settings now reload without restart
+
+Admin Tools:
+- /combat reload - Reload config instantly
+- /combat logging - Toggle console logging
+- /combat protection <player> <seconds> - Grant immunity
+- /combat clear <player> - Force-end combat
+- /combat stats - View server statistics
+
+Testing:
+- 46 comprehensive tests (100% pass rate)
+- 5000+ property-based test cases
+- Verified thread safety and performance
