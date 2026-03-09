@@ -2,9 +2,10 @@
 
 **The Ultimate PvP Combat Management Plugin for Minecraft Servers**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/TrueCombatManager)
-[![Minecraft](https://img.shields.io/badge/minecraft-1.20.4+-green.svg)](https://www.spigotmc.org/)
+[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/yourusername/TrueCombatManager)
+[![Minecraft](https://img.shields.io/badge/minecraft-1.19.4--1.21+-green.svg)](https://www.spigotmc.org/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-8%20passing-brightgreen.svg)]()
 
 ---
 
@@ -26,6 +27,7 @@ TrueCombatManager is a comprehensive, high-performance PvP combat management plu
 
 ## 📋 Table of Contents
 
+- [Installation](#-installation)
 - [Features](#-features)
 - [Installation](#-installation)
 - [Configuration](#-configuration)
@@ -92,19 +94,48 @@ TrueCombatManager is a comprehensive, high-performance PvP combat management plu
 ## 📦 Installation
 
 ### Requirements
-- **Minecraft:** 1.20.4+ (Paper/Spigot)
+- **Minecraft:** 1.19.4 - 1.21+ (Paper/Spigot)
 - **Java:** 21+
-- **ProtocolLib:** 5.0+ (Recommended for barriers)
-- **WorldGuard:** 7.0+ (Optional, for safezone protection)
-- **PlaceholderAPI:** 2.11+ (Optional, for placeholders)
+- **Platform:** Windows x64, Linux x64, or Linux ARM64 (Docker)
 
-### Steps
-1. Download the latest release
-2. Place `TrueCombatManager-1.0.0.jar` in your `plugins/` folder
-3. Install ProtocolLib (highly recommended)
-4. Restart your server
-5. Configure `plugins/TrueCombatManager/config.yml`
-6. Reload with `/combat reload`
+### What's Included
+The plugin is fully self-contained with all essential dependencies:
+- ✅ SQLite database support (Windows/Linux natives included)
+- ✅ HikariCP connection pooling
+- ✅ High-performance caching
+- ✅ JSON configuration handling
+
+### Optional Dependencies
+- **PlaceholderAPI** (2.11+) - For placeholders
+- **WorldGuard** (7.0+) - For safezone protection
+- **MySQL Connector** (8.2.0+) - If using MySQL instead of SQLite
+
+### Version Compatibility
+TrueCombatManager automatically detects your Minecraft version and adapts accordingly:
+- ✅ **1.19.4 - 1.20.6** - Fully supported
+- ✅ **1.21+** - Fully supported
+- ⚠️ **Older versions** - Warning displayed, may have issues
+- ⚠️ **Newer versions** - Warning displayed, untested
+
+### Installation Steps
+1. Download the latest release (2.4 MB)
+2. Place `TrueCombatManager-1.0.2.jar` in your `plugins/` folder
+3. Restart your server
+4. Configure `plugins/TrueCombatManager/config.yml`
+5. Reload with `/combat reload`
+
+No additional downloads needed! See [INSTALLATION.md](INSTALLATION.md) for details.
+
+### Testing
+TrueCombatManager includes comprehensive property-based tests:
+- ✅ 8 property tests with 1000+ iterations each
+- ✅ Combat session uniqueness and consistency
+- ✅ Timer reset accuracy
+- ✅ Thread-safe concurrent access
+- ✅ Damage tracking accuracy
+- ✅ K/D ratio calculations
+- ✅ Win rate validation
+- ✅ Combat time accumulation
 
 ---
 
@@ -209,6 +240,9 @@ restrictions:
 | `/combat reload` | Reload configuration | `pvpcombat.admin` |
 | `/combat debug` | Toggle debug mode | `pvpcombat.admin.debug` |
 | `/combat logging <enabled\|disabled>` | Control console logging | `pvpcombat.admin` |
+| `/combat stats` | View server-wide statistics | `pvpcombat.admin` |
+| `/combat clear <player>` | Force-end combat for a player | `pvpcombat.admin` |
+| `/combat protection <player> <seconds>` | Grant temporary protection | `pvpcombat.admin` |
 
 ---
 
@@ -413,6 +447,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 🔄 Changelog
+
+### v1.0.2 (2025-12-24)
+- ✅ Enhanced admin commands (stats, clear, protection)
+- ✅ Version compatibility layer (1.19.4 - 1.21+)
+- ✅ Comprehensive property-based testing (8 tests, 1000+ iterations)
+- ✅ Configuration documentation with examples
+- ✅ Performance optimizations verified
+- ✅ Production-ready release
 
 ### v1.0.0 (2025-11-30)
 - ✅ Initial release

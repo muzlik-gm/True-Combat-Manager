@@ -100,29 +100,35 @@ public class AntiCheatConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (interferenceMaxPercentage < 0 || interferenceMaxPercentage > 100) {
-            result.addError("anticheat.interference.max-interference-percentage",
-                          "Max interference percentage must be between 0 and 100: " + interferenceMaxPercentage);
+            errors.add(new ConfigurationValidator.ConfigValidationError("anticheat.interference.max-interference-percentage",
+                "Max interference percentage must be between 0 and 100: " + interferenceMaxPercentage, 
+                interferenceMaxPercentage, 10.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (interferenceWindow < 1) {
-            result.addError("anticheat.interference.interference-window",
-                          "Interference window must be positive: " + interferenceWindow);
+            errors.add(new ConfigurationValidator.ConfigValidationError("anticheat.interference.interference-window",
+                "Interference window must be positive: " + interferenceWindow, 
+                interferenceWindow, 5, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (interferenceSoundVolume < 0 || interferenceSoundVolume > 2) {
-            result.addWarning("anticheat.interference.sound.volume",
-                            "Sound volume should be between 0 and 2: " + interferenceSoundVolume);
+            warnings.add(new ConfigurationValidator.ConfigValidationError("anticheat.interference.sound.volume",
+                "Sound volume should be between 0 and 2: " + interferenceSoundVolume, 
+                interferenceSoundVolume, 1.0, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (interferenceSoundPitch < 0.5 || interferenceSoundPitch > 2) {
-            result.addWarning("anticheat.interference.sound.pitch",
-                            "Sound pitch should be between 0.5 and 2: " + interferenceSoundPitch);
+            warnings.add(new ConfigurationValidator.ConfigValidationError("anticheat.interference.sound.pitch",
+                "Sound pitch should be between 0.5 and 2: " + interferenceSoundPitch, 
+                interferenceSoundPitch, 1.0, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

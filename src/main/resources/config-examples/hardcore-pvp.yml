@@ -1,0 +1,126 @@
+# ========================================
+# HARDCORE PVP SERVER CONFIGURATION
+# ========================================
+# This configuration is optimized for hardcore PvP servers
+# Features:
+# - Long combat timers (30s)
+# - Strict restrictions on all items
+# - No newbie protection
+# - Aggressive anti-cheat
+# - Minimal visual distractions
+
+config-version: 2
+
+general:
+  enabled: true
+  debug-mode: false
+  language: "en"
+
+logging:
+  console-enabled: false
+
+database:
+  type: "sqlite"
+  auto-save-interval: 5
+
+combat:
+  duration: 30  # Long combat timer
+  cooldown: 10  # Long cooldown
+  max-sessions: 0  # Unlimited
+  
+  disconnect-protection:
+    enabled: true
+    display-mode: "actionbar"
+  
+  damage:
+    reset-on-damage: true
+    min-damage-trigger: 0.1  # Very sensitive
+  
+  bossbar:
+    enabled: true
+    update-interval: 1
+    title: "&4⚔ COMBAT: &c{time_left}s"
+    color: "RED"
+    style: "SOLID"
+
+newbie-protection:
+  enabled: false  # No protection on hardcore servers
+
+restrictions:
+  enderpearl:
+    enabled: true
+    cooldown: 15  # Long cooldown
+    block-usage: false
+    combat-cooldown-multiplier: 2.0
+  
+  golden-apple:
+    enabled: true
+    cooldown: 30
+    block-usage: false
+  
+  enchanted-golden-apple:
+    enabled: true
+    cooldown: 60
+    block-usage: false
+  
+  elytra:
+    enabled: true
+    block-glide: true
+    block-boosting: true
+    block-takeoff: true
+  
+  trident:
+    enabled: true
+    block-riptide: true
+    cooldown: 10
+  
+  crystal:
+    enabled: true
+    block-placement: true
+    block-breaking: false
+  
+  respawn-anchor:
+    enabled: true
+  
+  teleport:
+    enabled: true
+  
+  safezone:
+    enabled: true
+    block-entry: true
+  
+  blocks:
+    enabled: true
+    block-breaking: true
+    block-placing: true
+
+visual:
+  themes:
+    default-theme: "minimal"
+  
+  bossbar:
+    enabled: true
+  
+  actionbar:
+    enabled: true
+    show-opponent: true
+  
+  sounds:
+    enabled: true
+    profile: "intense"
+
+performance:
+  lag:
+    enabled: true
+    tps-threshold: 18.0
+    ping-threshold: 200
+
+anticheat:
+  interference:
+    enabled: true
+    block-hits: true
+    max-interference-percentage: 5.0
+
+statistics:
+  enabled: true
+  track-hits: true

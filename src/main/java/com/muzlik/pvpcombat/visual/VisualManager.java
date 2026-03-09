@@ -118,4 +118,14 @@ public class VisualManager implements IVisualManager {
         bossBarManager.clearAllBossBars();
         actionBarManager.clearAllActionBars();
     }
+
+    /**
+     * Reloads configuration for all visual components.
+     */
+    public void reloadConfig() {
+        themeManager.loadThemes();
+        bossBarManager.reloadConfig();
+        soundManager.reloadConfig();
+        plugin.getLogger().info("VisualManager configuration reloaded");
+    }
 }

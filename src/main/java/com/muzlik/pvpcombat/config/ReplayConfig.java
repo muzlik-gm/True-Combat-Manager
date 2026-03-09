@@ -78,44 +78,55 @@ public class ReplayConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (!replayStorageFormat.equals("MEMORY") &&
             !replayStorageFormat.equals("COMPRESSED_FILE") &&
             !replayStorageFormat.equals("HYBRID")) {
-            result.addError("replay.storage.format", "Invalid storage format: " + replayStorageFormat +
-                          ". Must be MEMORY, COMPRESSED_FILE, or HYBRID");
+            errors.add(new ConfigurationValidator.ConfigValidationError("replay.storage.format", 
+                "Invalid storage format: " + replayStorageFormat + ". Must be MEMORY, COMPRESSED_FILE, or HYBRID", 
+                replayStorageFormat, "HYBRID", ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (replayTimelineCapacity < 100) {
-            result.addWarning("replay.timeline.capacity", "Timeline capacity too small: " +
-                            replayTimelineCapacity + ", recommended minimum: 100");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("replay.timeline.capacity", 
+                "Timeline capacity too small: " + replayTimelineCapacity + ", recommended minimum: 100", 
+                replayTimelineCapacity, 1000, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (replayTimelineMaxAgeSeconds < 60) {
-            result.addWarning("replay.timeline.max_age_seconds", "Timeline max age too short: " +
-                            replayTimelineMaxAgeSeconds + "s, recommended minimum: 60s");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("replay.timeline.max_age_seconds", 
+                "Timeline max age too short: " + replayTimelineMaxAgeSeconds + "s, recommended minimum: 60s", 
+                replayTimelineMaxAgeSeconds, 600, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (replayCacheMaxAgeMinutes < 5) {
-            result.addWarning("replay.cache.max_age_minutes", "Cache max age too short: " +
-                            replayCacheMaxAgeMinutes + "min, recommended minimum: 5min");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("replay.cache.max_age_minutes", 
+                "Cache max age too short: " + replayCacheMaxAgeMinutes + "min, recommended minimum: 5min", 
+                replayCacheMaxAgeMinutes, 30, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (replayGuiPageSize < 10) {
-            result.addWarning("replay.gui.page_size", "GUI page size too small: " +
-                            replayGuiPageSize + ", recommended minimum: 10");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("replay.gui.page_size", 
+                "GUI page size too small: " + replayGuiPageSize + ", recommended minimum: 10", 
+                replayGuiPageSize, 50, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (replayGuiAutoplaySpeed <= 0) {
-            result.addError("replay.gui.autoplay.speed", "Autoplay speed must be positive: " + replayGuiAutoplaySpeed);
+            errors.add(new ConfigurationValidator.ConfigValidationError("replay.gui.autoplay.speed", 
+                "Autoplay speed must be positive: " + replayGuiAutoplaySpeed, 
+                replayGuiAutoplaySpeed, 1.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (replayGuiAutoplayInterval < 1) {
-            result.addError("replay.gui.autoplay.interval", "Autoplay interval must be positive: " + replayGuiAutoplayInterval);
+            errors.add(new ConfigurationValidator.ConfigValidationError("replay.gui.autoplay.interval", 
+                "Autoplay interval must be positive: " + replayGuiAutoplayInterval, 
+                replayGuiAutoplayInterval, 4, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

@@ -125,42 +125,52 @@ public class IntegrationConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (crossServerSyncEnabled) {
             if (!crossServerSyncPlatform.equals("AUTO") &&
                 !crossServerSyncPlatform.equals("BUNGEE") &&
                 !crossServerSyncPlatform.equals("VELOCITY")) {
-                result.addError("integration.cross-server-sync.platform", "Invalid platform: " + crossServerSyncPlatform +
-                              ". Must be AUTO, BUNGEE, or VELOCITY");
+                errors.add(new ConfigurationValidator.ConfigValidationError("integration.cross-server-sync.platform", 
+                    "Invalid platform: " + crossServerSyncPlatform + ". Must be AUTO, BUNGEE, or VELOCITY", 
+                    crossServerSyncPlatform, "AUTO", ConfigurationValidator.ConfigValidationError.Severity.ERROR));
             }
 
             if (crossServerSyncInterval < 5) {
-                result.addWarning("integration.cross-server-sync.sync-interval", "Sync interval too low: " +
-                                crossServerSyncInterval + "s, recommended minimum: 5s");
+                warnings.add(new ConfigurationValidator.ConfigValidationError("integration.cross-server-sync.sync-interval", 
+                    "Sync interval too low: " + crossServerSyncInterval + "s, recommended minimum: 5s", 
+                    crossServerSyncInterval, 5, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
             }
 
             if (crossServerSyncTimeout < 1) {
-                result.addError("integration.cross-server-sync.timeout", "Timeout must be positive: " + crossServerSyncTimeout);
+                errors.add(new ConfigurationValidator.ConfigValidationError("integration.cross-server-sync.timeout", 
+                    "Timeout must be positive: " + crossServerSyncTimeout, 
+                    crossServerSyncTimeout, 5, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
             }
 
             if (crossServerSyncConnectionPoolEnabled) {
                 if (crossServerSyncConnectionPoolMaxConnections < 1) {
-                    result.addError("integration.cross-server-sync.connection-pool.max-connections",
-                                  "Max connections must be positive: " + crossServerSyncConnectionPoolMaxConnections);
+                    errors.add(new ConfigurationValidator.ConfigValidationError("integration.cross-server-sync.connection-pool.max-connections",
+                        "Max connections must be positive: " + crossServerSyncConnectionPoolMaxConnections, 
+                        crossServerSyncConnectionPoolMaxConnections, 10, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
                 }
                 if (crossServerSyncConnectionPoolIdleTimeout < 30) {
-                    result.addWarning("integration.cross-server-sync.connection-pool.idle-timeout",
-                                    "Idle timeout too low: " + crossServerSyncConnectionPoolIdleTimeout + "s, recommended minimum: 30s");
+                    warnings.add(new ConfigurationValidator.ConfigValidationError("integration.cross-server-sync.connection-pool.idle-timeout",
+                        "Idle timeout too low: " + crossServerSyncConnectionPoolIdleTimeout + "s, recommended minimum: 30s", 
+                        crossServerSyncConnectionPoolIdleTimeout, 300, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
                 }
             }
         }
 
         if (legacyNetworkEnabled) {
-            result.addWarning("integration.network.enabled", "Legacy network settings are deprecated. Use cross-server-sync instead.");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("integration.network.enabled", 
+                "Legacy network settings are deprecated. Use cross-server-sync instead.", 
+                true, false, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

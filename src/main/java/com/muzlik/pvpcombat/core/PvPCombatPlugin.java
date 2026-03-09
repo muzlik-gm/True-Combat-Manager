@@ -25,42 +25,116 @@ public class PvPCombatPlugin extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        // Initialize plugin manager
-        pluginManager = new PluginManager(this);
+        try {
+            // Initialize plugin manager
+            pluginManager = new PluginManager(this);
 
-        // Load configurations
-        configManager = pluginManager.getConfigManager();
-        configManager.loadConfig();
+            // Load configurations with validation
+            try {
+                configManager = pluginManager.getConfigManager();
+                configManager.loadConfig();
+                getLogger().info("Configuration loaded successfully");
+            } catch (Exception e) {
+                getLogger().severe("Failed to load configuration: " + e.getMessage());
+                e.printStackTrace();
+                getLogger().severe("Using default configuration values");
+                // Continue with defaults rather than disabling plugin
+            }
 
-        // Initialize logging manager
-        loggingManager = new LoggingManager(this);
+            // Initialize logging manager
+            try {
+                loggingManager = new LoggingManager(this);
+            } catch (Exception e) {
+                getLogger().severe("Failed to initialize logging manager: " + e.getMessage());
+                e.printStackTrace();
+                // Create a minimal logging manager
+                loggingManager = new LoggingManager(this);
+            }
 
-        // Initialize subsystems
-        combatManager = pluginManager.getCombatManager();
-        visualManager = pluginManager.getVisualManager();
-        restrictionManager = pluginManager.getRestrictionManager();
+            // Initialize subsystems with error handling
+            try {
+                combatManager = pluginManager.getCombatManager();
+                getLogger().info("Combat manager initialized");
+            } catch (Exception e) {
+                getLogger().severe("CRITICAL: Failed to initialize combat manager: " + e.getMessage());
+                e.printStackTrace();
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
 
-        // Register events and commands
-        pluginManager.registerEvents();
-        pluginManager.registerCommands();
-        
-        // Register PlaceholderAPI expansion if available
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new com.muzlik.pvpcombat.integration.PvPCombatExpansion(this).register();
-            getLogger().info("PlaceholderAPI expansion registered!");
+            try {
+                visualManager = pluginManager.getVisualManager();
+                getLogger().info("Visual manager initialized");
+            } catch (Exception e) {
+                getLogger().severe("Failed to initialize visual manager: " + e.getMessage());
+                e.printStackTrace();
+                getLogger().warning("Visual features will be disabled");
+            }
+
+            try {
+                restrictionManager = pluginManager.getRestrictionManager();
+                getLogger().info("Restriction manager initialized");
+            } catch (Exception e) {
+                getLogger().severe("Failed to initialize restriction manager: " + e.getMessage());
+                e.printStackTrace();
+                getLogger().warning("Restriction features will be disabled");
+            }
+
+            // Register events and commands with error handling
+            try {
+                pluginManager.registerEvents();
+                getLogger().info("Events registered successfully");
+            } catch (Exception e) {
+                getLogger().severe("Failed to register events: " + e.getMessage());
+                e.printStackTrace();
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+
+            try {
+                pluginManager.registerCommands();
+                getLogger().info("Commands registered successfully");
+            } catch (Exception e) {
+                getLogger().severe("Failed to register commands: " + e.getMessage());
+                e.printStackTrace();
+                getLogger().warning("Commands will not be available");
+            }
+            
+            // Register PlaceholderAPI expansion if available
+            try {
+                if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                    new com.muzlik.pvpcombat.integration.PvPCombatExpansion(this).register();
+                    getLogger().info("PlaceholderAPI expansion registered!");
+                }
+            } catch (Exception e) {
+                getLogger().warning("Failed to register PlaceholderAPI expansion: " + e.getMessage());
+                e.printStackTrace();
+                // Non-critical, continue without PlaceholderAPI
+            }
+
+            getLogger().info("PvPCombat plugin has been enabled successfully!");
+            
+        } catch (Exception e) {
+            getLogger().severe("CRITICAL ERROR during plugin initialization: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
         }
-
-        getLogger().info("PvPCombat plugin has been enabled!");
     }
 
     @Override
     public void onDisable() {
-        if (pluginManager != null) {
-            pluginManager.shutdown();
+        try {
+            if (pluginManager != null) {
+                pluginManager.shutdown();
+                getLogger().info("Plugin manager shut down successfully");
+            }
+        } catch (Exception e) {
+            getLogger().severe("Error during plugin shutdown: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            instance = null;
+            getLogger().info("PvPCombat plugin has been disabled!");
         }
-
-        instance = null;
-        getLogger().info("PvPCombat plugin has been disabled!");
     }
 
     // Getters for accessing managers
@@ -90,5 +164,9 @@ public class PvPCombatPlugin extends JavaPlugin {
 
     public LoggingManager getLoggingManager() {
         return loggingManager;
+    }
+    
+    public com.muzlik.pvpcombat.protection.NewbieProtection getNewbieProtection() {
+        return pluginManager != null ? pluginManager.getNewbieProtection() : null;
     }
 }

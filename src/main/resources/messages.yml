@@ -60,6 +60,13 @@ restrictions:
   teleport:
     blocked: "&cYou cannot teleport during combat!"
     command-blocked: "&cCommand &f{command} &cis blocked during combat."
+  
+  # Newbie protection messages
+  newbie-protection:
+    attack-blocked: "&cYou need armor to attack other players!"
+    defend-blocked: "&cYou cannot attack players without armor!"
+    timed-active: "&cThis player has newbie protection for &e{time}s&c!"
+    self-combat: "&cYou cannot attack yourself!"
 
 # Visual Messages
 visual:
@@ -86,6 +93,16 @@ admin:
   interference-detected: "&cInterference detected in combat between &f{attacker} &7and &f{defender}&7!"
   session-limit: "&cCombat session limit reached. Cannot start new combat."
   cleanup: "&aCleaned up &f{count} &ainactive combat sessions."
+  
+  # Protection command messages
+  protection:
+    granted: "&aGranted &e{time}s &aof protection to &f{player}&a!"
+    granted-all: "&aGranted &e{time}s &aof protection to &f{count} &aplayers!"
+    removed: "&aRemoved protection from &f{player}&a!"
+    check-active: "&f{player} &ahas &e{time}s &aof protection remaining."
+    check-inactive: "&f{player} &cdoes not have timed protection."
+    invalid-time: "&cInvalid time value. Must be a positive number."
+    player-not-found: "&cPlayer not found or not online."
 
 # PlaceholderAPI Messages (for placeholders)
 placeholders:

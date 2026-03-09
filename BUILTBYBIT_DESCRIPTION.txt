@@ -1,370 +1,145 @@
-═══════════════════════════════════════════════════════════════
-                    TRUE COMBAT MANAGER v1.0.1
-        The Ultimate PvP Combat Management Plugin - Zero Lag
-═══════════════════════════════════════════════════════════════
+[CENTER]
+[SIZE=7][B]True Combat Manager[/B][/SIZE]
+[SIZE=5]Professional PvP Combat Control for Minecraft Servers[/SIZE]
+[SIZE=4]Advanced combat tracking • Smart restrictions • Dynamic visual feedback[/SIZE]
+[SIZE=4][B]Compatible with Paper & Spigot 1.18–1.21 • Java 17+[/B][/SIZE]
+[SIZE=3][I]If you encounter any issues, feel free to report them.[/I][/SIZE]
+[/CENTER]
 
-🎯 OVERVIEW
+[HR][/HR]
 
-A comprehensive, high-performance PvP combat plugin featuring real-time
-combat tracking, newbie protection, smart restrictions, visual feedback,
-statistics tracking, and combat replay system. Optimized for zero lag with
-intelligent logging system and async operations.
+[SIZE=6][B]🎯 Overview[/B][/SIZE]
 
-═══════════════════════════════════════════════════════════════
-✨ COMPLETE FEATURE LIST
-═══════════════════════════════════════════════════════════════
+True Combat Manager is a complete PvP management system built for competitive Minecraft servers.  
+It tracks fights with precision, enforces intelligent restrictions, prevents combat logging, and includes fully customizable visual effects for a polished player experience.
 
-⚔️ COMBAT MANAGEMENT
-  ✓ Real-time combat detection and tracking
-  ✓ Configurable combat duration (default: 30s)
-  ✓ Automatic timer reset on damage
-  ✓ Lag compensation system (TPS monitoring)
-  ✓ Combat logging protection (instant death on logout)
-  ✓ Automatic combat end on death
-  ✓ Concurrent session management (unlimited fights)
-  ✓ Thread-safe architecture
-  ✓ Minimum damage threshold (0.5 hearts)
+Designed with performance in mind using async processing, lag compensation, and a thread-safe architecture. Ideal for Practice, KitPvP, Factions, or any PvP-focused gameplay environment.
 
-🛡️ NEWBIE PROTECTION SYSTEM
-  ✓ Protects players without armor from PvP
-  ✓ XP level threshold (configurable, default: 3)
-  ✓ Prevents damage dealing by newbies
-  ✓ Prevents damage receiving by newbies
-  ✓ Requires at least 1 armor piece (configurable)
-  ✓ Bypass permission support
-  ✓ Custom messages for attackers and defenders
-  ✓ Detailed logging for debugging
+[ATTACH type="full" width="800px"]1117174[/ATTACH]
+[SIZE=2][I]BossBar countdown and ActionBar updates during an active fight[/I][/SIZE]
 
-🚫 SMART RESTRICTIONS (All Configurable)
-  ✓ Tridents - Block throwing & riptide enchantment
-  ✓ Ender Pearls - Block usage & safezone teleportation
-  ✓ Respawn Anchors - Block usage during combat
-  ✓ Elytra - Block gliding & firework boosts
-  ✓ End Crystals - Block placement/breaking
-  ✓ Golden Apples - Configurable cooldowns (3s base, 4.5s combat)
-  ✓ Enchanted Golden Apples - Separate cooldowns (4s base, 8s combat)
-  ✓ Commands - Block teleport commands (/tp, /home, /spawn, /warp)
-  ✓ Safezones - Prevent entry with visual glass barriers
-  ✓ Creative Mode - Auto-switch to survival during combat
-  ✓ Block Breaking/Placing - Optional restrictions
+[HR][/HR]
 
-🎨 VISUAL SYSTEM
-  ✓ 6 Built-in Themes:
-    • Default - Classic red/yellow theme
-    • Minimal - Clean gray theme
-    • Intense - Bold red/orange theme
-    • Elegant - Sophisticated purple theme
-    • Neon - Bright cyan/pink theme
-    • Retro - Vintage green/yellow theme
-  ✓ BossBar display with countdown timer
-  ✓ Color-coded urgency (green → yellow → red)
-  ✓ ActionBar notifications with opponent info
-  ✓ Sound effects (5 profiles: default, subtle, intense, calm, electronic)
-  ✓ Client-side glass barriers (ProtocolLib)
-  ✓ Per-player style preferences
-  ✓ HEX color support for full RGB customization
+[SIZE=6][B]✨ Core Features[/B][/SIZE]
 
-📊 STATISTICS & TRACKING
-  ✓ Wins/Losses tracking
-  ✓ K/D ratio calculation
-  ✓ Win rate percentage
-  ✓ Damage dealt/received (precise to 0.1 hearts)
-  ✓ Hits landed vs total hits
-  ✓ Accuracy percentage
-  ✓ Combat duration tracking
-  ✓ Knockback exchanges
-  ✓ Total combat time
-  ✓ Last combat timestamp
-  ✓ PlaceholderAPI integration (15+ placeholders)
+[SIZE=5][B]⚔️ Combat Engine[/B][/SIZE]
+[LIST]
+[*]Accurate combat detection & real-time tracking
+[*]Customizable combat duration
+[*]Automatic timer reset on new damage
+[*]Lag compensation using live TPS monitoring
+[*]Combat logging protection with instant logout punishment
+[*]Fight ends automatically on death
+[*]Unlimited simultaneous combats per player
+[*]Minimum damage threshold control
+[*]Multithreaded, thread-safe architecture
+[/LIST]
 
-🎬 COMBAT REPLAY SYSTEM
-  ✓ Timeline recording of all combat events
-  ✓ Hybrid storage (memory + compressed files)
-  ✓ Replay playback with admin commands
-  ✓ Event filtering and search
-  ✓ Configurable retention (default: 30 days)
-  ✓ Memory-efficient with auto cleanup
-  ✓ Player names in replay filenames
+[SIZE=5][B]🛡️ Newbie Protection[/B][/SIZE]
+[LIST]
+[*]Automatic PvP protection for under-geared players
+[*]XP-based threshold system
+[*]Blocks both damage dealing & receiving
+[*]Armor requirements (minimum 1 piece or full set)
+[*]Bypass permissions
+[*]Editable player messages
+[*]Debug logging for server admins
+[/LIST]
 
-🛡️ SAFEZONE PROTECTION
-  ✓ WorldGuard integration
-  ✓ Prevent entry during combat
-  ✓ Visual glass barriers at boundaries
-  ✓ Barriers persist until player moves away (>10 blocks)
-  ✓ Barriers only render on AIR blocks (no griefing)
-  ✓ Client-side rendering (no world modification)
-  ✓ Configurable barrier material (GLASS, RED_STAINED_GLASS, etc.)
-  ✓ Prevent attacking from/into safezones
-  ✓ Sound and visual feedback
+[SIZE=5][B]🚫 Smart Restrictions[/B][/SIZE]
+[LIST]
+[*]Trident usage & riptide blocking
+[*]Ender Pearl cooldowns + anti-escape logic
+[*]Respawn Anchor disabling in combat
+[*]Elytra glide/firework blocking
+[*]End Crystal placement control
+[*]Golden Apple cooldowns (separate base & combat values)
+[*]Command blocking for TP/home/warp/etc.
+[*]Safezone entry blocking with visual barriers
+[*]Creative Mode forced to Survival
+[*]Optional block break/place limits
+[/LIST]
 
-⚡ PERFORMANCE OPTIMIZED
-  ✓ Zero lag - Optimized for high-performance servers
-  ✓ Intelligent logging system (disable for best performance)
-  ✓ Async operations (combat logging, stats calculation)
-  ✓ Efficient caching (player data, restrictions, combat state)
-  ✓ Minimal memory footprint
-  ✓ Configurable thread pool (default: 4 threads)
-  ✓ Automatic cache cleanup
-  ✓ No string creation when logging disabled
+[SIZE=5][B]🎨 Visual Interface[/B][/SIZE]
+[LIST]
+[*]6 Built-in themes (minimal, fire, ice, neon, dark, clean)
+[*]Smooth BossBar combat timer
+[*]ActionBar opponent & timer notifications
+[*]Live theme switching via [ICODE]/combat toggle-style[/ICODE]
+[*]Full HEX color support
+[*]6 sound profiles
+[*]Audio cues for start/end/reset/warnings
+[/LIST]
 
-🔒 ANTI-ABUSE FEATURES
-  ✓ Combat logging protection (instant death)
-  ✓ Anti-interference system (third-party damage detection)
-  ✓ Thread-safe operations
-  ✓ Input validation on all commands
-  ✓ Permission checks on sensitive operations
-  ✓ Server switch prevention during combat
+[SIZE=2][I]Sample themes displayed in-game[/I][/SIZE]
+[ATTACH type="full" width="300px"]1117149[/ATTACH]
+[ATTACH type="full" width="300px"]1117153[/ATTACH]
+[ATTACH type="full" width="300px"]1117144[/ATTACH]
+[ATTACH type="full" width="300px"]1117148[/ATTACH]
 
-🌐 CROSS-SERVER SUPPORT (Experimental)
-  ✓ BungeeCord/Velocity compatibility
-  ✓ Combat state synchronization
-  ✓ Server switch prevention
-  ✓ Network-wide broadcasts
-  ✓ Configurable sync intervals
+[SIZE=5][B]📊 Detailed Statistics[/B][/SIZE]
+[LIST]
+[*]Wins / Losses
+[*]K/D ratio & win rate
+[*]Damage dealt / received
+[*]Accuracy & hit ratio
+[*]Knockback interactions
+[*]Total combat time
+[*]Last combat timestamp
+[*]15+ PlaceholderAPI placeholders
+[/LIST]
 
-═══════════════════════════════════════════════════════════════
-🎮 COMMANDS
-═══════════════════════════════════════════════════════════════
+[ATTACH type="full" width="600px"]1117131[/ATTACH]
+[SIZE=2][I]Player using /combat summary to view detailed analytics[/I][/SIZE]
 
-PLAYER COMMANDS:
-  /combat status
-    • Check your current combat status and opponent
-    • Permission: pvpcombat.command.status (default: true)
+[SIZE=5][B]⚡ Optimized Performance[/B][/SIZE]
+[LIST]
+[*]Lightweight and lag-free
+[*]Async calculations
+[*]Efficient data caching
+[*]Configurable thread pool
+[*]Automatic cleanup tasks
+[*]Optional logging for debugging
+[/LIST]
 
-  /combat summary
-    • View your lifetime combat statistics
-    • Permission: pvpcombat.command.summary (default: true)
+[HR][/HR]
 
-  /combat toggle-style
-    • Cycle through visual themes
-    • Permission: pvpcombat.command.toggle-style (default: true)
+[SIZE=6][B]🎮 Commands[/B][/SIZE]
 
-ADMIN COMMANDS:
-  /combat inspect <player>
-    • Real-time combat data inspection
-    • Permission: pvpcombat.admin.inspect (default: op)
+[SIZE=5][B]Player Commands[/B][/SIZE]
+[TABLE]
+[TR][TH]Command[/TH][TH]Description[/TH][/TR]
+[TR][TD][ICODE]/combat status[/ICODE][/TD][TD]View combat timer, opponent, and health[/TD][/TR]
+[TR][TD][ICODE]/combat summary[/ICODE][/TD][TD]Show lifetime combat statistics[/TD][/TR]
+[TR][TD][ICODE]/combat toggle-style[/ICODE][/TD][TD]Change BossBar / ActionBar style[/TD][/TR]
+[/TABLE]
 
-  /combat summary <player>
-    • View any player's statistics
-    • Permission: pvpcombat.admin (default: op)
+[SIZE=5][B]Admin Commands[/B][/SIZE]
+[TABLE]
+[TR][TH]Command[/TH][TH]Description[/TH][/TR]
+[TR][TD][ICODE]/combat inspect <player>[/ICODE][/TD][TD]View real-time combat details[/TD][/TR]
+[TR][TD][ICODE]/combat summary <player>[/ICODE][/TD][TD]View another player’s statistics[/TD][/TR]
+[TR][TD][ICODE]/combat reload[/ICODE][/TD][TD]Reload configuration[/TD][/TR]
+[TR][TD][ICODE]/combat debug[/ICODE][/TD][TD]Performance/debug mode toggle[/TD][/TR]
+[TR][TD][ICODE]/combat logging <enabled|disabled>[/ICODE][/TD][TD]Toggle console logging[/TD][/TR]
+[TR][TD][ICODE]/replay <player>[/ICODE][/TD][TD]View replay timeline[/TD][/TR]
+[/TABLE]
 
-  /combat reload
-    • Reload configuration
-    • Permission: pvpcombat.admin (default: op)
+[SIZE=5][B]Permissions[/B][/SIZE]
+[ICODE]pvpcombat.command.status[/ICODE]  
+[ICODE]pvpcombat.command.summary[/ICODE]  
+[ICODE]pvpcombat.command.toggle-style[/ICODE]  
+[ICODE]pvpcombat.admin[/ICODE]  
+[ICODE]pvpcombat.admin.inspect[/ICODE]  
+[ICODE]pvpcombat.admin.debug[/ICODE]  
+[ICODE]pvpcombat.bypass.combatlog[/ICODE]  
+[ICODE]pvpcombat.bypass.restrictions[/ICODE]  
+[ICODE]pvpcombat.bypass.newbie[/ICODE]
 
-  /combat debug
-    • Toggle debug mode with verbosity levels
-    • Permission: pvpcombat.admin.debug (default: op)
+[HR][/HR]
 
-  /combat logging <enabled|disabled>
-    • Control console logging in real-time
-    • Permission: pvpcombat.admin (default: op)
-    • Aliases: enable/on/true, disable/off/false
-
-  /replay view <session-uuid>
-    • View combat replay timeline
-    • Permission: pvpcombat.admin (default: op)
-
-═══════════════════════════════════════════════════════════════
-🔐 PERMISSIONS
-═══════════════════════════════════════════════════════════════
-
-PLAYER PERMISSIONS (default: true):
-  • pvpcombat.command.status
-  • pvpcombat.command.summary
-  • pvpcombat.command.toggle-style
-
-ADMIN PERMISSIONS (default: op):
-  • pvpcombat.admin - All admin commands
-  • pvpcombat.admin.inspect - Inspect players
-  • pvpcombat.admin.debug - Debug mode
-
-BYPASS PERMISSIONS (default: op):
-  • pvpcombat.bypass.combatlog - Bypass combat logging
-  • pvpcombat.bypass.restrictions - Bypass all restrictions
-  • pvpcombat.bypass.newbie - Bypass newbie protection
-  • pvpcombat.bypass.server-switch - Bypass server switch prevention
-
-═══════════════════════════════════════════════════════════════
-📋 REQUIREMENTS
-═══════════════════════════════════════════════════════════════
-
-REQUIRED:
-  • Minecraft 1.20.4+ (Paper/Spigot/Purpur)
-  • Java 21+ (Java 21.0.8 tested)
-
-RECOMMENDED:
-  • ProtocolLib 5.0+ (for client-side barriers)
-  • WorldGuard 7.0+ (for safezone protection)
-  • PlaceholderAPI 2.11+ (for placeholders)
-
-OPTIONAL INTEGRATIONS:
-  • Citizens (NPC combat support)
-  • CombatLogX (integration support)
-  • MythicMobs (mob combat support)
-  • BungeeCord/Velocity (cross-server sync)
-
-═══════════════════════════════════════════════════════════════
-⚙️ CONFIGURATION HIGHLIGHTS
-═══════════════════════════════════════════════════════════════
-
-# General Settings
-general:
-  enabled: true
-  debug-mode: false
-
-# Combat Settings
-combat:
-  duration: 30              # Combat timer (seconds)
-  allow-flight: false       # Allow flight during combat
-  cancel-on-death: true     # End combat on death
-
-# Newbie Protection
-newbie-protection:
-  enabled: true
-  prevent-damage-dealing: true
-  prevent-damage-receiving: true
-  xp-level-threshold: 3
-  require-any-armor: true   # true = need 1 piece, false = need full set
-
-# Restrictions
-restrictions:
-  trident:
-    enabled: true
-    block-throwing: true
-    block-riptide: true
-  
-  enderpearl:
-    enabled: true
-    block-usage: true
-    cooldown: 10
-    combat-cooldown-multiplier: 2.0
-  
-  respawn-anchor:
-    enabled: true
-  
-  elytra:
-    enabled: true
-    block-glide: true
-  
-  crystal:
-    enabled: true
-    block-placement: true
-    block-breaking: false
-  
-  golden-apple:
-    cooldown: 3
-    combat-cooldown-multiplier: 1.5
-  
-  enchanted-golden-apple:
-    cooldown: 4
-    combat-cooldown-multiplier: 2.0
-  
-  teleport:
-    enabled: true
-    blocked-commands:
-      - "tp"
-      - "teleport"
-      - "home"
-      - "spawn"
-      - "warp"
-      - "tpa"
-      - "tpaccept"
-      - "back"
-  
-  safezone:
-    enabled: true
-    block-entry: true
-    protected-regions:
-      - "spawn"
-      - "safezone"
-      - "safe"
-    barrier:
-      enabled: true
-      material: "GLASS"      # GLASS, RED_STAINED_GLASS, etc.
-      height: 4
-      width: 5
-
-# Visual System
-visual:
-  themes:
-    default-theme: "default"
-    available: ["default", "minimal", "intense", "elegant", "neon", "retro"]
-  
-  bossbar:
-    enabled: true
-    update-interval: 1
-  
-  actionbar:
-    enabled: true
-    update-interval: 20
-  
-  sounds:
-    profile: "default"      # default, subtle, intense, calm, electronic
-
-# Performance
-performance:
-  lag:
-    enabled: true
-    tps-threshold: 18.0
-  
-  async:
-    enabled: true
-    thread-pool-size: 4
-  
-  cache:
-    player-data-ttl: 1800   # 30 minutes
-
-# Logging (disable for best performance)
-logging:
-  console-enabled: false
-  storage:
-    type: "BOTH"            # FILE, MEMORY, or BOTH
-
-# Statistics
-statistics:
-  enabled: true
-  summary:
-    delivery: "CHAT"        # CHAT, GUI, STORAGE, or NONE
-
-# Replay System
-replay:
-  enabled: false            # Disabled by default
-  retention-days: 30
-  max-events: 1000
-
-═══════════════════════════════════════════════════════════════
-🔌 PLACEHOLDERAPI SUPPORT
-═══════════════════════════════════════════════════════════════
-
-COMBAT STATUS:
-  %pvpcombat_in_combat% - true/false
-  %pvpcombat_time_left% - Remaining seconds
-  %pvpcombat_opponent% - Opponent name
-
-LIFETIME STATISTICS:
-  %pvpcombat_wins% - Total wins
-  %pvpcombat_losses% - Total losses
-  %pvpcombat_total_combats% - Total combats
-  %pvpcombat_kd_ratio% - K/D ratio (formatted)
-  %pvpcombat_win_rate% - Win rate percentage
-  %pvpcombat_total_damage_dealt% - Total damage dealt
-  %pvpcombat_total_damage_received% - Total damage received
-  %pvpcombat_damage_ratio% - Damage ratio (dealt/received)
-  %pvpcombat_total_combat_time% - Total time in combat
-
-SESSION STATISTICS:
-  %pvpcombat_session_damage_dealt% - Damage in current fight
-  %pvpcombat_session_damage_received% - Damage received
-  %pvpcombat_session_hits_landed% - Hits landed
-  %pvpcombat_knockback_exchanges% - Knockback exchanges
-
-═══════════════════════════════════════════════════════════════
-📊 COMBAT STATISTICS EXAMPLE
-═══════════════════════════════════════════════════════════════
-
-Players can view their statistics with /combat summary:
-
+[SIZE=6][B]📊 Example Summary Output[/B][/SIZE]
+[CODE]
 === Combat Summary for PlayerName ===
 Total Combats: 47
 Wins: 32 | Losses: 15
@@ -375,145 +150,90 @@ Damage Received: 275.0 ❤
 Damage Ratio: 2.14
 Total Combat Time: 23m 45s
 Last Combat: 2025-11-30 15:30:00
+[/CODE]
 
-═══════════════════════════════════════════════════════════════
-🚀 WHY CHOOSE TRUE COMBAT MANAGER?
-═══════════════════════════════════════════════════════════════
+[HR][/HR]
 
-✓ ZERO LAG - Optimized for high-performance servers
-✓ NEWBIE FRIENDLY - Protects new players automatically
-✓ HIGHLY CONFIGURABLE - 100+ configuration options
-✓ VISUAL FEEDBACK - 6 themes, BossBar, ActionBar, sounds
-✓ SMART RESTRICTIONS - Block items/commands during combat
-✓ COMPREHENSIVE STATISTICS - Detailed tracking with PlaceholderAPI
-✓ SAFEZONE PROTECTION - Visual barriers with WorldGuard
-✓ COMBAT REPLAY - Timeline recording and playback
-✓ ANTI-ABUSE - Combat logging protection and anti-interference
-✓ CROSS-SERVER - BungeeCord/Velocity support
-✓ ACTIVE DEVELOPMENT - Regular updates and bug fixes
-✓ PROFESSIONAL SUPPORT - Fast response to issues
-✓ WELL DOCUMENTED - Extensive configuration comments
+[SIZE=6][B]🛡️ Combat Logging Protection[/B][/SIZE]
 
-═══════════════════════════════════════════════════════════════
-📦 INSTALLATION
-═══════════════════════════════════════════════════════════════
+Players disconnecting mid-fight face:
+[LIST]
+[*]Instant death
+[*]Inventory drop at logout location
+[*]Loss added to statistics
+[*]Opponent receives an automatic win
+[*]Announced server-wide
+[/LIST]
 
-1. Download TrueCombatManager-1.0.1.jar
-2. Place in your server's plugins/ folder
-3. Install ProtocolLib (recommended for barriers)
-4. Install WorldGuard (recommended for safezones)
-5. Restart your server
-6. Edit plugins/TrueCombatManager/config.yml to customize
-7. Use /combat reload to apply changes
+[ATTACH type="full" width="600px"]1117182[/ATTACH]
+[SIZE=2][I]Example of a broadcasted combat-log forfeit[/I][/SIZE]
 
-═══════════════════════════════════════════════════════════════
-🐛 TROUBLESHOOTING
-═══════════════════════════════════════════════════════════════
+[HR][/HR]
 
-SERVER LAG?
-  → Disable console logging: /combat logging disabled
-  → Check config: logging.console-enabled: false
-  → This eliminates all string creation overhead
+[SIZE=6][B]🔌 PlaceholderAPI Integration[/B][/SIZE]
 
-NEWBIE PROTECTION NOT WORKING?
-  → Check player has NO armor equipped (all 4 slots empty)
-  → Verify player XP level ≤ threshold (default: 3)
-  → Check player doesn't have pvpcombat.bypass.newbie permission
-  → Enable logging to see detailed checks: /combat logging enabled
+[TABLE]
+[TR][TH]Placeholder[/TH][TH]Description[/TH][/TR]
+[TR][TD][ICODE]%pvpcombat_in_combat%[/ICODE][/TD][TD]Returns true/false[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_time_left%[/ICODE][/TD][TD]Remaining combat time[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_opponent%[/ICODE][/TD][TD]Opponent’s name[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_wins%[/ICODE][/TD][TD]Total wins[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_losses%[/ICODE][/TD][TD]Total losses[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_kd_ratio%[/ICODE][/TD][TD]K/D ratio[/TD][/TR]
+[TR][TD][ICODE]%pvpcombat_win_rate%[/ICODE][/TD][TD]Win percentage[/TD][/TR]
+[/TABLE]
 
-BARRIERS NOT SHOWING?
-  → Install ProtocolLib 5.0+
-  → Check config: restrictions.safezone.barrier.enabled: true
-  → Verify WorldGuard regions are configured
-  → Check console for ProtocolLib detection message
+[HR][/HR]
 
-TRIDENTS STILL WORKING IN COMBAT?
-  → Check config: restrictions.trident.enabled: true
-  → Verify player is actually in combat
-  → Check console logs when enabled
+[SIZE=6][B]⚙️ Configuration (Example)[/B][/SIZE]
 
-COMMANDS NOT BLOCKED?
-  → Check config: restrictions.teleport.enabled: true
-  → Verify blocked-commands list is not empty
-  → Check player doesn't have pvpcombat.bypass.restrictions permission
+[CODE=yaml]
+# Config excerpt...
+general:
+  enabled: true
+combat:
+  duration: 30
+newbie-protection:
+  enabled: true
+restrictions:
+  enderpearl:
+    enabled: true
+    cooldown: 10
+visual:
+  themes:
+    default-theme: "default"
+performance:
+  async:
+    enabled: true
+statistics:
+  enabled: true
+[/CODE]
 
-PLACEHOLDERS NOT WORKING?
-  → Install PlaceholderAPI
-  → Run /papi reload
-  → Check /papi parse me %pvpcombat_in_combat%
+[HR][/HR]
 
-═══════════════════════════════════════════════════════════════
-🆕 CHANGELOG - v1.0.1
-═══════════════════════════════════════════════════════════════
+[SIZE=6][B]🚀 Why Choose True Combat Manager?[/B][/SIZE]
 
-INITIAL RELEASE:
-  • Complete PvP combat management system
-  • Real-time combat tracking with 30s timer
-  • Newbie protection system (XP level + armor check)
-  • Smart restrictions (tridents, ender pearls, respawn anchors, etc.)
-  • Visual system with 6 themes and BossBar/ActionBar
-  • Comprehensive statistics tracking
-  • Combat replay system with timeline recording
-  • Safezone protection with WorldGuard integration
-  • Visual glass barriers (ProtocolLib)
-  • PlaceholderAPI support (15+ placeholders)
-  • Performance optimized with async operations
-  • Intelligent logging system (zero lag when disabled)
-  • Combat logging protection (instant death)
-  • Cross-server support (BungeeCord/Velocity)
-  • Admin tools (inspect, debug, replay viewer)
-  • 100+ configuration options
+[LIST]
+[*]Blazing-fast, no-lag combat engine
+[*]Auto-protection for new players
+[*]100+ configuration options
+[*]6 visual themes + sound profiles
+[*]Smart item & command restrictions
+[*]Comprehensive statistics with PlaceholderAPI
+[*]Safezone wall barriers (WorldGuard support)
+[*]Replay system for fights
+[*]Anti-abuse combat logging protection
+[*]Cross-server support (Bungee/Velocity)
+[*]Well-documented & actively maintained
+[/LIST]
 
-═══════════════════════════════════════════════════════════════
-🎯 TESTED VERSIONS
-═══════════════════════════════════════════════════════════════
+[HR][/HR]
 
-✓ Minecraft 1.21.10 - Fully Tested
-✓ Minecraft 1.21.x - Fully Tested
-✓ Minecraft 1.20.x - Compatible
-✓ Minecraft 1.19.x - Compatible
-⚠ Minecraft 1.18.x - Basic Features
-
-✓ Paper 1.20.4+ - Recommended
-✓ Spigot 1.20.4+ - Supported
-✓ Purpur 1.20.4+ - Supported
-
-✓ Java 21.0.8 - Tested
-✓ Java 21+ - Recommended
-✓ Java 17+ - Minimum
-
-═══════════════════════════════════════════════════════════════
-📞 SUPPORT
-═══════════════════════════════════════════════════════════════
-
-Need help? Contact me directly through BuiltByBit messages!
-
-REPORTING BUGS:
-  1. Check if issue already exists
-  2. Provide server version and plugin version
-  3. Include relevant config sections
-  4. Attach console errors (if any)
-  5. Describe steps to reproduce
-
-FEATURE REQUESTS:
-  All feature requests are welcome and considered!
-
-═══════════════════════════════════════════════════════════════
-⭐ LEAVE A REVIEW
-═══════════════════════════════════════════════════════════════
-
-If you enjoy this plugin, please leave a 5-star review!
-Your feedback helps improve the plugin and helps others discover it.
-
-═══════════════════════════════════════════════════════════════
-📜 LICENSE
-═══════════════════════════════════════════════════════════════
-
-All Rights Reserved © 2025 muzlik
-
-This is proprietary software. Unauthorized copying, distribution,
-modification, or use is strictly prohibited.
-
-═══════════════════════════════════════════════════════════════
-
-Version: 1.0.1 | Author: muzlik | Made with ❤️ for Minecraft
+[SIZE=6][B]📦 Installation[/B][/SIZE]
+[LIST=1]
+[*]Download the latest version
+[*]Drag it into your plugins folder
+[*]Install ProtocolLib (recommended for visual barriers)
+[*]Install WorldGuard if using region-based safezones
+[*]Restart the server
+[/LIST]

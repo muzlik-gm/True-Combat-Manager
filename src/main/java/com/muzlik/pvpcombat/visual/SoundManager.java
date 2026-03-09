@@ -234,6 +234,15 @@ public class SoundManager {
     }
 
     /**
+     * Reloads sound profiles from configuration.
+     */
+    public void reloadConfig() {
+        soundProfiles.clear();
+        loadSoundProfiles();
+        plugin.getLogger().fine("SoundManager configuration reloaded");
+    }
+
+    /**
      * SoundProfile class for managing sound sets.
      */
     public static class SoundProfile {

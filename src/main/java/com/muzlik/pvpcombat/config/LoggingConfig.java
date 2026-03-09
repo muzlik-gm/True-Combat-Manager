@@ -105,48 +105,59 @@ public class LoggingConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (!loggingLevel.equals("INFO") && !loggingLevel.equals("DEBUG") &&
             !loggingLevel.equals("WARNING") && !loggingLevel.equals("ERROR")) {
-            result.addWarning("logging.level", "Invalid log level: " + loggingLevel +
-                            ". Valid levels: INFO, DEBUG, WARNING, ERROR");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("logging.level", 
+                "Invalid log level: " + loggingLevel + ". Valid levels: INFO, DEBUG, WARNING, ERROR", 
+                loggingLevel, "INFO", ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (loggingMaxFiles < 1) {
-            result.addError("logging.max-files", "Max files must be positive: " + loggingMaxFiles);
+            errors.add(new ConfigurationValidator.ConfigValidationError("logging.max-files", 
+                "Max files must be positive: " + loggingMaxFiles, 
+                loggingMaxFiles, 5, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (loggingMaxSizeMb < 1) {
-            result.addError("logging.max-size-mb", "Max size must be positive: " + loggingMaxSizeMb);
+            errors.add(new ConfigurationValidator.ConfigValidationError("logging.max-size-mb", 
+                "Max size must be positive: " + loggingMaxSizeMb, 
+                loggingMaxSizeMb, 10, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (!combatLoggingStorageType.equals("FILE") &&
             !combatLoggingStorageType.equals("MEMORY") &&
             !combatLoggingStorageType.equals("BOTH")) {
-            result.addError("logging.combat.storage.type", "Invalid storage type: " + combatLoggingStorageType +
-                          ". Must be FILE, MEMORY, or BOTH");
+            errors.add(new ConfigurationValidator.ConfigValidationError("logging.combat.storage.type", 
+                "Invalid storage type: " + combatLoggingStorageType + ". Must be FILE, MEMORY, or BOTH", 
+                combatLoggingStorageType, "BOTH", ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (!combatLoggingSummaryDelivery.equals("CHAT") &&
             !combatLoggingSummaryDelivery.equals("GUI") &&
             !combatLoggingSummaryDelivery.equals("STORAGE") &&
             !combatLoggingSummaryDelivery.equals("NONE")) {
-            result.addWarning("logging.combat.summary.delivery", "Invalid summary delivery: " + combatLoggingSummaryDelivery +
-                            ". Valid options: CHAT, GUI, STORAGE, NONE");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("logging.combat.summary.delivery", 
+                "Invalid summary delivery: " + combatLoggingSummaryDelivery + ". Valid options: CHAT, GUI, STORAGE, NONE", 
+                combatLoggingSummaryDelivery, "CHAT", ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (combatLoggingRetentionDays < 1) {
-            result.addWarning("logging.combat.retention.days", "Retention days too low: " + combatLoggingRetentionDays +
-                            ", recommended minimum: 1 day");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("logging.combat.retention.days", 
+                "Retention days too low: " + combatLoggingRetentionDays + ", recommended minimum: 1 day", 
+                combatLoggingRetentionDays, 30, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (combatLoggingMemoryMaxEntries < 100) {
-            result.addWarning("logging.combat.memory.max-entries", "Max memory entries too low: " +
-                            combatLoggingMemoryMaxEntries + ", recommended minimum: 100");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("logging.combat.memory.max-entries", 
+                "Max memory entries too low: " + combatLoggingMemoryMaxEntries + ", recommended minimum: 100", 
+                combatLoggingMemoryMaxEntries, 10000, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

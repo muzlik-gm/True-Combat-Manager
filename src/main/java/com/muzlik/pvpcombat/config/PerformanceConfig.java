@@ -97,46 +97,70 @@ public class PerformanceConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (lagTpsThreshold < 0 || lagTpsThreshold > 20) {
-            result.addError("performance.lag.tps-threshold", "TPS threshold must be between 0 and 20: " + lagTpsThreshold);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.lag.tps-threshold", 
+                "TPS threshold must be between 0 and 20: " + lagTpsThreshold, 
+                lagTpsThreshold, 18.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (lagPingThreshold < 0) {
-            result.addError("performance.lag.ping-threshold", "Ping threshold cannot be negative: " + lagPingThreshold);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.lag.ping-threshold", 
+                "Ping threshold cannot be negative: " + lagPingThreshold, 
+                lagPingThreshold, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (lagBaseExtensionSeconds < 0) {
-            result.addError("performance.lag.base-extension-seconds", "Base extension seconds cannot be negative: " + lagBaseExtensionSeconds);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.lag.base-extension-seconds", 
+                "Base extension seconds cannot be negative: " + lagBaseExtensionSeconds, 
+                lagBaseExtensionSeconds, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (lagExtensionMultiplier <= 0) {
-            result.addError("performance.lag.extension-multiplier", "Extension multiplier must be positive: " + lagExtensionMultiplier);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.lag.extension-multiplier", 
+                "Extension multiplier must be positive: " + lagExtensionMultiplier, 
+                lagExtensionMultiplier, 1.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (lagPingUpdateIntervalMs < 100) {
-            result.addWarning("performance.lag.ping-update-interval-ms", "Ping update interval too low: " + lagPingUpdateIntervalMs + "ms, recommended minimum: 100ms");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("performance.lag.ping-update-interval-ms", 
+                "Ping update interval too low: " + lagPingUpdateIntervalMs + "ms, recommended minimum: 100ms", 
+                lagPingUpdateIntervalMs, 1000, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
         if (lagTpsHistoryLength < 10) {
-            result.addWarning("performance.lag.tps-history-length", "TPS history length too small: " + lagTpsHistoryLength + ", recommended minimum: 10");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("performance.lag.tps-history-length", 
+                "TPS history length too small: " + lagTpsHistoryLength + ", recommended minimum: 10", 
+                lagTpsHistoryLength, 20, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (asyncThreadPoolSize < 1) {
-            result.addError("performance.async.thread-pool-size", "Thread pool size must be at least 1: " + asyncThreadPoolSize);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.async.thread-pool-size", 
+                "Thread pool size must be at least 1: " + asyncThreadPoolSize, 
+                asyncThreadPoolSize, 4, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (asyncThreadPoolSize > 32) {
-            result.addWarning("performance.async.thread-pool-size", "Thread pool size very large: " + asyncThreadPoolSize + ", recommended maximum: 32");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("performance.async.thread-pool-size", 
+                "Thread pool size very large: " + asyncThreadPoolSize + ", recommended maximum: 32", 
+                asyncThreadPoolSize, 4, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (cachingPlayerDataTtl < 0) {
-            result.addError("performance.cache.player-data-ttl", "Player data TTL cannot be negative: " + cachingPlayerDataTtl);
+            errors.add(new ConfigurationValidator.ConfigValidationError("performance.cache.player-data-ttl", 
+                "Player data TTL cannot be negative: " + cachingPlayerDataTtl, 
+                cachingPlayerDataTtl, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (cachingSessionCleanupInterval < 10) {
-            result.addWarning("performance.cache.cleanup-interval", "Cleanup interval too small: " + cachingSessionCleanupInterval + "s, recommended minimum: 10s");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("performance.cache.cleanup-interval", 
+                "Cleanup interval too small: " + cachingSessionCleanupInterval + "s, recommended minimum: 10s", 
+                cachingSessionCleanupInterval, 60, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (maxEventBuffer < 100) {
-            result.addWarning("performance.max-event-buffer", "Max event buffer too small: " + maxEventBuffer + ", recommended minimum: 100");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("performance.max-event-buffer", 
+                "Max event buffer too small: " + maxEventBuffer + ", recommended minimum: 100", 
+                maxEventBuffer, 1000, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

@@ -126,24 +126,33 @@ public class RestrictionConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (enderPearlCooldown < 0) {
-            result.addError("restrictions.enderpearl.cooldown", "Ender pearl cooldown cannot be negative: " + enderPearlCooldown);
+            errors.add(new ConfigurationValidator.ConfigValidationError("restrictions.enderpearl.cooldown", 
+                "Ender pearl cooldown cannot be negative: " + enderPearlCooldown, 
+                enderPearlCooldown, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (enderPearlCombatCooldownMultiplier <= 0) {
-            result.addError("restrictions.enderpearl.combat-cooldown-multiplier",
-                          "Combat cooldown multiplier must be positive: " + enderPearlCombatCooldownMultiplier);
+            errors.add(new ConfigurationValidator.ConfigValidationError("restrictions.enderpearl.combat-cooldown-multiplier",
+                "Combat cooldown multiplier must be positive: " + enderPearlCombatCooldownMultiplier, 
+                enderPearlCombatCooldownMultiplier, 1.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
         if (elytraMinSafeHeight < 0) {
-            result.addError("restrictions.elytra.min-safe-height", "Minimum safe height cannot be negative: " + elytraMinSafeHeight);
+            errors.add(new ConfigurationValidator.ConfigValidationError("restrictions.elytra.min-safe-height", 
+                "Minimum safe height cannot be negative: " + elytraMinSafeHeight, 
+                elytraMinSafeHeight, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (elytraBoostCooldown < 0) {
-            result.addError("restrictions.elytra.boost-cooldown", "Boost cooldown cannot be negative: " + elytraBoostCooldown);
+            errors.add(new ConfigurationValidator.ConfigValidationError("restrictions.elytra.boost-cooldown", 
+                "Boost cooldown cannot be negative: " + elytraBoostCooldown, 
+                elytraBoostCooldown, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

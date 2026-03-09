@@ -1,0 +1,126 @@
+# ========================================
+# CASUAL SURVIVAL SERVER CONFIGURATION
+# ========================================
+# This configuration is optimized for casual survival servers
+# Features:
+# - Short combat timers (10s)
+# - Lenient restrictions
+# - Newbie protection enabled
+# - Friendly visual themes
+# - Balanced gameplay
+
+config-version: 2
+
+general:
+  enabled: true
+  debug-mode: false
+  language: "en"
+
+logging:
+  console-enabled: false
+
+database:
+  type: "sqlite"
+  auto-save-interval: 5
+
+combat:
+  duration: 10  # Short combat timer
+  cooldown: 3  # Short cooldown
+  max-sessions: 50
+  
+  disconnect-protection:
+    enabled: true
+    display-mode: "actionbar"
+  
+  damage:
+    reset-on-damage: true
+    min-damage-trigger: 1.0  # Less sensitive
+  
+  bossbar:
+    enabled: true
+    update-interval: 1
+    title: "&aCombat: &f{time_left}s"
+    color: "GREEN"
+    style: "SOLID"
+
+newbie-protection:
+  enabled: true
+  prevent-damage-dealing: true
+  prevent-damage-receiving: true
+  xp-level-threshold: 5
+  require-any-armor: true
+  
+  timed-protection-on-join:
+    enabled: true
+    duration-seconds: 900  # 15 minutes
+
+restrictions:
+  enderpearl:
+    enabled: true
+    cooldown: 3
+    block-usage: false
+    combat-cooldown-multiplier: 1.0
+  
+  golden-apple:
+    enabled: false
+  
+  enchanted-golden-apple:
+    enabled: false
+  
+  elytra:
+    enabled: false
+  
+  trident:
+    enabled: true
+    block-riptide: false
+    cooldown: 3
+  
+  crystal:
+    enabled: true
+    block-placement: true
+    block-breaking: false
+  
+  respawn-anchor:
+    enabled: true
+  
+  teleport:
+    enabled: true
+  
+  safezone:
+    enabled: true
+    block-entry: true
+    protected-regions:
+      - "spawn"
+      - "safezone"
+  
+  blocks:
+    enabled: false
+
+visual:
+  themes:
+    default-theme: "clean"
+  
+  bossbar:
+    enabled: true
+  
+  actionbar:
+    enabled: true
+    show-opponent: true
+  
+  sounds:
+    enabled: true
+    profile: "calm"
+
+performance:
+  lag:
+    enabled: true
+    tps-threshold: 18.0
+    ping-threshold: 250
+
+anticheat:
+  interference:
+    enabled: false
+
+statistics:
+  enabled: true
+  track-hits: true

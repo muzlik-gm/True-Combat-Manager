@@ -4,6 +4,9 @@ import com.muzlik.pvpcombat.commands.AdminCommand;
 import com.muzlik.pvpcombat.commands.CombatCommand;
 import com.muzlik.pvpcombat.commands.ReplayCommand;
 import com.muzlik.pvpcombat.config.ConfigManager;
+import com.muzlik.pvpcombat.database.SQLiteDatabaseManager;
+import com.muzlik.pvpcombat.database.MySQLDatabaseManager;
+import com.muzlik.pvpcombat.interfaces.IDatabaseManager;
 import com.muzlik.pvpcombat.logging.CombatLogger;
 import com.muzlik.pvpcombat.interfaces.ICombatManager;
 import com.muzlik.pvpcombat.interfaces.IConfigManager;
@@ -15,10 +18,16 @@ import com.muzlik.pvpcombat.combat.CombatManager;
 import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.performance.TPSMonitor;
 import com.muzlik.pvpcombat.utils.CacheManager;
+import com.muzlik.pvpcombat.utils.VersionCompatibility;
 import com.muzlik.pvpcombat.restrictions.RestrictionManager;
 import com.muzlik.pvpcombat.combat.AntiInterferenceManager;
+import com.muzlik.pvpcombat.protection.NewbieProtection;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import com.muzlik.pvpcombat.events.CombatEventListener;
+
+import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * Coordinates all subsystems and manages plugin lifecycle.
@@ -32,6 +41,8 @@ public class PluginManager {
     private IRestrictionManager restrictionManager;
     private IConfigManager configManager;
     private CombatTracker combatTracker;
+    private NewbieProtection newbieProtection;
+    private IDatabaseManager databaseManager;
 
     public PluginManager(PvPCombatPlugin plugin) {
         this.plugin = plugin;
@@ -39,11 +50,29 @@ public class PluginManager {
     }
 
     private void initializeManagers() {
+        // Detect and log Minecraft version
+        VersionCompatibility.detectVersion();
+        VersionCompatibility.logVersionInfo();
+        
+        // Warn if version is not supported
+        if (!VersionCompatibility.isSupported()) {
+            plugin.getLogger().warning("Running on an unsupported Minecraft version!");
+            plugin.getLogger().warning("Some features may not work correctly.");
+        }
+        
         // Initialize configuration manager first as others depend on it
         this.configManager = new ConfigManager(plugin);
+        
+        // Initialize database manager
+        initializeDatabase();
 
-        // Initialize combat tracker
-        this.combatTracker = new CombatTracker();
+        // Initialize combat tracker with plugin reference
+        this.combatTracker = new CombatTracker(plugin);
+        this.combatTracker.setDatabaseManager(databaseManager);
+        this.combatTracker.initialize();
+        
+        // Initialize newbie protection
+        this.newbieProtection = new NewbieProtection(plugin);
 
         // Initialize shared components
         CacheManager cacheManager = new CacheManager(plugin);
@@ -58,6 +87,41 @@ public class PluginManager {
 
         plugin.getLogger().info("Plugin managers initialized successfully.");
     }
+    
+    /**
+     * Initialize the database manager based on configuration.
+     */
+    private void initializeDatabase() {
+        FileConfiguration config = plugin.getConfig();
+        String databaseType = config.getString("database.type", "sqlite").toLowerCase();
+        
+        try {
+            if (databaseType.equals("mysql")) {
+                String host = config.getString("database.mysql.host", "localhost");
+                int port = config.getInt("database.mysql.port", 3306);
+                String database = config.getString("database.mysql.database", "pvpcombat");
+                String username = config.getString("database.mysql.username", "root");
+                String password = config.getString("database.mysql.password", "");
+                
+                databaseManager = new MySQLDatabaseManager(
+                    plugin.getLogger(), host, port, database, username, password
+                );
+                plugin.getLogger().info("Using MySQL database");
+            } else {
+                databaseManager = new SQLiteDatabaseManager(
+                    plugin.getLogger(), plugin.getDataFolder()
+                );
+                plugin.getLogger().info("Using SQLite database");
+            }
+            
+            databaseManager.initialize();
+            plugin.getLogger().info("Database initialized successfully");
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to initialize database", e);
+            plugin.getLogger().warning("Plugin will continue without persistent storage");
+            databaseManager = null;
+        }
+    }
 
     /**
      * Registers all event listeners.
@@ -69,7 +133,7 @@ public class PluginManager {
         TPSMonitor tpsMonitor = new TPSMonitor(plugin);
         PerformanceMonitor performanceMonitor = new PerformanceMonitor(plugin, tpsMonitor, cacheManager);
 
-        // Register CombatEventListener
+        // Register CombatEventListener with shared newbieProtection
         CombatEventListener combatListener = new CombatEventListener(
             plugin, 
             (CombatManager) combatManager, 
@@ -78,7 +142,8 @@ public class PluginManager {
             (RestrictionManager) restrictionManager,
             combatLogger,
             performanceMonitor,
-            cacheManager
+            cacheManager,
+            newbieProtection
         );
         Bukkit.getPluginManager().registerEvents(combatListener, plugin);
         
@@ -129,6 +194,21 @@ public class PluginManager {
      * Shuts down all subsystems.
      */
     public void shutdown() {
+        // Shutdown combat tracker (saves all data)
+        if (combatTracker != null) {
+            combatTracker.shutdown();
+        }
+        
+        // Shutdown database
+        if (databaseManager != null) {
+            databaseManager.shutdown();
+        }
+        
+        // Cleanup combat manager (includes disconnect tracker)
+        if (combatManager instanceof CombatManager) {
+            ((CombatManager) combatManager).cleanup();
+        }
+        
         plugin.getLogger().info("Plugin subsystems shut down.");
     }
 
@@ -151,5 +231,13 @@ public class PluginManager {
 
     public IConfigManager getConfigManager() {
         return configManager;
+    }
+    
+    public NewbieProtection getNewbieProtection() {
+        return newbieProtection;
+    }
+    
+    public IDatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }

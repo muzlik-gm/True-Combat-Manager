@@ -7,6 +7,193 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2025-12-04
+
+### 🛡️ Anti-Abuse & Combat Logging Fix
+
+**CRITICAL UPDATE**: This version fixes a major exploit where players could crash opponents to force combat logging and get easy wins.
+
+---
+
+### 🎯 Major Features
+
+#### Disconnect Protection System (NEW)
+- **FIXED**: Players can no longer abuse combat logging by crashing opponents
+- **NEW**: Grace period system - players have time to reconnect before punishment
+- **SMART**: Only punishes if player doesn't reconnect before combat timer expires
+- **FAIR**: Protects legitimate players who crash/lag out
+- **CONFIGURABLE**: Can be enabled/disabled and messages customized
+
+#### How It Works
+1. **Player Disconnects**: System tracks them instead of instant punishment
+2. **Grace Period**: Timer set based on remaining combat time
+3. **Reconnection**: If they return in time, no penalty applied
+4. **Timeout**: If timer expires while offline, punishment applied
+
+---
+
+### ✨ New Features
+
+#### DisconnectTracker System
+- Tracks disconnected players with combat data
+- Manages punishment timers automatically
+- Handles reconnection logic
+- Applies penalties only when appropriate
+- Notifies opponents of disconnect/reconnect status
+
+#### Enhanced Notifications
+- Opponent notified when player disconnects with countdown
+- Player notified when they reconnect successfully
+- Broadcast message when punishment is applied
+- All messages configurable in config.yml
+
+---
+
+### 🛠️ Configuration Changes
+
+#### New Configuration Section
+```yaml
+combat:
+  disconnect-protection:
+    # Enable disconnect tracking (recommended: true)
+    enabled: true
+    
+    # Message shown to opponent when player disconnects
+    disconnect-message: "&e{player} &cdisconnected during combat! They have &e{time} seconds &cto reconnect or they will be punished."
+    
+    # Message shown to player when they reconnect in time
+    reconnect-success-message: "&aYou reconnected in time! No combat logging penalty applied."
+    
+    # Message broadcast when player is punished for not reconnecting
+    punishment-broadcast: "&c{player} &ecombat logged and was punished for not reconnecting in time!"
+```
+
+#### Placeholders
+- `{player}` - Player name
+- `{time}` - Remaining time in seconds
+
+---
+
+### 🔧 Technical Changes
+
+#### New Files
+- `DisconnectTracker.java` - Core disconnect tracking system
+
+#### Modified Files
+- `CombatManager.java` - Added DisconnectTracker integration and cleanup
+- `CombatTracker.java` - Added UUID-based win/loss recording for offline players
+- `CombatEventListener.java` - Updated quit/join handlers for disconnect tracking
+- `PluginManager.java` - Added cleanup call on shutdown
+- `config.yml` - Added disconnect-protection configuration
+
+#### Architecture Improvements
+- Proper cleanup on plugin disable
+- Thread-safe disconnect tracking
+- Automatic timer management
+- Memory-efficient tracking system
+
+---
+
+### 🎮 Benefits
+
+1. **Prevents Abuse**: Can't crash opponents for easy wins
+2. **Fair System**: Legitimate disconnects forgiven if reconnect quickly
+3. **Still Punishes**: Intentional combat loggers still punished
+4. **Configurable**: Server owners control behavior
+5. **Backward Compatible**: Can disable to restore old behavior
+
+---
+
+### 📋 Testing Recommendations
+
+1. Test normal combat logging (leave and don't return)
+2. Test reconnection within timer (leave and return quickly)
+3. Test with actual crashes/lag
+4. Test timer expiration edge cases
+5. Verify opponent notifications
+
+---
+
+### ⚠️ Breaking Changes
+
+None. This version is fully backward compatible. The new system is enabled by default but can be disabled.
+
+---
+
+### 🐛 Bug Fixes
+
+- Fixed exploit where players could crash opponents to force combat log
+- Fixed instant punishment not considering network issues
+- Fixed opponent not being notified of disconnect status
+
+---
+
+### 📊 Impact
+
+#### Before Fix
+- Players could abuse crashes to win fights
+- Legitimate players punished for network issues
+- Unfair advantage to players with lag machines
+- No way to distinguish intentional vs accidental disconnects
+
+#### After Fix
+- Crash abuse no longer effective
+- Legitimate players protected
+- Fair punishment system
+- Clear distinction between intentional and accidental
+
+---
+
+### 🌍 Compatibility
+
+Same as 1.0.1:
+- **Paper** 1.18.x - 1.21.x (recommended)
+- **Spigot** 1.18.x - 1.21.x (supported)
+- **Purpur** 1.18.x - 1.21.x (supported)
+- **Java**: 17+ (21 recommended)
+
+---
+
+### 🔮 Migration Guide
+
+#### From 1.0.1 or Earlier
+
+1. **Stop your server**
+2. **Backup your config** (recommended)
+3. **Replace the plugin JAR** with `TrueCombatManager-1.0.2.jar`
+4. **Start your server**
+5. **New config section added automatically** with default values
+6. **Test the system** by disconnecting during combat
+
+#### Configuration Updates
+- New `combat.disconnect-protection` section added
+- Default: `enabled: true` (recommended)
+- All other settings remain compatible
+
+---
+
+### 📝 Notes
+
+#### Disconnect Protection
+- **RECOMMENDED**: Keep enabled for fair gameplay
+- Grace period = remaining combat time
+- Works with all combat scenarios
+- No performance impact
+
+#### Backward Compatibility
+- Set `enabled: false` to restore old instant-punishment behavior
+- All existing features continue to work
+- No database changes required
+
+---
+
+**Current Version**: 1.0.2  
+**Released**: December 4, 2025  
+**Author**: muzlik  
+**Support**: Contact author directly
+
+---
+
 ## [1.0.1] - 2025-11-30
 
 ### 🎉 Performance & Bug Fix Release

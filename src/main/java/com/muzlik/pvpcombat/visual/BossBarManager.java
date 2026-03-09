@@ -190,4 +190,12 @@ public class BossBarManager {
     public Map<String, BossBar> getActiveBossBars() {
         return new ConcurrentHashMap<>(activeBossBars);
     }
+
+    /**
+     * Reloads configuration for bossbar manager.
+     */
+    public void reloadConfig() {
+        themeManager.loadThemes();
+        plugin.getLogger().fine("BossBarManager configuration reloaded");
+    }
 }

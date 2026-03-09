@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.ArrayList;
 import com.muzlik.pvpcombat.data.CombatEvent;
 import com.muzlik.pvpcombat.data.CombatStatistics;
+import com.muzlik.pvpcombat.data.DamageInfo;
+import com.muzlik.pvpcombat.data.WeaponStats;
 
 /**
  * Model class for storing player-specific combat data and statistics.
@@ -26,12 +28,22 @@ public class PlayerCombatData {
     private List<CombatEvent> events = new ArrayList<>();
     private CombatStatistics stats = new CombatStatistics(null);
     private long lastActivity = System.currentTimeMillis();
+    
+    // Enhanced tracking fields
+    private int criticalHits;
+    private int longestCombo;
+    private double highestDamageInSession;
+    private final Map<DamageInfo.WeaponType, WeaponStats> weaponStats;
 
     public PlayerCombatData(UUID playerId) {
         this.playerId = playerId;
         this.weaponUsage = new HashMap<>();
+        this.weaponStats = new HashMap<>();
         this.lastCombat = LocalDateTime.now();
         this.restrictionData = new RestrictionData(playerId);
+        this.criticalHits = 0;
+        this.longestCombo = 0;
+        this.highestDamageInSession = 0.0;
     }
 
     // Getters and setters
@@ -84,6 +96,55 @@ public class PlayerCombatData {
         if (restrictionData != null) {
             restrictionData.clearAllRestrictions();
         }
+    }
+    
+    // Enhanced tracking getters and setters
+    public int getCriticalHits() { return criticalHits; }
+    public void setCriticalHits(int criticalHits) { this.criticalHits = criticalHits; }
+    public void incrementCriticalHits() { this.criticalHits++; }
+    
+    public int getLongestCombo() { return longestCombo; }
+    public void setLongestCombo(int longestCombo) { this.longestCombo = longestCombo; }
+    public void updateLongestCombo(int combo) {
+        if (combo > this.longestCombo) {
+            this.longestCombo = combo;
+        }
+    }
+    
+    public double getHighestDamageInSession() { return highestDamageInSession; }
+    public void setHighestDamageInSession(double highestDamageInSession) { 
+        this.highestDamageInSession = highestDamageInSession; 
+    }
+    public void updateHighestDamage(double damage) {
+        if (damage > this.highestDamageInSession) {
+            this.highestDamageInSession = damage;
+        }
+    }
+    
+    // Weapon stats methods
+    public Map<DamageInfo.WeaponType, WeaponStats> getWeaponStats() {
+        return weaponStats;
+    }
+    
+    public WeaponStats getWeaponStats(DamageInfo.WeaponType weaponType) {
+        return weaponStats.computeIfAbsent(weaponType, WeaponStats::new);
+    }
+    
+    public void recordDamageWithWeapon(DamageInfo damageInfo) {
+        WeaponStats stats = getWeaponStats(damageInfo.getWeaponType());
+        stats.recordHit(damageInfo.getAmount(), damageInfo.isCritical());
+        
+        if (damageInfo.isCritical()) {
+            incrementCriticalHits();
+        }
+        
+        addDamageDealt(damageInfo.getAmount());
+        updateHighestDamage(damageInfo.getAmount());
+    }
+    
+    public void recordKillWithWeapon(DamageInfo.WeaponType weaponType) {
+        WeaponStats stats = getWeaponStats(weaponType);
+        stats.recordKill();
     }
     
     /**

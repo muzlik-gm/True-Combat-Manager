@@ -48,7 +48,8 @@ public class CombatEventListener implements Listener {
     public CombatEventListener(PvPCombatPlugin plugin, CombatManager combatManager,
                                 CombatTracker combatTracker, AntiInterferenceManager antiInterferenceManager,
                                 RestrictionManager restrictionManager, CombatLogger combatLogger,
-                                PerformanceMonitor performanceMonitor, CacheManager cacheManager) {
+                                PerformanceMonitor performanceMonitor, CacheManager cacheManager,
+                                com.muzlik.pvpcombat.protection.NewbieProtection newbieProtection) {
         this.plugin = plugin;
         this.combatManager = combatManager;
         this.combatTracker = combatTracker;
@@ -57,7 +58,7 @@ public class CombatEventListener implements Listener {
         this.combatLogger = combatLogger;
         this.performanceMonitor = performanceMonitor;
         this.cacheManager = cacheManager;
-        this.newbieProtection = new com.muzlik.pvpcombat.protection.NewbieProtection(plugin);
+        this.newbieProtection = newbieProtection;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -72,6 +73,12 @@ public class CombatEventListener implements Listener {
 
             Player attacker = (Player) event.getDamager();
             Player defender = (Player) event.getEntity();
+            
+            // FIX: Prevent self-combat (player hitting themselves)
+            if (attacker.equals(defender)) {
+                event.setCancelled(true);
+                return;
+            }
             
             // Check newbie protection FIRST (before any other checks, even before cancelled check)
             if (newbieProtection.isEnabled()) {
@@ -252,30 +259,53 @@ public class CombatEventListener implements Listener {
             Player player = event.getPlayer();
 
             if (combatManager.isInCombat(player)) {
-                // Record a loss for leaving combat
-                combatManager.getCombatTracker().recordLoss(player);
-                
-                // Get opponent and record a win for them
                 Player opponent = combatManager.getOpponent(player);
-                String forfeitMessage = ChatColor.RED + player.getName() + ChatColor.YELLOW + " forfeited by logging out during combat and died!";
                 
-                if (opponent != null) {
-                    combatManager.getCombatTracker().recordWin(opponent);
-                    plugin.getLoggingManager().log(player.getName() + " forfeited combat. " + opponent.getName() + " wins!");
+                // Check if disconnect protection is enabled
+                boolean disconnectProtection = plugin.getConfig().getBoolean("combat.disconnect-protection.enabled", true);
+                
+                if (disconnectProtection) {
+                    // Get remaining combat time from session
+                    CombatSession session = combatManager.getActiveSessions().get(player.getUniqueId());
+                    int remainingTime = session != null ? session.getRemainingTime() : 
+                        plugin.getConfig().getInt("combat.duration", 10);
                     
-                    // Notify opponent with better message
-                    opponent.sendMessage(ChatColor.GREEN + "You won! " + ChatColor.YELLOW + player.getName() + " forfeited by logging out.");
+                    if (opponent != null) {
+                        // Get message from config
+                        String message = plugin.getConfig().getString("combat.disconnect-protection.disconnect-message",
+                            "&e{player} &cdisconnected during combat! They have &e{time} seconds &cto reconnect or they will be punished.");
+                        message = ChatColor.translateAlternateColorCodes('&', message
+                            .replace("{player}", player.getName())
+                            .replace("{time}", String.valueOf(remainingTime)));
+                        opponent.sendMessage(message);
+                        
+                        plugin.getLoggingManager().log(String.format("%s disconnected during combat with %s. Tracking for %d seconds.",
+                            player.getName(), opponent.getName(), remainingTime));
+                    }
+                    
+                    // Track the disconnect instead of instantly punishing
+                    combatManager.getDisconnectTracker().onPlayerDisconnect(player, opponent, remainingTime);
+                    
+                    // End combat session (but don't punish yet)
+                    AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
+                } else {
+                    // Old behavior - instant punishment
+                    combatManager.getCombatTracker().recordLoss(player);
+                    
+                    String forfeitMessage = ChatColor.RED + player.getName() + ChatColor.YELLOW + " forfeited by logging out during combat and died!";
+                    
+                    if (opponent != null) {
+                        combatManager.getCombatTracker().recordWin(opponent);
+                        plugin.getLoggingManager().log(player.getName() + " forfeited combat. " + opponent.getName() + " wins!");
+                        opponent.sendMessage(ChatColor.GREEN + "You won! " + ChatColor.YELLOW + player.getName() + " forfeited by logging out.");
+                    }
+                    
+                    plugin.getServer().broadcastMessage(forfeitMessage);
+                    player.setHealth(0.0);
+                    plugin.getLoggingManager().log(player.getName() + " was killed for combat logging.");
+                    
+                    AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
                 }
-                
-                // Broadcast forfeit to all players
-                plugin.getServer().broadcastMessage(forfeitMessage);
-                
-                // Kill the player immediately (this will trigger death and inventory drop naturally)
-                player.setHealth(0.0);
-                plugin.getLoggingManager().log(player.getName() + " was killed for combat logging.");
-                
-                // End combat due to logout - keep on main thread for thread safety
-                AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
             }
         } finally {
             performanceMonitor.endOperation("player-quit-event");
@@ -417,10 +447,25 @@ public class CombatEventListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        // Resume combat state from cache if exists
-        Object combatState = cacheManager.get("combat-state", player.getUniqueId().toString());
-        if (combatState != null) {
-            player.sendMessage(ChatColor.GREEN + "Combat session resumed from previous session!");
+        
+        // Handle timed protection for new players
+        newbieProtection.onPlayerJoin(player);
+        
+        // Check for pending punishment first
+        if (combatManager.getDisconnectTracker().hasPendingPunishment(player.getUniqueId())) {
+            combatManager.getDisconnectTracker().applyPendingPunishment(player);
+            return;
+        }
+        
+        // Check if player was tracked as disconnected during combat
+        boolean wasTracked = combatManager.getDisconnectTracker().onPlayerReconnect(player);
+        
+        if (!wasTracked) {
+            // Resume combat state from cache if exists
+            Object combatState = cacheManager.get("combat-state", player.getUniqueId().toString());
+            if (combatState != null) {
+                player.sendMessage(ChatColor.GREEN + "Combat session resumed from previous session!");
+            }
         }
     }
 

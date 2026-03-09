@@ -1,0 +1,134 @@
+# ========================================
+# BALANCED PVP SERVER CONFIGURATION
+# ========================================
+# This configuration provides a balanced PvP experience
+# Features:
+# - Medium combat timers (15s)
+# - Balanced restrictions
+# - Optional newbie protection
+# - Competitive visual themes
+# - Fair gameplay
+
+config-version: 2
+
+general:
+  enabled: true
+  debug-mode: false
+  language: "en"
+
+logging:
+  console-enabled: false
+
+database:
+  type: "sqlite"
+  auto-save-interval: 5
+
+combat:
+  duration: 15  # Medium combat timer
+  cooldown: 5  # Medium cooldown
+  max-sessions: 100
+  
+  disconnect-protection:
+    enabled: true
+    display-mode: "actionbar"
+  
+  damage:
+    reset-on-damage: true
+    min-damage-trigger: 0.5
+  
+  bossbar:
+    enabled: true
+    update-interval: 1
+    title: "&cCombat: &f{time_left}s"
+    color: "RED"
+    style: "SOLID"
+
+newbie-protection:
+  enabled: true
+  prevent-damage-dealing: false
+  prevent-damage-receiving: true
+  xp-level-threshold: 3
+  require-any-armor: false
+  
+  timed-protection-on-join:
+    enabled: true
+    duration-seconds: 300  # 5 minutes
+
+restrictions:
+  enderpearl:
+    enabled: true
+    cooldown: 6
+    block-usage: false
+    combat-cooldown-multiplier: 1.5
+  
+  golden-apple:
+    enabled: true
+    cooldown: 10
+    block-usage: false
+  
+  enchanted-golden-apple:
+    enabled: true
+    cooldown: 30
+    block-usage: false
+  
+  elytra:
+    enabled: true
+    block-glide: false
+    block-boosting: true
+    block-takeoff: false
+  
+  trident:
+    enabled: true
+    block-riptide: true
+    cooldown: 5
+  
+  crystal:
+    enabled: true
+    block-placement: true
+    block-breaking: false
+  
+  respawn-anchor:
+    enabled: true
+  
+  teleport:
+    enabled: true
+  
+  safezone:
+    enabled: true
+    block-entry: true
+    protected-regions:
+      - "spawn"
+  
+  blocks:
+    enabled: false
+
+visual:
+  themes:
+    default-theme: "clean"
+  
+  bossbar:
+    enabled: true
+  
+  actionbar:
+    enabled: true
+    show-opponent: true
+  
+  sounds:
+    enabled: true
+    profile: "default"
+
+performance:
+  lag:
+    enabled: true
+    tps-threshold: 18.0
+    ping-threshold: 200
+
+anticheat:
+  interference:
+    enabled: true
+    block-hits: false
+    max-interference-percentage: 10.0
+
+statistics:
+  enabled: true
+  track-hits: true

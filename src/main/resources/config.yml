@@ -48,6 +48,27 @@ commands:
     reload: true
     debug: true
 
+# ========================================
+# DATABASE SETTINGS
+# ========================================
+database:
+  # Database type: 'sqlite' or 'mysql'
+  # sqlite = Local file-based database (recommended for most servers)
+  # mysql = Remote MySQL server (for multi-server networks)
+  type: "sqlite"
+  
+  # MySQL settings (only used if type is 'mysql')
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "pvpcombat"
+    username: "root"
+    password: ""
+    
+  # Auto-save interval in minutes (how often to save player data)
+  # Default: 5 minutes
+  auto-save-interval: 5
+
   # Permission requirements
   permissions:
     status: "pvpcombat.command.status"
@@ -84,6 +105,34 @@ combat:
   # Higher = More sessions allowed | 0 = No limit
   max-sessions: 100
 
+  # Combat logging protection
+  # Prevents abuse where players crash opponents to force combat log
+  disconnect-protection:
+    # Enable disconnect tracking (recommended: true)
+    # When enabled, players who disconnect during combat have time to reconnect
+    # Only punished if they don't reconnect before combat timer expires
+    enabled: true
+    
+    # How to display grace period countdown to opponent
+    # Options: actionbar, bossbar, scoreboard
+    # actionbar = Shows above hotbar (recommended)
+    # bossbar = Shows as boss bar at top of screen
+    # scoreboard = Shows as title message
+    display-mode: "actionbar"
+    
+    # Grace period countdown format
+    # Placeholders: {player} = disconnected player name, {time} = remaining seconds
+    grace-period-format: "&e{player} &7has &c{time}s &7to reconnect"
+    
+    # Message shown to opponent when player disconnects
+    disconnect-message: "&e{player} &cdisconnected during combat! They have &e{time} seconds &cto reconnect or they will be punished."
+    
+    # Message shown to player when they reconnect in time
+    reconnect-success-message: "&aYou reconnected in time! No combat logging penalty applied."
+    
+    # Message broadcast when player is punished for not reconnecting
+    punishment-broadcast: "&c{player} &ecombat logged and was punished for not reconnecting in time!"
+
   # Damage settings
   damage:
     # Reset combat timer when damage is dealt/received
@@ -118,15 +167,15 @@ combat:
 newbie-protection:
   # Protect new players who don't have armor
   # true = Protection enabled | false = No protection
-  enabled: true
+  enabled: false
   
   # Prevent newbies from dealing damage to others
   # true = Newbies can't hurt others | false = Newbies can hurt others
-  prevent-damage-dealing: true
+  prevent-damage-dealing: false
   
   # Prevent newbies from receiving damage from others
   # true = Newbies can't be hurt | false = Newbies can be hurt
-  prevent-damage-receiving: true
+  prevent-damage-receiving: false
   
   # XP level threshold - players above this level lose protection even without armor
   # Higher = More protection | 0 = Only armor matters
@@ -134,7 +183,7 @@ newbie-protection:
   
   # Check if player has ANY armor piece equipped
   # true = Must have at least 1 armor piece | false = Must have full armor
-  require-any-armor: true
+  require-any-armor: false
   
   # Message sent to newbie when they try to attack
   newbie-attack-message: "&cYou need armor to attack other players!"
@@ -144,6 +193,25 @@ newbie-protection:
   
   # Bypass permission (players with this can ignore newbie protection)
   bypass-permission: "pvpcombat.bypass.newbie"
+  
+  # ========================================
+  # TIMED PROTECTION (NEW FEATURE)
+  # ========================================
+  # Give new players a specific amount of time protection when they join
+  timed-protection-on-join:
+    # Enable timed protection for new players
+    # true = New players get protection | false = Disabled
+    enabled: false
+    
+    # Duration of protection in seconds (default: 900 = 15 minutes)
+    # 60 = 1 minute | 300 = 5 minutes | 900 = 15 minutes | 1800 = 30 minutes
+    duration-seconds: 900
+  
+  # Messages for timed protection
+  timed-protection-granted: "&aYou have been granted &e{time}s &aof newbie protection!"
+  timed-protection-reminder: "&aYou have &e{time}s &aof newbie protection remaining!"
+  timed-protection-expired: "&cYour newbie protection has expired!"
+  timed-protection-active: "&cThis player has newbie protection for &e{time}s&c!"
 
 # ========================================
 # COMBAT RESTRICTIONS

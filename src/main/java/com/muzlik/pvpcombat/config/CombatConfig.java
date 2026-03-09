@@ -93,25 +93,37 @@ public class CombatConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (duration < 5) {
-            result.addWarning("combat.duration", "Combat duration too short: " + duration + "s, recommended minimum: 5s");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("combat.duration", 
+                "Combat duration too short: " + duration + "s, recommended minimum: 5s", 
+                duration, 5, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
         if (duration > 300) {
-            result.addWarning("combat.duration", "Combat duration too long: " + duration + "s, recommended maximum: 300s");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("combat.duration", 
+                "Combat duration too long: " + duration + "s, recommended maximum: 300s", 
+                duration, 300, ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
         if (cooldown < 0) {
-            result.addError("combat.cooldown", "Cooldown cannot be negative: " + cooldown);
+            errors.add(new ConfigurationValidator.ConfigValidationError("combat.cooldown", 
+                "Cooldown cannot be negative: " + cooldown, 
+                cooldown, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (maxSessions < 0) {
-            result.addError("combat.max-sessions", "Max sessions cannot be negative: " + maxSessions);
+            errors.add(new ConfigurationValidator.ConfigValidationError("combat.max-sessions", 
+                "Max sessions cannot be negative: " + maxSessions, 
+                maxSessions, 0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
         if (minDamageTrigger < 0) {
-            result.addError("combat.damage.min-damage-trigger", "Min damage trigger cannot be negative: " + minDamageTrigger);
+            errors.add(new ConfigurationValidator.ConfigValidationError("combat.damage.min-damage-trigger", 
+                "Min damage trigger cannot be negative: " + minDamageTrigger, 
+                minDamageTrigger, 0.0, ConfigurationValidator.ConfigValidationError.Severity.ERROR));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

@@ -81,7 +81,7 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
      * @return true if it's an admin command, false otherwise
      */
     private boolean isAdminCommand(String subCommand) {
-        return Arrays.asList("inspect", "summary", "reload", "debug").contains(subCommand);
+        return Arrays.asList("inspect", "summary", "reload", "debug", "logging", "protection", "stats", "clear").contains(subCommand);
     }
 
     /**
@@ -110,8 +110,12 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
                 player.sendMessage("§c=== Admin Commands ===");
                 player.sendMessage("§e/combat inspect <player> §7- View real-time combat info");
                 player.sendMessage("§e/combat summary <player> §7- Access last combat stats");
+                player.sendMessage("§e/combat stats §7- View server-wide statistics");
+                player.sendMessage("§e/combat clear <player> §7- Force-end combat");
                 player.sendMessage("§e/combat reload §7- Reload configuration");
                 player.sendMessage("§e/combat debug §7- Toggle debug mode");
+                player.sendMessage("§e/combat logging <enabled|disabled> §7- Toggle console logging");
+                player.sendMessage("§e/combat protection <player> <seconds> §7- Grant timed protection");
             }
 
             player.sendMessage("§7§oUse /combat <command> for detailed help on each command.");
@@ -141,6 +145,10 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
                     completions.add("inspect");
                     completions.add("reload");
                     completions.add("debug");
+                    completions.add("logging");
+                    completions.add("protection");
+                    completions.add("stats");
+                    completions.add("clear");
                 }
 
                 // Filter by current input
@@ -149,7 +157,7 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
             } else if (args.length == 2 && player.hasPermission("pvpcombat.admin")) {
                 // Complete player names for admin commands that need them
                 String subCmd = args[0].toLowerCase();
-                if ("inspect".equals(subCmd) || "summary".equals(subCmd)) {
+                if ("inspect".equals(subCmd) || "summary".equals(subCmd) || "clear".equals(subCmd)) {
                     String input = args[1].toLowerCase();
                     // Limit to reasonable number to prevent lag
                     plugin.getServer().getOnlinePlayers().stream()

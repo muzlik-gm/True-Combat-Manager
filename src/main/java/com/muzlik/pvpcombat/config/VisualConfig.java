@@ -193,24 +193,30 @@ public class VisualConfig extends SubConfig {
 
     @Override
     public ConfigurationValidator.ValidationResult validate() {
-        ConfigurationValidator.ValidationResult result = new ConfigurationValidator.ValidationResult();
+        java.util.List<ConfigurationValidator.ConfigValidationError> errors = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> warnings = new java.util.ArrayList<>();
+        java.util.List<ConfigurationValidator.ConfigValidationError> info = new java.util.ArrayList<>();
 
         if (defaultTheme != null && !availableThemes.contains(defaultTheme)) {
-            result.addWarning("visual.themes.default-theme", "Default theme '" + defaultTheme +
-                            "' not in available themes list: " + availableThemes);
+            warnings.add(new ConfigurationValidator.ConfigValidationError("visual.themes.default-theme", 
+                "Default theme '" + defaultTheme + "' not in available themes list: " + availableThemes, 
+                defaultTheme, availableThemes.isEmpty() ? "default" : availableThemes.get(0), 
+                ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (defaultSoundProfile != null && !soundProfiles.containsKey(defaultSoundProfile)) {
-            result.addWarning("visual.sounds.profile", "Default sound profile '" + defaultSoundProfile +
-                            "' not found in sound profiles");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("visual.sounds.profile", 
+                "Default sound profile '" + defaultSoundProfile + "' not found in sound profiles", 
+                defaultSoundProfile, "default", ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
         if (defaultMessageStyle != null && !messageFormats.containsKey(defaultMessageStyle)) {
-            result.addWarning("visual.messages.default-style", "Default message style '" + defaultMessageStyle +
-                            "' not found in message formats");
+            warnings.add(new ConfigurationValidator.ConfigValidationError("visual.messages.default-style", 
+                "Default message style '" + defaultMessageStyle + "' not found in message formats", 
+                defaultMessageStyle, "default", ConfigurationValidator.ConfigValidationError.Severity.WARNING));
         }
 
-        return result;
+        return new ConfigurationValidator.ValidationResult(errors.isEmpty(), errors, warnings, info);
     }
 
     @Override

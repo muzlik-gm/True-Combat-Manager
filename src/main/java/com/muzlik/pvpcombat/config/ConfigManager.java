@@ -106,14 +106,14 @@ public class ConfigManager implements IConfigManager {
             ConfigurationValidator.ValidationResult result = validateConfigInternal();
             if (result.hasErrors()) {
                 logger.warning("Configuration validation errors found:");
-                for (String error : result.getErrors()) {
-                    logger.warning("ERROR: " + error);
+                for (ConfigurationValidator.ConfigValidationError error : result.getErrors()) {
+                    logger.warning("ERROR: " + error.toString());
                 }
             }
             if (result.hasWarnings()) {
                 logger.info("Configuration validation warnings:");
-                for (String warning : result.getWarnings()) {
-                    logger.info("WARNING: " + warning);
+                for (ConfigurationValidator.ConfigValidationError warning : result.getWarnings()) {
+                    logger.info("WARNING: " + warning.toString());
                 }
             }
 
@@ -148,6 +148,25 @@ public class ConfigManager implements IConfigManager {
                 }
             }
 
+            // Reload all managers
+            com.muzlik.pvpcombat.core.PvPCombatPlugin plugin = com.muzlik.pvpcombat.core.PvPCombatPlugin.getInstance();
+            if (plugin != null) {
+                // Reload combat manager
+                if (plugin.getCombatManager() instanceof com.muzlik.pvpcombat.combat.CombatManager) {
+                    ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager()).reloadConfig();
+                }
+                
+                // Reload visual manager
+                if (plugin.getVisualManager() instanceof com.muzlik.pvpcombat.visual.VisualManager) {
+                    ((com.muzlik.pvpcombat.visual.VisualManager) plugin.getVisualManager()).reloadConfig();
+                }
+                
+                // Reload restriction manager
+                if (plugin.getRestrictionManager() instanceof com.muzlik.pvpcombat.restrictions.RestrictionManager) {
+                    ((com.muzlik.pvpcombat.restrictions.RestrictionManager) plugin.getRestrictionManager()).reloadConfig();
+                }
+            }
+
             logger.info("Configuration reloaded successfully");
 
         } catch (Exception e) {
@@ -158,7 +177,7 @@ public class ConfigManager implements IConfigManager {
     }
 
     public ConfigurationValidator.ValidationResult validateConfigInternal() {
-        ConfigurationValidator.ValidationResult result = validator.validateConfiguration(mainConfig);
+        ConfigurationValidator.ValidationResult result = validator.validateConfig(mainConfig);
 
         // Validate sub-configs
         for (SubConfig subConfig : subConfigs.values()) {

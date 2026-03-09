@@ -31,6 +31,10 @@ public class CombatSession {
     // Session-specific hit tracking
     private int attackerHitsLanded;
     private int defenderHitsLanded;
+    
+    // Combat end tracking
+    private CombatEndReason endReason;
+    private long endTime;
 
     public CombatSession(UUID sessionId, Player attacker, Player defender, int initialTimer) {
         this.sessionId = sessionId;
@@ -49,6 +53,8 @@ public class CombatSession {
         this.defenderDamageDealt = 0.0;
         this.attackerHitsLanded = 0;
         this.defenderHitsLanded = 0;
+        this.endReason = null;
+        this.endTime = 0;
     }
 
     // Getters and setters
@@ -232,5 +238,42 @@ public class CombatSession {
             return attackerDamageDealt; // Defender received damage from attacker
         }
         return 0.0;
+    }
+    
+    /**
+     * Get the reason this combat ended.
+     */
+    public CombatEndReason getEndReason() {
+        return endReason;
+    }
+    
+    /**
+     * Set the reason this combat ended.
+     */
+    public void setEndReason(CombatEndReason endReason) {
+        this.endReason = endReason;
+        this.endTime = System.currentTimeMillis();
+    }
+    
+    /**
+     * Get the time when this combat ended.
+     */
+    public long getEndTime() {
+        return endTime;
+    }
+    
+    /**
+     * Get the duration of this combat session in milliseconds.
+     */
+    public long getDuration() {
+        long end = endTime > 0 ? endTime : System.currentTimeMillis();
+        return end - startTime;
+    }
+    
+    /**
+     * Check if this session has ended.
+     */
+    public boolean hasEnded() {
+        return endReason != null;
     }
 }

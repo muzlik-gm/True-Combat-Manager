@@ -186,4 +186,13 @@ public class RestrictionManager implements IRestrictionManager {
     public TridentRestriction getTridentRestriction() { return tridentRestriction; }
     public CrystalRestriction getCrystalRestriction() { return crystalRestriction; }
     public CombatManager getCombatManager() { return combatManager; }
+
+    /**
+     * Reloads configuration for all restrictions.
+     */
+    public void reloadConfig() {
+        // Clear cache to force re-reading config values
+        cacheManager.clear("restriction-data");
+        PvPCombatPlugin.getInstance().getLogger().info("RestrictionManager configuration reloaded");
+    }
 }
