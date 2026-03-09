@@ -48,6 +48,9 @@ Desktop.ini
 *.swp
 *~
 
+# Test databases
+.jqwik-database
+
 # Build artifacts
 *.jar
 *.war
