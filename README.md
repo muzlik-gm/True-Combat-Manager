@@ -1,34 +1,184 @@
 # TrueCombatManager
 
-**The Ultimate PvP Combat Management Plugin for Minecraft Servers**
-
-[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/yourusername/TrueCombatManager)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/muzlik-gm/Combat-Manager)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.19.4--1.21+-green.svg)](https://www.spigotmc.org/)
+[![Java](https://img.shields.io/badge/java-21-orange.svg)](https://adoptium.net/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-8%20passing-brightgreen.svg)]()
+
+**Professional PvP Combat Management for Minecraft Servers**
+
+A lightweight, high-performance combat plugin with persistent statistics, real-time tracking, and comprehensive admin tools. Built for modern Minecraft servers running Spigot, Paper, or Purpur.
 
 ---
 
-## 🎯 Overview
+## ⚡ Key Features
 
-TrueCombatManager is a comprehensive, high-performance PvP combat management plugin designed for modern Minecraft servers. It provides advanced combat tracking, newbie protection, restriction systems, and visual feedback - all optimized for zero lag.
+### Combat System
+▸ Real-time combat tracking with configurable duration  
+▸ Automatic combat tagging on player damage  
+▸ Combat logging protection (instant death on logout)  
+▸ Timer reset on new damage  
+▸ Lag compensation system  
 
-### ✨ Key Features
+### Database & Statistics
+▸ SQLite database (default, zero setup)  
+▸ MySQL support for multi-server networks  
+▸ Persistent player statistics across restarts  
+▸ Weapon-specific damage tracking  
+▸ Combat history and session replays  
 
-- **🛡️ Newbie Protection** - Protects new players without armor from PvP
-- **⚔️ Combat Management** - Real-time combat tracking with lag compensation
-- **🚫 Smart Restrictions** - Block items/commands during combat (tridents, ender pearls, etc.)
-- **🎨 Visual System** - 6 themes with BossBar, ActionBar, and sound effects
-- **📊 Statistics Tracking** - Comprehensive combat stats with PlaceholderAPI support
-- **🔧 Performance Optimized** - Zero lag with intelligent logging system
-- **🌐 Multi-Server Support** - Cross-server combat sync (BungeeCord/Velocity)
+### Protection Systems
+▸ Newbie protection for unarmored players  
+▸ Timed immunity system with admin commands  
+▸ WorldGuard safe zone integration  
+▸ Configurable bypass permissions  
+
+### Visual Feedback
+▸ Customizable BossBar with 6 themes  
+▸ ActionBar timer display  
+▸ Sound effects for combat events  
+▸ Progress indicators  
+
+### Restrictions
+▸ Block ender pearls during combat  
+▸ Prevent elytra usage  
+▸ Restrict trident throwing  
+▸ Block golden apple consumption  
+▸ Prevent command usage  
+▸ Disable teleportation  
+
+### Admin Tools
+▸ `/combat reload` - Instant config reload without restart  
+▸ `/combat protection <player> <seconds>` - Grant immunity  
+▸ `/combat clear <player>` - Force-end combat  
+▸ `/combat stats` - Server-wide statistics  
+▸ `/combat logging <on|off>` - Toggle console logging  
+▸ `/combat inspect <player>` - Real-time combat status  
+
+### Cross-Server Support
+▸ BungeeCord/Velocity network sync  
+▸ Prevent server-hopping during combat  
+▸ Shared combat state across network  
+▸ Automatic plugin messaging  
 
 ---
 
-## 📋 Table of Contents
+## 📋 Requirements
 
-- [Installation](#-installation)
-- [Features](#-features)
+**Server Software:** Spigot, Paper, or Purpur  
+**Minecraft Version:** 1.19.4 - 1.21+  
+**Java Version:** 21 or higher  
+
+**Optional Dependencies:**  
+▸ PlaceholderAPI - For placeholder support  
+▸ WorldGuard - For safe zone protection  
+
+---
+
+## 🚀 Installation
+
+1. Download `TrueCombatManager-1.1.0.jar`
+2. Place in your server's `plugins` folder
+3. Restart your server
+4. Configure in `plugins/TrueCombatManager/config.yml`
+5. Use `/combat reload` to apply changes
+
+**No additional setup required** - SQLite database works out of the box!
+
+For detailed setup instructions, see [INSTALLATION.md](INSTALLATION.md)
+
+---
+
+## 📊 What's New in v1.1.0
+
+▸ Added SQLite/MySQL database for persistent statistics  
+▸ Fixed config reload bug - all settings update instantly  
+▸ Added newbie protection system with admin commands  
+▸ Optimized JAR size by 83% (14.6MB → 2.4MB)  
+▸ Added WorldGuard safe zone integration  
+▸ Enhanced admin tools and commands  
+▸ Improved default configuration  
+▸ Fixed memory leaks and performance issues  
+
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+---
+
+## 🎮 Commands
+
+### Player Commands
+```
+/combat status          - View your combat status
+/combat summary         - View your combat statistics
+/combat toggle-style    - Change visual theme
+```
+
+### Admin Commands
+```
+/combat reload                      - Reload configuration
+/combat inspect <player>            - Inspect player combat status
+/combat clear <player>              - Force-end combat
+/combat stats                       - View server statistics
+/combat logging <on|off>            - Toggle console logging
+/combat protection <player> <time>  - Grant timed immunity
+/replay view <session-id>           - View combat replay
+```
+
+---
+
+## 🔧 Configuration
+
+The plugin includes three preset configurations:
+
+▸ **Casual Survival** - Relaxed PvP settings  
+▸ **Balanced PvP** - Default competitive settings  
+▸ **Hardcore PvP** - Strict combat rules  
+
+All settings reload instantly with `/combat reload` - no restart needed!
+
+---
+
+## 🌐 Network Setup
+
+For multi-server networks:
+
+1. Install plugin on each backend server
+2. Enable cross-server sync in config:
+   ```yaml
+   integration:
+     cross-server:
+       enabled: true
+   ```
+3. Plugin automatically syncs through BungeeCord/Velocity
+
+---
+
+## 📈 Performance
+
+▸ Optimized JAR size: 2.4 MB  
+▸ Zero lag with intelligent caching  
+▸ Thread-safe concurrent operations  
+▸ Efficient database connection pooling  
+▸ Minimal memory footprint  
+
+---
+
+## 🔗 Links
+
+**GitHub:** https://github.com/muzlik-gm/Combat-Manager  
+**Issues:** https://github.com/muzlik-gm/Combat-Manager/issues  
+**Author:** muzlik  
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ for the Minecraft community**
+
 - [Installation](#-installation)
 - [Configuration](#-configuration)
 - [Commands](#-commands)
