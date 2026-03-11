@@ -1,98 +1,136 @@
 [CENTER]
 [SIZE=7][B]True Combat Manager[/B][/SIZE]
 [SIZE=5]Professional PvP Combat Control for Minecraft Servers[/SIZE]
-[SIZE=4]Advanced combat tracking ▸ Smart restrictions ▸ Dynamic visual feedback[/SIZE]
-[SIZE=4][B]Compatible with Paper & Spigot 1.18–1.21 ▸ Java 17+[/B][/SIZE]
+[SIZE=4]Advanced combat tracking • Smart restrictions • Dynamic visual feedback[/SIZE]
+[SIZE=4][B]Compatible with Paper & Spigot 1.18–1.21 • Java 17+[/B][/SIZE]
 [SIZE=3][I]If you encounter any issues, feel free to report them.[/I][/SIZE]
 [/CENTER]
 
 [HR][/HR]
 
-[SIZE=6][B]Overview[/B][/SIZE]
+[SIZE=6][B]🎯 Overview[/B][/SIZE]
 
-True Combat Manager is a complete PvP management system built for competitive Minecraft servers. It tracks fights with precision, enforces intelligent restrictions, prevents combat logging, and includes fully customizable visual effects for a polished player experience.
+True Combat Manager is a complete PvP management system built for competitive Minecraft servers.  
+It tracks fights with precision, enforces intelligent restrictions, prevents combat logging, and includes fully customizable visual effects for a polished player experience.
 
-Designed with performance in mind using async processing, lag compensation, and thread-safe architecture. Ideal for Practice, KitPvP, Factions, or any PvP-focused gameplay environment.
+Designed with performance in mind using async processing, lag compensation, and a thread-safe architecture. Ideal for Practice, KitPvP, Factions, or any PvP-focused gameplay environment.
 
-[HR][/HR]
-
-[SIZE=6][B]Core Features[/B][/SIZE]
-
-[SIZE=5][B]Combat Engine[/B][/SIZE]
-▸ Accurate combat detection with real-time tracking
-▸ Customizable combat duration (default 30s)
-▸ Automatic timer reset on new damage
-▸ Lag compensation using live TPS monitoring
-▸ Combat logging protection with instant death penalty
-▸ Automatic combat end on player death
-▸ Multithreaded, thread-safe architecture
-
-[SIZE=5][B]Newbie Protection[/B][/SIZE]
-▸ Automatic PvP protection for under-geared players
-▸ XP-based threshold system (default level 3)
-▸ Blocks both damage dealing and receiving
-▸ Armor requirements (minimum 1 piece or full set)
-▸ Bypass permissions for staff
-▸ Customizable player messages
-
-[SIZE=5][B]Smart Restrictions[/B][/SIZE]
-▸ Trident usage and riptide blocking
-▸ Ender Pearl cooldowns with anti-escape logic
-▸ Respawn Anchor disabling in combat
-▸ Elytra glide and firework blocking
-▸ End Crystal placement control
-▸ Golden Apple cooldowns (separate base and combat values)
-▸ Command blocking for teleport commands
-▸ Safezone entry blocking with visual barriers
-▸ Creative Mode forced to Survival
-▸ Optional block break/place limits
-
-[SIZE=5][B]Visual Interface[/B][/SIZE]
-▸ 6 Built-in themes (default, minimal, intense, elegant, neon, retro)
-▸ Smooth BossBar combat timer
-▸ ActionBar opponent and timer notifications
-▸ Live theme switching via [ICODE]/combat toggle-style[/ICODE]
-▸ Full HEX color support
-▸ 5 sound profiles with audio cues
-
-[SIZE=5][B]Statistics Tracking[/B][/SIZE]
-▸ Wins, losses, K/D ratio, win rate
-▸ Damage dealt and received
-▸ Accuracy and hit ratio
-▸ Knockback interactions
-▸ Total combat time
-▸ 15+ PlaceholderAPI placeholders
-
-[SIZE=5][B]Performance Optimized[/B][/SIZE]
-▸ Lightweight and lag-free
-▸ Async calculations
-▸ Efficient data caching
-▸ Configurable thread pool
-▸ Automatic cleanup tasks
-▸ Optional logging for debugging
-
-[SIZE=5][B]Data Persistence[/B][/SIZE]
-▸ SQLite database for local storage
-▸ MySQL support for network-wide stats
-▸ Automatic data migration
-▸ Optimized for Windows, Linux, and Docker environments
-
-[SIZE=5][B]Cross-Server Support[/B][/SIZE]
-▸ BungeeCord and Velocity compatibility
-▸ Combat state synchronization across backend servers
-▸ Network-wide combat tracking
-▸ Server switch prevention during combat
+[ATTACH type="full" width="800px"]1117174[/ATTACH]
+[SIZE=2][I]BossBar countdown and ActionBar updates during an active fight[/I][/SIZE]
 
 [HR][/HR]
 
-[SIZE=6][B]Commands[/B][/SIZE]
+[SIZE=6][B]✨ Core Features[/B][/SIZE]
+
+[SIZE=5][B]⚔️ Combat Engine[/B][/SIZE]
+[LIST]
+[*]Accurate combat detection & real-time tracking
+[*]Customizable combat duration
+[*]Automatic timer reset on new damage
+[*]Lag compensation using live TPS monitoring
+[*]Combat logging protection with instant logout punishment
+[*]Fight ends automatically on death
+[*]Unlimited simultaneous combats per player
+[*]Minimum damage threshold control
+[*]Multithreaded, thread-safe architecture
+[/LIST]
+
+[SIZE=5][B]🛡️ Newbie Protection[/B][/SIZE]
+[LIST]
+[*]Automatic PvP protection for under-geared players
+[*]XP-based threshold system
+[*]Blocks both damage dealing & receiving
+[*]Armor requirements (minimum 1 piece or full set)
+[*]Bypass permissions
+[*]Editable player messages
+[*]Debug logging for server admins
+[/LIST]
+
+[SIZE=5][B]🚫 Smart Restrictions[/B][/SIZE]
+[LIST]
+[*]Trident usage & riptide blocking
+[*]Ender Pearl cooldowns + anti-escape logic
+[*]Respawn Anchor disabling in combat
+[*]Elytra glide/firework blocking
+[*]End Crystal placement control
+[*]Golden Apple cooldowns (separate base & combat values)
+[*]Command blocking for TP/home/warp/etc.
+[*]Safezone entry blocking with visual barriers
+[*]Creative Mode forced to Survival
+[*]Optional block break/place limits
+[/LIST]
+
+[SIZE=5][B]🎨 Visual Interface[/B][/SIZE]
+[LIST]
+[*]6 Built-in themes (default, minimal, intense, elegant, neon, retro)
+[*]Smooth BossBar combat timer
+[*]ActionBar opponent & timer notifications
+[*]Live theme switching via [ICODE]/combat toggle-style[/ICODE]
+[*]Full HEX color support
+[*]5 sound profiles
+[*]Audio cues for start/end/reset/warnings
+[/LIST]
+
+[SIZE=2][I]Sample themes displayed in-game[/I][/SIZE]
+[ATTACH type="full" width="300px"]1117149[/ATTACH]
+[ATTACH type="full" width="300px"]1117153[/ATTACH]
+[ATTACH type="full" width="300px"]1117144[/ATTACH]
+[ATTACH type="full" width="300px"]1117148[/ATTACH]
+
+[SIZE=5][B]📊 Detailed Statistics[/B][/SIZE]
+[LIST]
+[*]Wins / Losses
+[*]K/D ratio & win rate
+[*]Damage dealt / received
+[*]Accuracy & hit ratio
+[*]Knockback interactions
+[*]Total combat time
+[*]Last combat timestamp
+[*]15+ PlaceholderAPI placeholders
+[/LIST]
+
+[ATTACH type="full" width="600px"]1117131[/ATTACH]
+[SIZE=2][I]Player using /combat summary to view detailed analytics[/I][/SIZE]
+
+[SIZE=5][B]💾 Database & Persistence[/B][/SIZE]
+[LIST]
+[*]SQLite database (default, zero setup required)
+[*]MySQL support for multi-server networks
+[*]Persistent player statistics across restarts
+[*]Automatic data migration
+[*]Optimized for Windows, Linux, and Docker environments
+[/LIST]
+
+[SIZE=5][B]⚡ Optimized Performance[/B][/SIZE]
+[LIST]
+[*]Lightweight and lag-free (only 2.4MB JAR)
+[*]Async calculations
+[*]Efficient data caching
+[*]Configurable thread pool
+[*]Automatic cleanup tasks
+[*]Optional logging for debugging
+[*]Real-time config reload without restart
+[/LIST]
+
+[SIZE=5][B]🌐 Cross-Server Support[/B][/SIZE]
+[LIST]
+[*]BungeeCord/Velocity compatibility
+[*]Combat state synchronization across backend servers
+[*]Server switch prevention during combat
+[*]Network-wide broadcasts
+[*]Shared MySQL database for network-wide stats
+[/LIST]
+
+[HR][/HR]
+
+[SIZE=6][B]🎮 Commands[/B][/SIZE]
 
 [SIZE=5][B]Player Commands[/B][/SIZE]
 [TABLE]
 [TR][TH]Command[/TH][TH]Description[/TH][/TR]
 [TR][TD][ICODE]/combat status[/ICODE][/TD][TD]View combat timer, opponent, and health[/TD][/TR]
 [TR][TD][ICODE]/combat summary[/ICODE][/TD][TD]Show lifetime combat statistics[/TD][/TR]
-[TR][TD][ICODE]/combat toggle-style[/ICODE][/TD][TD]Change BossBar/ActionBar style[/TD][/TR]
+[TR][TD][ICODE]/combat toggle-style[/ICODE][/TD][TD]Change BossBar / ActionBar style[/TD][/TR]
 [/TABLE]
 
 [SIZE=5][B]Admin Commands[/B][/SIZE]
@@ -101,25 +139,57 @@ Designed with performance in mind using async processing, lag compensation, and 
 [TR][TD][ICODE]/combat inspect <player>[/ICODE][/TD][TD]View real-time combat details[/TD][/TR]
 [TR][TD][ICODE]/combat summary <player>[/ICODE][/TD][TD]View another player's statistics[/TD][/TR]
 [TR][TD][ICODE]/combat reload[/ICODE][/TD][TD]Reload configuration in real-time[/TD][/TR]
-[TR][TD][ICODE]/combat debug[/ICODE][/TD][TD]Toggle performance/debug mode[/TD][/TR]
+[TR][TD][ICODE]/combat debug[/ICODE][/TD][TD]Performance/debug mode toggle[/TD][/TR]
 [TR][TD][ICODE]/combat logging <enabled|disabled>[/ICODE][/TD][TD]Toggle console logging[/TD][/TR]
 [TR][TD][ICODE]/replay view <session>[/ICODE][/TD][TD]View combat replay timeline[/TD][/TR]
 [/TABLE]
 
+[SIZE=5][B]Permissions[/B][/SIZE]
+[ICODE]pvpcombat.command.status[/ICODE]  
+[ICODE]pvpcombat.command.summary[/ICODE]  
+[ICODE]pvpcombat.command.toggle-style[/ICODE]  
+[ICODE]pvpcombat.admin[/ICODE]  
+[ICODE]pvpcombat.admin.inspect[/ICODE]  
+[ICODE]pvpcombat.admin.debug[/ICODE]  
+[ICODE]pvpcombat.bypass.combatlog[/ICODE]  
+[ICODE]pvpcombat.bypass.restrictions[/ICODE]  
+[ICODE]pvpcombat.bypass.newbie[/ICODE]
+
 [HR][/HR]
 
-[SIZE=6][B]Combat Logging Protection[/B][/SIZE]
+[SIZE=6][B]📊 Example Summary Output[/B][/SIZE]
+[CODE]
+=== Combat Summary for PlayerName ===
+Total Combats: 47
+Wins: 32 | Losses: 15
+Win Rate: 68.1%
+K/D Ratio: 2.13
+Damage Dealt: 587.5 ❤
+Damage Received: 275.0 ❤
+Damage Ratio: 2.14
+Total Combat Time: 23m 45s
+Last Combat: 2025-11-30 15:30:00
+[/CODE]
+
+[HR][/HR]
+
+[SIZE=6][B]🛡️ Combat Logging Protection[/B][/SIZE]
 
 Players disconnecting mid-fight face:
-▸ Instant death
-▸ Full inventory drop at logout location
-▸ Loss added to statistics
-▸ Opponent receives automatic win
-▸ Server-wide announcement
+[LIST]
+[*]Instant death
+[*]Inventory drop at logout location
+[*]Loss added to statistics
+[*]Opponent receives an automatic win
+[*]Announced server-wide
+[/LIST]
+
+[ATTACH type="full" width="600px"]1117182[/ATTACH]
+[SIZE=2][I]Example of a broadcasted combat-log forfeit[/I][/SIZE]
 
 [HR][/HR]
 
-[SIZE=6][B]PlaceholderAPI Integration[/B][/SIZE]
+[SIZE=6][B]🔌 PlaceholderAPI Integration[/B][/SIZE]
 
 [TABLE]
 [TR][TH]Placeholder[/TH][TH]Description[/TH][/TR]
@@ -134,54 +204,123 @@ Players disconnecting mid-fight face:
 
 [HR][/HR]
 
-[SIZE=6][B]Why Choose True Combat Manager?[/B][/SIZE]
+[SIZE=6][B]⚙️ Configuration (Example)[/B][/SIZE]
 
-✓ Blazing-fast, no-lag combat engine
-✓ Auto-protection for new players
-✓ 100+ configuration options
-✓ 6 visual themes with sound profiles
-✓ Smart item and command restrictions
-✓ Comprehensive statistics with PlaceholderAPI
-✓ Safezone protection with WorldGuard support
-✓ Combat replay system for admins
-✓ Anti-abuse combat logging protection
-✓ Cross-server support through BungeeCord/Velocity
-✓ SQLite and MySQL database support
-✓ Real-time config reload without restart
-✓ Optimized JAR size (2.4MB)
-✓ Well-documented and actively maintained
+[CODE=yaml]
+# Config excerpt...
+general:
+  enabled: true
+
+combat:
+  duration: 30
+
+database:
+  type: "SQLITE"              # SQLITE or MYSQL
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "pvpcombat"
+
+newbie-protection:
+  enabled: true
+  xp-level-threshold: 3
+
+restrictions:
+  enderpearl:
+    enabled: true
+    cooldown: 10
+  golden-apple:
+    cooldown: 3
+    combat-cooldown-multiplier: 1.5
+
+visual:
+  themes:
+    default-theme: "default"
+
+performance:
+  async:
+    enabled: true
+  lag:
+    enabled: true
+    tps-threshold: 18.0
+
+statistics:
+  enabled: true
+
+logging:
+  console-enabled: false      # Disable for best performance
+[/CODE]
 
 [HR][/HR]
 
-[SIZE=6][B]Installation[/B][/SIZE]
+[SIZE=6][B]🚀 Why Choose True Combat Manager?[/B][/SIZE]
+
+[LIST]
+[*]Blazing-fast, no-lag combat engine
+[*]Auto-protection for new players
+[*]100+ configuration options
+[*]6 visual themes + sound profiles
+[*]Smart item & command restrictions
+[*]Comprehensive statistics with PlaceholderAPI
+[*]Safezone wall barriers (WorldGuard support)
+[*]Combat replay system for fights
+[*]Anti-abuse combat logging protection
+[*]Cross-server support (BungeeCord/Velocity)
+[*]SQLite & MySQL database support
+[*]Real-time config reload without restart
+[*]Optimized JAR size (only 2.4MB)
+[*]Well-documented & actively maintained
+[/LIST]
+
+[HR][/HR]
+
+[SIZE=6][B]📦 Installation[/B][/SIZE]
 [LIST=1]
-[*]Download the latest version
-[*]Place in your plugins folder
+[*]Download the latest version (TrueCombatManager-1.1.0.jar)
+[*]Drag it into your plugins folder
 [*]Install ProtocolLib (recommended for visual barriers)
-[*]Install WorldGuard (optional for region-based safezones)
+[*]Install WorldGuard if using region-based safezones
 [*]Restart the server
 [*]Configure [ICODE]plugins/TrueCombatManager/config.yml[/ICODE]
 [*]Use [ICODE]/combat reload[/ICODE] to apply changes
 [/LIST]
 
 [SIZE=5][B]Requirements[/B][/SIZE]
-▸ Minecraft 1.18+ (Paper/Spigot/Purpur)
-▸ Java 17+ (Java 21 recommended)
-▸ ProtocolLib 5.0+ (recommended)
-▸ WorldGuard 7.0+ (optional)
-▸ PlaceholderAPI 2.11+ (optional)
+[LIST]
+[*]Minecraft 1.18+ (Paper/Spigot/Purpur)
+[*]Java 17+ (Java 21 recommended)
+[*]ProtocolLib 5.0+ (optional, for barriers)
+[*]WorldGuard 7.0+ (optional, for safezones)
+[*]PlaceholderAPI 2.11+ (optional, for placeholders)
+[/LIST]
 
 [HR][/HR]
 
-[SIZE=6][B]What's New in v1.1.0[/B][/SIZE]
+[SIZE=6][B]🆕 What's New in v1.1.0[/B][/SIZE]
 
-▸ SQLite database for data persistence
-▸ MySQL support for network-wide statistics
-▸ Real-time config reload without restart
-▸ Optimized JAR size (83.5% reduction to 2.4MB)
-▸ Enhanced PvP settings and restrictions
-▸ Improved default configuration
-▸ Bug fixes and performance improvements
+[SIZE=5][B]New Features[/B][/SIZE]
+[LIST]
+[*]SQLite database for data persistence
+[*]MySQL support for network-wide statistics
+[*]Real-time config reload without restart
+[*]Enhanced PvP settings and restrictions
+[*]Improved default configuration
+[/LIST]
+
+[SIZE=5][B]Improvements[/B][/SIZE]
+[LIST]
+[*]Optimized JAR size (83.5% reduction to 2.4MB)
+[*]Better performance and memory usage
+[*]Enhanced cross-server synchronization
+[*]Improved stability and reliability
+[/LIST]
+
+[SIZE=5][B]Bug Fixes[/B][/SIZE]
+[LIST]
+[*]Fixed config reload requiring restart
+[*]Fixed various known issues
+[*]Improved thread safety
+[/LIST]
 
 [HR][/HR]
 
