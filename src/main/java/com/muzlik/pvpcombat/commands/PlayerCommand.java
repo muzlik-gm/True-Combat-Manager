@@ -1,6 +1,9 @@
 package com.muzlik.pvpcombat.commands;
 
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
+import com.muzlik.pvpcombat.combat.CombatManager;
+import com.muzlik.pvpcombat.data.CombatSession;
+import com.muzlik.pvpcombat.utils.MessageUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.attribute.Attribute;
@@ -76,13 +79,20 @@ public class PlayerCommand {
                 return true;
             }
 
-            if (!plugin.getCombatManager().isInCombat(player)) {
+            CombatManager combatManager = (CombatManager) plugin.getCombatManager();
+            if (!combatManager.isInCombat(player)) {
                 player.sendMessage("§aYou are not in combat.");
                 player.sendMessage("§7You can engage in PvP combat or wait for the combat timer to expire.");
                 return true;
             }
 
-            Player opponent = plugin.getCombatManager().getOpponent(player);
+            CombatSession session = combatManager.getActiveSessions().get(player.getUniqueId());
+            if (session == null) {
+                player.sendMessage("§cCould not retrieve combat session data.");
+                return true;
+            }
+
+            Player opponent = session.getOpponent(player);
 
             // Display combat status header
             player.sendMessage("§6=== Combat Status ===");
@@ -90,20 +100,30 @@ public class PlayerCommand {
 
             if (opponent != null) {
                 player.sendMessage("§eOpponent: §f" + opponent.getName());
-                // Show opponent health if available
+
+                // Show opponent health with progress bar
                 double opponentHealth = opponent.getHealth();
                 double opponentMaxHealth = ((LivingEntity) opponent).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-                player.sendMessage(String.format("§eOpponent Health: §c%.1f §7/ §c%.1f ❤", opponentHealth, opponentMaxHealth));
+                double opponentHealthProgress = opponentHealth / opponentMaxHealth;
+                String opponentHealthBar = MessageUtils.createProgressBar(opponentHealthProgress, 10);
+                player.sendMessage(String.format("§eOpponent Health: §f%s §7(%.1f/%.1f)", opponentHealthBar, opponentHealth, opponentMaxHealth));
             } else {
                 player.sendMessage("§eOpponent: §fUnknown");
             }
 
-            // Show player's own health
+            // Show player's own health with progress bar
             double playerHealth = player.getHealth();
             double playerMaxHealth = ((LivingEntity) player).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-            player.sendMessage(String.format("§eYour Health: §a%.1f §7/ §a%.1f ❤", playerHealth, playerMaxHealth));
+            double playerHealthProgress = playerHealth / playerMaxHealth;
+            String playerHealthBar = MessageUtils.createProgressBar(playerHealthProgress, 10);
+            player.sendMessage(String.format("§eYour Health: §f%s §7(%.1f/%.1f)", playerHealthBar, playerHealth, playerMaxHealth));
 
-            player.sendMessage("§eTime Remaining: §fUnknown §7(Enhanced status pending)");
+            // Show combat timer with progress bar
+            int timeLeft = session.getRemainingTime();
+            double timerProgress = session.getTimerData().getProgress();
+            String timerBar = MessageUtils.createProgressBar(timerProgress, 10);
+            player.sendMessage(String.format("§eTime Remaining: §f%s §f%ds", timerBar, timeLeft));
+
             player.sendMessage("§7§oUse /combat summary to view detailed fight statistics.");
 
             return true;
