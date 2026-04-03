@@ -76,4 +76,12 @@ public class LoggingManager {
     public void logError(String message) {
         plugin.getLogger().severe(message);
     }
+
+    /**
+     * Reloads configuration for logging manager.
+     */
+    public void reloadConfig() {
+        this.consoleLoggingEnabled = plugin.getConfig().getBoolean("logging.console-enabled", false);
+        plugin.getLogger().info("LoggingManager configuration reloaded");
+    }
 }

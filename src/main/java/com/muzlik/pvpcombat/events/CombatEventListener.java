@@ -193,7 +193,7 @@ public class CombatEventListener implements Listener {
                 }
             }
 
-            // Start or reset combat asynchronously
+            // Start or reset combat
             if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
                 // Switch creative mode players to survival
                 if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
@@ -205,8 +205,8 @@ public class CombatEventListener implements Listener {
                     defender.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
                 }
                 
-                // Start new combat - run on main thread for thread safety
-                AsyncUtils.runSync(plugin, () -> combatManager.startCombat(attacker, defender));
+                // Start new combat - run synchronously to ensure it's active before recording damage
+                combatManager.startCombat(attacker, defender);
             } else {
                 // Reset timer for existing combat - run on main thread
                 AsyncUtils.runSync(plugin, () -> {

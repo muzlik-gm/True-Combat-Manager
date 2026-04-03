@@ -20,6 +20,12 @@ public class SQLiteDatabaseManager extends DatabaseManager {
     
     @Override
     protected HikariConfig createHikariConfig() {
+        // Ensure data folder exists
+        File dataFolder = databaseFile.getParentFile();
+        if (dataFolder != null && !dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+
         HikariConfig config = new HikariConfig();
         
         config.setJdbcUrl("jdbc:sqlite:" + databaseFile.getAbsolutePath());
