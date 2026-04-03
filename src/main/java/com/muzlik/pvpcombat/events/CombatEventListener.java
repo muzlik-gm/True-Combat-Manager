@@ -154,13 +154,40 @@ public class CombatEventListener implements Listener {
                 return;
             }
 
-            // Record damage synchronously to ensure it's tracked
+            // 1. Start or reset combat state FIRST
+            if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
+                // Switch creative mode players to survival
+                if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
+                    attacker.setGameMode(org.bukkit.GameMode.SURVIVAL);
+                    attacker.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
+                }
+                if (defender.getGameMode() == org.bukkit.GameMode.CREATIVE) {
+                    defender.setGameMode(org.bukkit.GameMode.SURVIVAL);
+                    defender.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
+                }
+
+                // Start new combat synchronously
+                combatManager.startCombat(attacker, defender);
+            } else {
+                // Reset timer for existing combat synchronously
+                CombatSession timerSession = combatManager.getActiveSessions().values().stream()
+                    .filter(s -> s.involvesPlayer(attacker))
+                    .findFirst().orElse(null);
+                if (timerSession != null) {
+                    // Reset timer to default duration
+                    int defaultDuration = plugin.getConfig().getInt("combat.duration", 30);
+                    timerSession.getTimerData().setRemainingSeconds(defaultDuration);
+                }
+            }
+
+            // 2. Record damage synchronously to ensure it's tracked
             // Use the CombatManager's tracker, not the local one!
             double damage = event.getFinalDamage();
             combatManager.getCombatTracker().recordDamageDealt(attacker, damage);
             combatManager.getCombatTracker().recordDamageReceived(defender, damage);
             
-            // Also record damage in the session for per-combat tracking
+            // 3. Also record damage in the session for per-combat tracking
+            // Now the session is guaranteed to exist
             CombatSession damageSession = combatManager.getActiveSessions().values().stream()
                 .filter(s -> s.involvesPlayer(attacker))
                 .findFirst().orElse(null);
@@ -175,50 +202,22 @@ public class CombatEventListener implements Listener {
                     combatManager.getCombatTracker().getPlayerData(attacker.getUniqueId()).getTotalDamageDealt()));
             }
 
-            // Log damage event asynchronously
+            // 4. Log damage event asynchronously
             if (combatManager.isInCombat(attacker)) {
                 Player opponent = combatManager.getOpponent(attacker);
                 if (opponent != null && opponent.equals(defender)) {
                     AsyncUtils.runAsync(plugin, () -> {
                         CombatSession logSession = combatManager.getActiveSessions().values().stream()
-                            .filter(s -> s.getAttacker().equals(attacker) || s.getDefender().equals(attacker))
+                            .filter(s -> s.involvesPlayer(attacker))
                             .findFirst().orElse(null);
                         if (logSession != null) {
                             String weaponType = attacker.getInventory().getItemInMainHand().getType().toString();
                             double distance = attacker.getLocation().distance(defender.getLocation());
-                            combatLogger.logDamageDealt(logSession.getSessionId(), attacker, defender, event.getFinalDamage(),
+                            combatLogger.logDamageDealt(logSession.getSessionId(), attacker, defender, damage,
                                                        true, distance, weaponType);
                         }
                     }, "combat-processing");
                 }
-            }
-
-            // Start or reset combat
-            if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
-                // Switch creative mode players to survival
-                if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    attacker.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                    attacker.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
-                }
-                if (defender.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    defender.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                    defender.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
-                }
-                
-                // Start new combat - run synchronously to ensure it's active before recording damage
-                combatManager.startCombat(attacker, defender);
-            } else {
-                // Reset timer for existing combat - run on main thread
-                AsyncUtils.runSync(plugin, () -> {
-                    CombatSession timerSession = combatManager.getActiveSessions().values().stream()
-                        .filter(s -> s.getAttacker().equals(attacker) || s.getDefender().equals(attacker))
-                        .findFirst().orElse(null);
-                    if (timerSession != null) {
-                        // Reset timer to default duration
-                        int defaultDuration = plugin.getConfig().getInt("combat.duration", 30);
-                        timerSession.getTimerData().setRemainingSeconds(defaultDuration);
-                    }
-                });
             }
         } finally {
             performanceMonitor.endOperation("entity-damage-event");
