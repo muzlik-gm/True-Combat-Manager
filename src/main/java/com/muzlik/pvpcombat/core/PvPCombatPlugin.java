@@ -34,6 +34,9 @@ public class PvPCombatPlugin extends JavaPlugin {
                 configManager = pluginManager.getConfigManager();
                 configManager.loadConfig();
                 getLogger().info("Configuration loaded successfully");
+
+                // Initialize database after config is loaded and data folder is created
+                pluginManager.initializeDatabase();
             } catch (Exception e) {
                 getLogger().severe("Failed to load configuration: " + e.getMessage());
                 e.printStackTrace();

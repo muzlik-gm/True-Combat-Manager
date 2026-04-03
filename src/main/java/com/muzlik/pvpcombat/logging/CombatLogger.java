@@ -221,6 +221,9 @@ public class CombatLogger {
      * Generates and delivers a combat summary.
      */
     public void generateSummary(UUID sessionId, Player player, com.muzlik.pvpcombat.data.CombatSession session) {
+        // Re-read configuration in case it was reloaded
+        loadConfiguration();
+
         if (summaryDelivery == SummaryDelivery.NONE) {
             return;
         }

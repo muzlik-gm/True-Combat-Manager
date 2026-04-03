@@ -165,6 +165,11 @@ public class ConfigManager implements IConfigManager {
                 if (plugin.getRestrictionManager() instanceof com.muzlik.pvpcombat.restrictions.RestrictionManager) {
                     ((com.muzlik.pvpcombat.restrictions.RestrictionManager) plugin.getRestrictionManager()).reloadConfig();
                 }
+
+                // Reload logging manager
+                if (plugin.getLoggingManager() != null) {
+                    plugin.getLoggingManager().reloadConfig();
+                }
             }
 
             logger.info("Configuration reloaded successfully");

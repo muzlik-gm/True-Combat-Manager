@@ -43,6 +43,7 @@ public class PluginManager {
     private CombatTracker combatTracker;
     private NewbieProtection newbieProtection;
     private IDatabaseManager databaseManager;
+    private CombatLogger combatLogger;
 
     public PluginManager(PvPCombatPlugin plugin) {
         this.plugin = plugin;
@@ -63,20 +64,15 @@ public class PluginManager {
         // Initialize configuration manager first as others depend on it
         this.configManager = new ConfigManager(plugin);
         
-        // Initialize database manager
-        initializeDatabase();
-
         // Initialize combat tracker with plugin reference
         this.combatTracker = new CombatTracker(plugin);
-        this.combatTracker.setDatabaseManager(databaseManager);
-        this.combatTracker.initialize();
         
         // Initialize newbie protection
         this.newbieProtection = new NewbieProtection(plugin);
 
         // Initialize shared components
         CacheManager cacheManager = new CacheManager(plugin);
-        CombatLogger combatLogger = new CombatLogger(plugin);
+        this.combatLogger = new CombatLogger(plugin);
         TPSMonitor tpsMonitor = new TPSMonitor(plugin);
         PerformanceMonitor performanceMonitor = new PerformanceMonitor(plugin, tpsMonitor, cacheManager);
 
@@ -91,7 +87,7 @@ public class PluginManager {
     /**
      * Initialize the database manager based on configuration.
      */
-    private void initializeDatabase() {
+    public void initializeDatabase() {
         FileConfiguration config = plugin.getConfig();
         String databaseType = config.getString("database.type", "sqlite").toLowerCase();
         
@@ -115,6 +111,13 @@ public class PluginManager {
             }
             
             databaseManager.initialize();
+
+            // Re-inject database manager into combat tracker
+            if (combatTracker != null) {
+                combatTracker.setDatabaseManager(databaseManager);
+                combatTracker.initialize();
+            }
+
             plugin.getLogger().info("Database initialized successfully");
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to initialize database", e);
@@ -129,7 +132,6 @@ public class PluginManager {
     public void registerEvents() {
         // Initialize shared components for event listener
         CacheManager cacheManager = new CacheManager(plugin);
-        CombatLogger combatLogger = new CombatLogger(plugin);
         TPSMonitor tpsMonitor = new TPSMonitor(plugin);
         PerformanceMonitor performanceMonitor = new PerformanceMonitor(plugin, tpsMonitor, cacheManager);
 
@@ -179,7 +181,6 @@ public class PluginManager {
 
         // Register replay command with dedicated ReplayCommand executor
         if (plugin.getCommand("replay") != null) {
-            CombatLogger combatLogger = new CombatLogger(plugin);
             ReplayCommand replayCommand = new ReplayCommand(plugin, combatLogger);
             plugin.getCommand("replay").setExecutor(replayCommand);
             plugin.getCommand("replay").setTabCompleter(replayCommand);
