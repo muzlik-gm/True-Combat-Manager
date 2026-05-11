@@ -8,13 +8,13 @@ import com.muzlik.pvpcombat.data.DamageInfo.WeaponType;
  */
 public class WeaponStats {
     
-    private final WeaponType type;
+    private final String type;
     private int uses;
     private double totalDamage;
     private int kills;
     private int criticalHits;
     
-    public WeaponStats(WeaponType type) {
+    public WeaponStats(String type) {
         this.type = type;
         this.uses = 0;
         this.totalDamage = 0.0;
@@ -55,7 +55,7 @@ public class WeaponStats {
     }
     
     // Getters
-    public WeaponType getType() {
+    public String getType() {
         return type;
     }
     

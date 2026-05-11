@@ -230,6 +230,10 @@ public class CombatManager implements ICombatManager {
                     
                     attackerData.addCombatTime(combatDuration);
                     defenderData.addCombatTime(combatDuration);
+
+                    // Merge weapon stats from session to global data
+                    mergeWeaponStats(session.getAttacker(), session);
+                    mergeWeaponStats(session.getDefender(), session);
                     
                     // Update last combat timestamp
                     java.time.LocalDateTime now = java.time.LocalDateTime.now();
@@ -502,6 +506,25 @@ public class CombatManager implements ICombatManager {
         }
 
         plugin.getLogger().info("CombatManager configuration reloaded (duration: " + defaultTimerSeconds + "s)");
+    }
+
+    /**
+     * Merges weapon stats from a session into a player's global statistics.
+     */
+    private void mergeWeaponStats(Player player, CombatSession session) {
+        com.muzlik.pvpcombat.data.PlayerCombatData globalData = combatTracker.getPlayerData(player.getUniqueId());
+        Map<String, com.muzlik.pvpcombat.data.WeaponStats> sessionWeaponStats = session.getWeaponStats(player);
+
+        for (Map.Entry<String, com.muzlik.pvpcombat.data.WeaponStats> entry : sessionWeaponStats.entrySet()) {
+            String material = entry.getKey();
+            com.muzlik.pvpcombat.data.WeaponStats sessionStats = entry.getValue();
+            com.muzlik.pvpcombat.data.WeaponStats globalStats = globalData.getWeaponStats(material);
+
+            globalStats.setUses(globalStats.getUses() + sessionStats.getUses());
+            globalStats.setTotalDamage(globalStats.getTotalDamage() + sessionStats.getTotalDamage());
+            globalStats.setKills(globalStats.getKills() + sessionStats.getKills());
+            globalStats.setCriticalHits(globalStats.getCriticalHits() + sessionStats.getCriticalHits());
+        }
     }
 
     /**

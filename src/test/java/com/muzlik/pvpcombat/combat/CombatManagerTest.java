@@ -152,11 +152,11 @@ class CombatManagerTest {
     void testDamageTracking() {
         CombatSession session = new CombatSession(UUID.randomUUID(), player1, player2, 30);
         
-        session.recordDamage(player1, 10.5);
+        session.recordDamage(player1, 10.5, org.bukkit.Material.DIAMOND_SWORD, false);
         assertEquals(10.5, session.getDamageDealt(player1), 0.001);
         assertEquals(10.5, session.getDamageReceived(player2), 0.001);
         
-        session.recordDamage(player2, 8.0);
+        session.recordDamage(player2, 8.0, org.bukkit.Material.IRON_AXE, true);
         assertEquals(8.0, session.getDamageDealt(player2), 0.001);
         assertEquals(8.0, session.getDamageReceived(player1), 0.001);
     }

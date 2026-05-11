@@ -5,6 +5,7 @@ import com.muzlik.pvpcombat.combat.CombatManager;
 import com.muzlik.pvpcombat.combat.CombatTracker;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
 import com.muzlik.pvpcombat.data.CombatSession;
+import com.muzlik.pvpcombat.data.WeaponStats;
 import com.muzlik.pvpcombat.data.RestrictionData;
 import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.logging.CombatLogger;
@@ -192,7 +193,15 @@ public class CombatEventListener implements Listener {
                 .filter(s -> s.involvesPlayer(attacker))
                 .findFirst().orElse(null);
             if (damageSession != null) {
-                damageSession.recordDamage(attacker, damage);
+                // Check for critical hit (simple version: falling and not on ladder/vines/water)
+                boolean isCritical = attacker.getFallDistance() > 0.0F &&
+                                     !attacker.isOnGround() &&
+                                     !attacker.isInsideVehicle() &&
+                                     !attacker.hasPotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS) &&
+                                     attacker.getLocation().getBlock().getType() != Material.LADDER &&
+                                     attacker.getLocation().getBlock().getType() != Material.VINE;
+
+                damageSession.recordDamage(attacker, damage, attacker.getInventory().getItemInMainHand().getType(), isCritical);
             }
             
             // Debug logging - only if console logging is enabled
@@ -238,6 +247,13 @@ public class CombatEventListener implements Listener {
                     // Use the CombatManager's tracker, not the local one!
                     combatManager.getCombatTracker().recordWin(opponent);
                     combatManager.getCombatTracker().recordLoss(deceased);
+
+                    // Record weapon kill
+                    CombatSession session = combatManager.getActiveSessions().get(deceased.getUniqueId());
+                    if (session != null) {
+                        String weapon = opponent.getInventory().getItemInMainHand().getType().name();
+                        session.getWeaponStats(opponent).computeIfAbsent(weapon, WeaponStats::new).recordKill();
+                    }
                     
                     plugin.getLoggingManager().log("Combat ended - Winner: " + opponent.getName() + ", Loser: " + deceased.getName());
                 }

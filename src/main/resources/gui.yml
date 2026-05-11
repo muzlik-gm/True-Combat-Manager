@@ -1,0 +1,90 @@
+# ========================================
+# Combat GUI Configuration
+# ========================================
+
+# Settings for the main statistics GUI
+main-stats:
+  title: "&6&lCombat Statistics"
+  size: 54
+  items:
+    overall-record:
+      material: PAPER
+      slot: 13
+      name: "&eOverall Record"
+      lore:
+        - "&7Wins: &f{wins}"
+        - "&7Losses: &f{losses}"
+        - "&7K/D Ratio: &f{kd}"
+        - "&7Win Rate: &f{win_rate}%"
+    damage-stats:
+      material: REDSTONE
+      slot: 22
+      name: "&cDamage Statistics"
+      lore:
+        - "&7Dealt: &f{damage_dealt}"
+        - "&7Received: &f{damage_received}"
+        - "&7Ratio: &f{damage_ratio}"
+        - "&7Highest Damage: &f{highest_damage}"
+    other-stats:
+      material: BOOK
+      slot: 23
+      name: "&eOther Statistics"
+      lore:
+        - "&7Total Combats: &f{total_combats}"
+        - "&7Critical Hits: &f{critical_hits}"
+        - "&7Longest Combo: &f{longest_combo}"
+    weapon-stats-button:
+      material: DIAMOND_SWORD
+      slot: 31
+      name: "&aWeapon Statistics"
+      lore:
+        - "&7Click to view detailed"
+        - "&7stats for each weapon!"
+
+# Settings for the weapon-specific statistics GUI
+weapon-stats:
+  title: "&a&lWeapon Statistics"
+  size: 54
+  # Weapons to display in the GUI
+  # You can add or remove weapons here
+  weapons:
+    diamond_sword:
+      material: DIAMOND_SWORD
+      slot: 10
+      name: "&bDiamond Sword Stats"
+    netherite_sword:
+      material: NETHERITE_SWORD
+      slot: 11
+      name: "&8Netherite Sword Stats"
+    iron_sword:
+      material: IRON_SWORD
+      slot: 12
+      name: "&fIron Sword Stats"
+    diamond_axe:
+      material: DIAMOND_AXE
+      slot: 19
+      name: "&bDiamond Axe Stats"
+    netherite_axe:
+      material: NETHERITE_AXE
+      slot: 20
+      name: "&8Netherite Axe Stats"
+    bow:
+      material: BOW
+      slot: 28
+      name: "&eBow Stats"
+    crossbow:
+      material: CROSSBOW
+      slot: 29
+      name: "&eCrossbow Stats"
+    trident:
+      material: TRIDENT
+      slot: 30
+      name: "&3Trident Stats"
+
+# Common lore for weapon items in the GUI
+# Available placeholders: {damage}, {kills}, {uses}, {avg_damage}
+weapon-lore:
+  - "&7Total Damage: &f{damage}"
+  - "&7Total Kills: &f{kills}"
+  - "&7Total Usage: &f{uses}"
+  - "&7Avg Damage: &f{avg_damage}"
