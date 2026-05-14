@@ -56,3 +56,7 @@ Desktop.ini
 *.war
 *.ear
 *.class
+
+# IDE
+.codex
+.cursor
