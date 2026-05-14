@@ -35,6 +35,11 @@ public class BossBarManager {
         CombatSession session = ((CombatManager) plugin.getCombatManager()).getSessionById(sessionId);
         if (session == null || !session.isVisualsEnabled()) return;
 
+        // Check if bossbar is enabled in configuration
+        if (!plugin.getConfig().getBoolean("visual.bossbar.enabled", true)) {
+            return;
+        }
+
         BossBar bossBar = createBossBar(session);
         if (bossBar != null) {
             Player attacker = session.getAttacker();
