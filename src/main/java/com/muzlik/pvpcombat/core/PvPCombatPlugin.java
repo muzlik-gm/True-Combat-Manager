@@ -20,6 +20,7 @@ public class PvPCombatPlugin extends JavaPlugin {
     private IRestrictionManager restrictionManager;
     private IConfigManager configManager;
     private LoggingManager loggingManager;
+    private com.muzlik.pvpcombat.gui.GUIManager guiManager;
 
     @Override
     public void onEnable() {
@@ -54,6 +55,15 @@ public class PvPCombatPlugin extends JavaPlugin {
                 loggingManager = new LoggingManager(this);
             }
 
+            // Initialize GUI Manager
+            try {
+                guiManager = new com.muzlik.pvpcombat.gui.GUIManager(this);
+                getLogger().info("GUI manager initialized");
+            } catch (Exception e) {
+                getLogger().severe("Failed to initialize GUI manager: " + e.getMessage());
+                e.printStackTrace();
+            }
+
             // Initialize subsystems with error handling
             try {
                 combatManager = pluginManager.getCombatManager();
@@ -86,6 +96,10 @@ public class PvPCombatPlugin extends JavaPlugin {
             // Register events and commands with error handling
             try {
                 pluginManager.registerEvents();
+
+                // Register GUI Listener
+                getServer().getPluginManager().registerEvents(new com.muzlik.pvpcombat.gui.GUIListener(guiManager), this);
+
                 getLogger().info("Events registered successfully");
             } catch (Exception e) {
                 getLogger().severe("Failed to register events: " + e.getMessage());
@@ -116,6 +130,11 @@ public class PvPCombatPlugin extends JavaPlugin {
             }
 
             getLogger().info("PvPCombat plugin has been enabled successfully!");
+
+            // #region agent log
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H5", "PvPCombatPlugin.java:onEnable",
+                    "plugin_enabled", java.util.Map.of("combatManagerNonNull", combatManager != null));
+            // #endregion
             
         } catch (Exception e) {
             getLogger().severe("CRITICAL ERROR during plugin initialization: " + e.getMessage());
@@ -167,6 +186,10 @@ public class PvPCombatPlugin extends JavaPlugin {
 
     public LoggingManager getLoggingManager() {
         return loggingManager;
+    }
+
+    public com.muzlik.pvpcombat.gui.GUIManager getGuiManager() {
+        return guiManager;
     }
     
     public com.muzlik.pvpcombat.protection.NewbieProtection getNewbieProtection() {

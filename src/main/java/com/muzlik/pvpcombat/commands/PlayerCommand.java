@@ -53,6 +53,8 @@ public class PlayerCommand {
                     return handleStatusCommand(player);
                 case "summary":
                     return handleSummaryCommand(player);
+                case "stats":
+                    return handleStatsCommand(player);
                 case "toggle-style":
                     return handleToggleStyleCommand(player);
                 default:
@@ -161,68 +163,31 @@ public class PlayerCommand {
      */
     private boolean handleSummaryCommand(Player player) {
         try {
-            // Get player's combat data
-            com.muzlik.pvpcombat.data.PlayerCombatData combatData = 
-                ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager())
-                    .getCombatTracker().getPlayerData(player.getUniqueId());
-
-            if (combatData == null) {
-                player.sendMessage("§cNo combat data found. Engage in combat first!");
+            if (plugin.getGuiManager() != null) {
+                plugin.getGuiManager().openMainStatsGUI(player);
                 return true;
             }
 
-            // Check if player has any combat data
-            if (combatData.getTotalCombats() == 0 && combatData.getTotalDamageDealt() == 0) {
-                player.sendMessage("§eNo combat statistics yet. Fight someone to generate data!");
-                return true;
-            }
-
-            // Display summary
-            player.sendMessage("§6=== Combat Summary for " + player.getName() + " ===");
-            player.sendMessage(String.format("§eTotal Combats: §f%d", combatData.getTotalCombats()));
-            
-            if (combatData.getTotalCombats() > 0) {
-                player.sendMessage(String.format("§eWins: §a%d §7| §eLosses: §c%d", 
-                    combatData.getWins(), combatData.getLosses()));
-                
-                // Calculate win rate
-                double winRate = (double) combatData.getWins() / combatData.getTotalCombats() * 100.0;
-                player.sendMessage(String.format("§eWin Rate: §f%.1f%%", winRate));
-                
-                // Calculate K/D ratio
-                double kdRatio = combatData.getLosses() > 0 ? 
-                    (double) combatData.getWins() / combatData.getLosses() : combatData.getWins();
-                player.sendMessage(String.format("§eK/D Ratio: §f%.2f", kdRatio));
-            }
-            
-            player.sendMessage(String.format("§eDamage Dealt: §c%.1f ❤", combatData.getTotalDamageDealt()));
-            player.sendMessage(String.format("§eDamage Received: §c%.1f ❤", combatData.getTotalDamageReceived()));
-            
-            // Calculate damage ratio
-            if (combatData.getTotalDamageReceived() > 0) {
-                double damageRatio = combatData.getTotalDamageDealt() / combatData.getTotalDamageReceived();
-                player.sendMessage(String.format("§eDamage Ratio: §f%.2f", damageRatio));
-            }
-            
-            // Show combat time
-            if (combatData.getTotalCombatTime() > 0) {
-                long totalMinutes = combatData.getTotalCombatTime() / 60000;
-                long totalSeconds = (combatData.getTotalCombatTime() % 60000) / 1000;
-                player.sendMessage(String.format("§eTotal Combat Time: §f%dm %ds", totalMinutes, totalSeconds));
-            }
-            
-            // Show last combat time
-            if (combatData.getLastCombat() != null) {
-                player.sendMessage("§7Last Combat: §f" + combatData.getLastCombat().toString());
-            }
-            
+            player.sendMessage("§cGUI system is not available.");
             return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("Error showing combat summary: " + e.getMessage());
+            plugin.getLogger().severe("Error showing combat summary GUI: " + e.getMessage());
             e.printStackTrace();
             player.sendMessage("§cFailed to show combat summary.");
             return true;
         }
+    }
+
+    /**
+     * Opens the player's own combat stats GUI.
+     */
+    private boolean handleStatsCommand(Player player) {
+        if (plugin.getGuiManager() != null) {
+            plugin.getGuiManager().openMainStatsGUI(player);
+        } else {
+            player.sendMessage("§cStats GUI is not available.");
+        }
+        return true;
     }
 
     /**

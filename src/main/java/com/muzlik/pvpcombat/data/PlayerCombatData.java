@@ -33,7 +33,7 @@ public class PlayerCombatData {
     private int criticalHits;
     private int longestCombo;
     private double highestDamageInSession;
-    private final Map<DamageInfo.WeaponType, WeaponStats> weaponStats;
+    private final Map<String, WeaponStats> weaponStats;
 
     public PlayerCombatData(UUID playerId) {
         this.playerId = playerId;
@@ -122,16 +122,17 @@ public class PlayerCombatData {
     }
     
     // Weapon stats methods
-    public Map<DamageInfo.WeaponType, WeaponStats> getWeaponStats() {
+    public Map<String, WeaponStats> getWeaponStats() {
         return weaponStats;
     }
     
-    public WeaponStats getWeaponStats(DamageInfo.WeaponType weaponType) {
-        return weaponStats.computeIfAbsent(weaponType, WeaponStats::new);
+    public WeaponStats getWeaponStats(String weaponMaterial) {
+        return weaponStats.computeIfAbsent(weaponMaterial, WeaponStats::new);
     }
     
     public void recordDamageWithWeapon(DamageInfo damageInfo) {
-        WeaponStats stats = getWeaponStats(damageInfo.getWeaponType());
+        String material = damageInfo.getWeaponMaterial() != null ? damageInfo.getWeaponMaterial().name() : "AIR";
+        WeaponStats stats = getWeaponStats(material);
         stats.recordHit(damageInfo.getAmount(), damageInfo.isCritical());
         
         if (damageInfo.isCritical()) {
@@ -142,8 +143,8 @@ public class PlayerCombatData {
         updateHighestDamage(damageInfo.getAmount());
     }
     
-    public void recordKillWithWeapon(DamageInfo.WeaponType weaponType) {
-        WeaponStats stats = getWeaponStats(weaponType);
+    public void recordKillWithWeapon(String weaponMaterial) {
+        WeaponStats stats = getWeaponStats(weaponMaterial);
         stats.recordKill();
     }
     

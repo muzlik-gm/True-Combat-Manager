@@ -1,7 +1,11 @@
 package com.muzlik.pvpcombat.data;
 
+import org.bukkit.Material;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,6 +35,10 @@ public class CombatSession {
     // Session-specific hit tracking
     private int attackerHitsLanded;
     private int defenderHitsLanded;
+
+    // Weapon tracking per session
+    private final Map<String, WeaponStats> attackerWeaponStats;
+    private final Map<String, WeaponStats> defenderWeaponStats;
     
     // Combat end tracking
     private CombatEndReason endReason;
@@ -53,6 +61,8 @@ public class CombatSession {
         this.defenderDamageDealt = 0.0;
         this.attackerHitsLanded = 0;
         this.defenderHitsLanded = 0;
+        this.attackerWeaponStats = new HashMap<>();
+        this.defenderWeaponStats = new HashMap<>();
         this.endReason = null;
         this.endTime = 0;
     }
@@ -193,15 +203,28 @@ public class CombatSession {
     /**
      * Records damage dealt by a player in this session.
      */
-    public void recordDamage(Player damager, double damage) {
+    public void recordDamage(Player damager, double damage, Material weaponMaterial, boolean isCritical) {
+        String materialName = weaponMaterial != null ? weaponMaterial.name() : "AIR";
+
         // Update damage and hit stats
         if (damager.equals(attacker)) {
             attackerDamageDealt += damage;
             attackerHitsLanded++;
+            attackerWeaponStats.computeIfAbsent(materialName, WeaponStats::new).recordHit(damage, isCritical);
         } else if (damager.equals(defender)) {
             defenderDamageDealt += damage;
             defenderHitsLanded++;
+            defenderWeaponStats.computeIfAbsent(materialName, WeaponStats::new).recordHit(damage, isCritical);
         }
+    }
+
+    public Map<String, WeaponStats> getWeaponStats(Player player) {
+        if (player.equals(attacker)) {
+            return attackerWeaponStats;
+        } else if (player.equals(defender)) {
+            return defenderWeaponStats;
+        }
+        return new HashMap<>();
     }
     
     /**

@@ -1,5 +1,6 @@
 package com.muzlik.pvpcombat.interfaces;
 
+import com.muzlik.pvpcombat.combat.CombatTracker;
 import org.bukkit.entity.Player;
 import java.util.UUID;
 

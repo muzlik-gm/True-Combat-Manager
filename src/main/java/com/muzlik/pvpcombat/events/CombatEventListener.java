@@ -5,6 +5,7 @@ import com.muzlik.pvpcombat.combat.CombatManager;
 import com.muzlik.pvpcombat.combat.CombatTracker;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
 import com.muzlik.pvpcombat.data.CombatSession;
+import com.muzlik.pvpcombat.data.WeaponStats;
 import com.muzlik.pvpcombat.data.RestrictionData;
 import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.logging.CombatLogger;
@@ -66,8 +67,19 @@ public class CombatEventListener implements Listener {
         performanceMonitor.startOperation("entity-damage-event");
 
         try {
-            // Only handle player vs player damage
-            if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) {
+            // Only handle player vs player damage (direct hit; projectiles logged separately)
+            if (!(event.getEntity() instanceof Player)) {
+                return;
+            }
+            if (!(event.getDamager() instanceof Player)) {
+                // #region agent log
+                if (event.getDamager() != null) {
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H3", "CombatEventListener.java:onEntityDamage",
+                            "skipped_non_player_damager", java.util.Map.of(
+                                    "damagerType", event.getDamager().getClass().getSimpleName(),
+                                    "victim", ((Player) event.getEntity()).getName()));
+                }
+                // #endregion
                 return;
             }
 
@@ -155,6 +167,14 @@ public class CombatEventListener implements Listener {
             }
 
             // 1. Start or reset combat state FIRST
+            // #region agent log
+            boolean neitherInCombat = !combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender);
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H4", "CombatEventListener.java:onEntityDamage",
+                    "combat_damage_branch", java.util.Map.of(
+                            "neitherInCombat", neitherInCombat,
+                            "attacker", attacker.getName(),
+                            "defender", defender.getName()));
+            // #endregion
             if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
                 // Switch creative mode players to survival
                 if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
@@ -192,7 +212,15 @@ public class CombatEventListener implements Listener {
                 .filter(s -> s.involvesPlayer(attacker))
                 .findFirst().orElse(null);
             if (damageSession != null) {
-                damageSession.recordDamage(attacker, damage);
+                // Check for critical hit (simple version: falling and not on ladder/vines/water)
+                boolean isCritical = attacker.getFallDistance() > 0.0F &&
+                                     !attacker.isOnGround() &&
+                                     !attacker.isInsideVehicle() &&
+                                     !attacker.hasPotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS) &&
+                                     attacker.getLocation().getBlock().getType() != Material.LADDER &&
+                                     attacker.getLocation().getBlock().getType() != Material.VINE;
+
+                damageSession.recordDamage(attacker, damage, attacker.getInventory().getItemInMainHand().getType(), isCritical);
             }
             
             // Debug logging - only if console logging is enabled
@@ -238,6 +266,13 @@ public class CombatEventListener implements Listener {
                     // Use the CombatManager's tracker, not the local one!
                     combatManager.getCombatTracker().recordWin(opponent);
                     combatManager.getCombatTracker().recordLoss(deceased);
+
+                    // Record weapon kill
+                    CombatSession session = combatManager.getActiveSessions().get(deceased.getUniqueId());
+                    if (session != null) {
+                        String weapon = opponent.getInventory().getItemInMainHand().getType().name();
+                        session.getWeaponStats(opponent).computeIfAbsent(weapon, WeaponStats::new).recordKill();
+                    }
                     
                     plugin.getLoggingManager().log("Combat ended - Winner: " + opponent.getName() + ", Loser: " + deceased.getName());
                 }
@@ -462,6 +497,12 @@ public class CombatEventListener implements Listener {
         if (!wasTracked) {
             // Resume combat state from cache if exists
             Object combatState = cacheManager.get("combat-state", player.getUniqueId().toString());
+            // #region agent log
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H6", "CombatEventListener.java:onPlayerJoin",
+                    "join_resume_cache", java.util.Map.of(
+                            "wasTracked", wasTracked,
+                            "combatStatePresent", combatState != null));
+            // #endregion
             if (combatState != null) {
                 player.sendMessage(ChatColor.GREEN + "Combat session resumed from previous session!");
             }

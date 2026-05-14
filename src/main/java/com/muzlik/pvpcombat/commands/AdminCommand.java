@@ -73,15 +73,31 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 case "summary":
                     return handleAdminSummaryCommand(player, args);
                 case "reload":
-                    return handleReloadCommand(player);
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage("§cThis command can only be used by players.");
+                        return true;
+                    }
+                    boolean result = handleReloadCommand((Player) sender);
+                    if (result && plugin.getGuiManager() != null) {
+                        plugin.getGuiManager().loadConfig();
+                    }
+                    return result;
+                case "stats":
+                    if (args.length > 1) {
+                        return handleAdminStatsCommand(sender, args);
+                    }
+                    if (plugin.getGuiManager() != null) {
+                        plugin.getGuiManager().openServerStatsGUI(player);
+                        player.sendMessage("§aOpened server combat overview.");
+                        return true;
+                    }
+                    return handleStatsCommand(player);
                 case "debug":
                     return handleDebugCommand(player, args);
                 case "logging":
                     return handleLoggingCommand(player, args);
                 case "protection":
                     return handleProtectionCommand(player, args);
-                case "stats":
-                    return handleStatsCommand(player);
                 case "clear":
                     return handleClearCommand(player, args);
                 default:
@@ -150,6 +166,29 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
+     * Handles showing stats for a specific player (admin).
+     */
+    private boolean handleAdminStatsCommand(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /combat stats <player>");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[1]);
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found.");
+            return true;
+        }
+
+        if (plugin.getGuiManager() != null) {
+            plugin.getGuiManager().openMainStatsGUI((Player) sender, target.getUniqueId());
+            sender.sendMessage("§aOpening statistics for " + target.getName());
+        }
+
+        return true;
+    }
+
+    /**
      * Shows last combat stats for a player with enhanced error handling.
      *
      * @param player The admin player executing the command
@@ -174,6 +213,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
             if (target == null) {
                 player.sendMessage("§cPlayer '" + targetName + "' is not online.");
+                return true;
+            }
+
+            if (plugin.getGuiManager() != null) {
+                plugin.getGuiManager().openMainStatsGUI(player, target.getUniqueId());
+                player.sendMessage("§aOpening combat statistics for §e" + target.getName() + "§a.");
                 return true;
             }
 

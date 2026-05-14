@@ -24,7 +24,7 @@ public abstract class DatabaseManager implements IDatabaseManager {
     protected HikariDataSource dataSource;
     protected final String databaseType;
     
-    private static final int CURRENT_SCHEMA_VERSION = 1;
+    private static final int CURRENT_SCHEMA_VERSION = 2;
     
     public DatabaseManager(Logger logger, String databaseType) {
         this.logger = logger;
@@ -147,6 +147,19 @@ public abstract class DatabaseManager implements IDatabaseManager {
                 ")"
             );
             
+            // Weapon stats table
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS player_weapon_stats (" +
+                "player_id VARCHAR(36), " +
+                "weapon_material VARCHAR(50), " +
+                "uses INTEGER DEFAULT 0, " +
+                "total_damage DOUBLE DEFAULT 0, " +
+                "kills INTEGER DEFAULT 0, " +
+                "critical_hits INTEGER DEFAULT 0, " +
+                "PRIMARY KEY (player_id, weapon_material)" +
+                ")"
+            );
+
             // Insert initial schema version if not exists
             stmt.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (1)");
             
@@ -177,8 +190,31 @@ public abstract class DatabaseManager implements IDatabaseManager {
             stmt.setDouble(10, data.getHighestDamageInSession());
             
             stmt.executeUpdate();
+
+            // Save weapon stats
+            saveWeaponStats(conn, playerId, data.getWeaponStats());
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to save player data for " + playerId, e);
+        }
+    }
+
+    private void saveWeaponStats(Connection conn, UUID playerId, Map<String, com.muzlik.pvpcombat.data.WeaponStats> weaponStats) throws SQLException {
+        String sql = "INSERT OR REPLACE INTO player_weapon_stats " +
+                    "(player_id, weapon_material, uses, total_damage, kills, critical_hits) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (Map.Entry<String, com.muzlik.pvpcombat.data.WeaponStats> entry : weaponStats.entrySet()) {
+                com.muzlik.pvpcombat.data.WeaponStats stats = entry.getValue();
+                stmt.setString(1, playerId.toString());
+                stmt.setString(2, entry.getKey());
+                stmt.setInt(3, stats.getUses());
+                stmt.setDouble(4, stats.getTotalDamage());
+                stmt.setInt(5, stats.getKills());
+                stmt.setInt(6, stats.getCriticalHits());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
         }
     }
     
@@ -209,6 +245,9 @@ public abstract class DatabaseManager implements IDatabaseManager {
                 data.setLongestCombo(rs.getInt("longest_combo"));
                 data.setHighestDamageInSession(rs.getDouble("highest_damage_in_session"));
                 
+                // Load weapon stats
+                loadWeaponStats(conn, playerId, data);
+
                 return data;
             }
         } catch (SQLException e) {
@@ -254,6 +293,12 @@ public abstract class DatabaseManager implements IDatabaseManager {
             }
             
             stmt.executeBatch();
+
+            // Save weapon stats for all players in batch
+            for (Map.Entry<UUID, PlayerCombatData> entry : dataMap.entrySet()) {
+                saveWeaponStats(conn, entry.getKey(), entry.getValue().getWeaponStats());
+            }
+
             conn.commit();
             
             logger.info("Batch saved " + dataMap.size() + " player records");
@@ -262,6 +307,24 @@ public abstract class DatabaseManager implements IDatabaseManager {
         }
     }
     
+    private void loadWeaponStats(Connection conn, UUID playerId, PlayerCombatData data) throws SQLException {
+        String sql = "SELECT * FROM player_weapon_stats WHERE player_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, playerId.toString());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String material = rs.getString("weapon_material");
+                com.muzlik.pvpcombat.data.WeaponStats stats = data.getWeaponStats(material);
+                stats.setUses(rs.getInt("uses"));
+                stats.setTotalDamage(rs.getDouble("total_damage"));
+                stats.setKills(rs.getInt("kills"));
+                stats.setCriticalHits(rs.getInt("critical_hits"));
+            }
+        }
+    }
+
     @Override
     public void migrateSchema(int fromVersion, int toVersion) throws SQLException {
         logger.info("Migrating database schema from version " + fromVersion + " to " + toVersion);
@@ -269,8 +332,19 @@ public abstract class DatabaseManager implements IDatabaseManager {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
-            // Future migrations will go here
-            // For now, we only have version 1
+            if (fromVersion < 2) {
+                stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS player_weapon_stats (" +
+                    "player_id VARCHAR(36), " +
+                    "weapon_material VARCHAR(50), " +
+                    "uses INTEGER DEFAULT 0, " +
+                    "total_damage DOUBLE DEFAULT 0, " +
+                    "kills INTEGER DEFAULT 0, " +
+                    "critical_hits INTEGER DEFAULT 0, " +
+                    "PRIMARY KEY (player_id, weapon_material)" +
+                    ")"
+                );
+            }
             
             // Update schema version
             stmt.execute("INSERT INTO schema_version (version) VALUES (" + toVersion + ")");
