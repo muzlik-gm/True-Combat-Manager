@@ -98,7 +98,7 @@ public class PvPCombatPlugin extends JavaPlugin {
                 pluginManager.registerEvents();
 
                 // Register GUI Listener
-                getServer().getPluginManager().registerEvents(new com.muzlik.pvpcombat.gui.GUIListener(this, guiManager), this);
+                getServer().getPluginManager().registerEvents(new com.muzlik.pvpcombat.gui.GUIListener(guiManager), this);
 
                 getLogger().info("Events registered successfully");
             } catch (Exception e) {
@@ -130,6 +130,11 @@ public class PvPCombatPlugin extends JavaPlugin {
             }
 
             getLogger().info("PvPCombat plugin has been enabled successfully!");
+
+            // #region agent log
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H5", "PvPCombatPlugin.java:onEnable",
+                    "plugin_enabled", java.util.Map.of("combatManagerNonNull", combatManager != null));
+            // #endregion
             
         } catch (Exception e) {
             getLogger().severe("CRITICAL ERROR during plugin initialization: " + e.getMessage());

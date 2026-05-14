@@ -2,89 +2,224 @@
 # Combat GUI Configuration
 # ========================================
 
-# Settings for the main statistics GUI
+# Fills empty slots so menus look framed and tidy
+gui-ux:
+  filler-enabled: true
+  filler-material: BLACK_STAINED_GLASS_PANE
+  filler-name: " "
+
+# ----------------------------------------
+# Main Statistics GUI  (54 slots / 6 rows)
+#
+#  Row 0  [0 ][1 ][2 ][3 ][4 ][5 ][6 ][7 ][8 ]  ← border
+#  Row 1  [9 ][10][11][12][13][14][15][16][17]
+#  Row 2  [18][19][20][21][22][23][24][25][26]
+#  Row 3  [27][28][29][30][31][32][33][34][35]
+#  Row 4  [36][37][38][39][40][41][42][43][44]
+#  Row 5  [45][46][47][48][49][50][51][52][53]  ← border
+#
+#  Slot 13 → Overall Record   (GOLDEN_SWORD)
+#  Slot 21 → Damage Stats     (BLAZE_POWDER)
+#  Slot 23 → Combat Stats     (EXPERIENCE_BOTTLE)
+#  Slot 31 → Weapon Stats btn (DIAMOND_SWORD)
+# ----------------------------------------
 main-stats:
-  title: "&6&lCombat Statistics"
+  title: "&6&lCombat Stats &8| &f{player}"
   size: 54
   items:
     overall-record:
-      material: PAPER
+      material: GOLDEN_SWORD
       slot: 13
-      name: "&eOverall Record"
+      name: "&6&lOverall Record"
       lore:
-        - "&7Wins: &f{wins}"
-        - "&7Losses: &f{losses}"
-        - "&7K/D Ratio: &f{kd}"
-        - "&7Win Rate: &f{win_rate}%"
+        - ""
+        - "&7Wins:      &a{wins}"
+        - "&7Losses:    &c{losses}"
+        - "&7K/D Ratio: &e{kd}"
+        - "&7Win Rate:  &e{win_rate}%"
+        - ""
     damage-stats:
-      material: REDSTONE
-      slot: 22
-      name: "&cDamage Statistics"
+      material: BLAZE_POWDER
+      slot: 21
+      name: "&c&lDamage Statistics"
       lore:
-        - "&7Dealt: &f{damage_dealt}"
-        - "&7Received: &f{damage_received}"
-        - "&7Ratio: &f{damage_ratio}"
-        - "&7Highest Damage: &f{highest_damage}"
-    other-stats:
-      material: BOOK
+        - ""
+        - "&7Dealt:         &f{damage_dealt}"
+        - "&7Received:      &f{damage_received}"
+        - "&7Damage Ratio:  &e{damage_ratio}"
+        - "&7Highest Burst: &c{highest_damage}"
+        - ""
+    combat-stats:
+      material: EXPERIENCE_BOTTLE
       slot: 23
-      name: "&eOther Statistics"
+      name: "&b&lCombat Statistics"
       lore:
-        - "&7Total Combats: &f{total_combats}"
-        - "&7Critical Hits: &f{critical_hits}"
-        - "&7Longest Combo: &f{longest_combo}"
+        - ""
+        - "&7Total Combats:  &f{total_combats}"
+        - "&7Critical Hits:  &f{critical_hits}"
+        - "&7Longest Combo:  &f{longest_combo}"
+        - ""
     weapon-stats-button:
       material: DIAMOND_SWORD
       slot: 31
-      name: "&aWeapon Statistics"
+      name: "&a&lWeapon Statistics"
       lore:
-        - "&7Click to view detailed"
-        - "&7stats for each weapon!"
+        - ""
+        - "&7View per-weapon breakdown:"
+        - "&7damage, kills, and usage."
+        - ""
+        - "&e» Click to open"
+        - ""
 
-# Settings for the weapon-specific statistics GUI
+# ----------------------------------------
+# Weapon Statistics GUI  (54 slots / 6 rows)
+#
+#  Row 1  Swords  → slots 10 11 12 13 14
+#  Row 2  Axes    → slots 19 20 21
+#  Row 3  Ranged  → slots 28 29 30
+#  Row 5  Back    → slot  49
+# ----------------------------------------
 weapon-stats:
-  title: "&a&lWeapon Statistics"
+  title: "&a&lWeapon Stats &8| &f{player}"
   size: 54
-  # Weapons to display in the GUI
-  # You can add or remove weapons here
+  back-button:
+    material: ARROW
+    slot: 49
+    name: "&f\u00AB &7Back to Overview"
+    lore:
+      - ""
+      - "&7Return to the main stats screen."
+      - ""
   weapons:
-    diamond_sword:
-      material: DIAMOND_SWORD
-      slot: 10
-      name: "&bDiamond Sword Stats"
     netherite_sword:
       material: NETHERITE_SWORD
+      slot: 10
+      name: "&8&lNetherite Sword"
+    diamond_sword:
+      material: DIAMOND_SWORD
       slot: 11
-      name: "&8Netherite Sword Stats"
+      name: "&b&lDiamond Sword"
     iron_sword:
       material: IRON_SWORD
       slot: 12
-      name: "&fIron Sword Stats"
-    diamond_axe:
-      material: DIAMOND_AXE
-      slot: 19
-      name: "&bDiamond Axe Stats"
+      name: "&7&lIron Sword"
+    stone_sword:
+      material: STONE_SWORD
+      slot: 13
+      name: "&8&lStone Sword"
+    golden_sword:
+      material: GOLDEN_SWORD
+      slot: 14
+      name: "&6&lGolden Sword"
     netherite_axe:
       material: NETHERITE_AXE
+      slot: 19
+      name: "&8&lNetherite Axe"
+    diamond_axe:
+      material: DIAMOND_AXE
       slot: 20
-      name: "&8Netherite Axe Stats"
+      name: "&b&lDiamond Axe"
+    iron_axe:
+      material: IRON_AXE
+      slot: 21
+      name: "&7&lIron Axe"
     bow:
       material: BOW
       slot: 28
-      name: "&eBow Stats"
+      name: "&e&lBow"
     crossbow:
       material: CROSSBOW
       slot: 29
-      name: "&eCrossbow Stats"
+      name: "&6&lCrossbow"
     trident:
       material: TRIDENT
       slot: 30
-      name: "&3Trident Stats"
+      name: "&3&lTrident"
 
-# Common lore for weapon items in the GUI
-# Available placeholders: {damage}, {kills}, {uses}, {avg_damage}
+# ----------------------------------------
+# Server-wide Stats GUI  (54 slots / 6 rows)
+#
+#  Row 1  Slot 13 → Network Snapshot   (NETHER_STAR)   centre
+#  Row 2  Slot 20 → Damage Totals      (FIRE_CHARGE)   left
+#  Row 2  Slot 22 → W/L Overview       (BEACON)        centre
+#  Row 2  Slot 24 → Per-Player Avgs    (WRITABLE_BOOK) right
+#  Row 3  Slot 31 → Weapon Stats btn   (DIAMOND_SWORD)
+#  Row 5  Slot 49 → Close              (BARRIER)
+#
+# Placeholders: {total_players} {active_sessions} {total_combats}
+# {total_wins} {total_losses} {total_damage_dealt} {total_damage_received}
+# {combat_time} {win_rate_global} {avg_combats} {avg_damage}
+# ----------------------------------------
+server-stats:
+  title: "&5&lServer Combat Overview"
+  size: 54
+  close-button:
+    material: BARRIER
+    slot: 49
+    name: "&c&lClose"
+    lore:
+      - ""
+      - "&7Click to close this menu."
+      - ""
+  weapon-stats-button:
+    material: DIAMOND_SWORD
+    slot: 31
+    name: "&a&lWeapon Statistics"
+    lore:
+      - ""
+      - "&7View per-weapon breakdown"
+      - "&7across all tracked players."
+      - ""
+      - "&e» Click to open"
+      - ""
+  items:
+    overview:
+      material: NETHER_STAR
+      slot: 13
+      name: "&d&lNetwork Snapshot"
+      lore:
+        - ""
+        - "&7Tracked players:        &f{total_players}"
+        - "&7Active combat sessions: &f{active_sessions}"
+        - ""
+        - "&8\u00BB &7Total Combats:   &f{total_combats}"
+        - "&8\u00BB &7Global Win Rate: &f{win_rate_global}%"
+        - ""
+    damage:
+      material: FIRE_CHARGE
+      slot: 20
+      name: "&c&lServer Damage Totals"
+      lore:
+        - ""
+        - "&7Dealt:       &f{total_damage_dealt}"
+        - "&7Received:    &f{total_damage_received}"
+        - "&7Combat Time: &f{combat_time}"
+        - ""
+    wl:
+      material: BEACON
+      slot: 22
+      name: "&a&lWins &7/ &c&lLosses"
+      lore:
+        - ""
+        - "&aWins:   &f{total_wins}"
+        - "&cLosses: &f{total_losses}"
+        - ""
+    averages:
+      material: WRITABLE_BOOK
+      slot: 24
+      name: "&e&lPer-Player Averages"
+      lore:
+        - ""
+        - "&7Combats / player:      &f{avg_combats}"
+        - "&7Damage dealt / player: &f{avg_damage}"
+        - ""
+
+# Common lore applied to every weapon item in the weapon-stats GUI
+# Placeholders: {damage} {kills} {uses} {avg_damage}
 weapon-lore:
+  - ""
   - "&7Total Damage: &f{damage}"
-  - "&7Total Kills: &f{kills}"
-  - "&7Total Usage: &f{uses}"
-  - "&7Avg Damage: &f{avg_damage}"
+  - "&7Kills:        &a{kills}"
+  - "&7Times Used:   &f{uses}"
+  - "&7Avg Damage:   &e{avg_damage}"
+  - ""

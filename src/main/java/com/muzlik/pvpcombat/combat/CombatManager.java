@@ -139,17 +139,33 @@ public class CombatManager implements ICombatManager {
                 CombatSession cachedSession = (CombatSession) cacheManager.get("combat-states", cacheKey);
 
                 if (cachedSession != null && cachedSession.isActive()) {
+                    // #region agent log
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                            "blocked_cache_active", java.util.Map.of("cacheKey", cacheKey));
+                    // #endregion
                     return null; // Already in combat
                 }
 
                 // Check if either player is already in combat
                 if (isInCombatUnsafe(attacker) || isInCombatUnsafe(defender)) {
+                    // #region agent log
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                            "blocked_already_in_combat", java.util.Map.of(
+                                    "attackerIn", isInCombatUnsafe(attacker),
+                                    "defenderIn", isInCombatUnsafe(defender)));
+                    // #endregion
                     return null; // Cannot start new combat
                 }
                 
                 // Check if either player is in a safe zone
                 if (isInSafeZone(attacker) || isInSafeZone(defender)) {
                     plugin.getLogger().info("Combat prevented: One or both players are in a safe zone");
+                    // #region agent log
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                            "blocked_safezone", java.util.Map.of(
+                                    "attackerSz", isInSafeZone(attacker),
+                                    "defenderSz", isInSafeZone(defender)));
+                    // #endregion
                     return null; // Cannot start combat in safe zone
                 }
 
@@ -195,6 +211,10 @@ public class CombatManager implements ICombatManager {
                     combatLogger.logCombatStart(sessionId, attacker, defender), "combat-processing");
 
                 plugin.getLogger().info("Combat started between " + attacker.getName() + " and " + defender.getName());
+                // #region agent log
+                com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                        "combat_started", java.util.Map.of("sessionId", sessionId.toString()));
+                // #endregion
                 return sessionId;
             });
         } finally {
@@ -361,6 +381,13 @@ public class CombatManager implements ICombatManager {
      */
     private void startTimerTask(CombatSession session) {
         UUID sessionId = session.getSessionId();
+
+        // #region agent log
+        com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H1", "CombatManager.java:startTimerTask",
+                "scheduling_timer", java.util.Map.of(
+                        "thread", Thread.currentThread().getName(),
+                        "sessionId", sessionId.toString()));
+        // #endregion
 
         BukkitRunnable timerTask = new BukkitRunnable() {
             @Override

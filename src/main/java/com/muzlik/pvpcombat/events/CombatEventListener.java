@@ -67,8 +67,19 @@ public class CombatEventListener implements Listener {
         performanceMonitor.startOperation("entity-damage-event");
 
         try {
-            // Only handle player vs player damage
-            if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) {
+            // Only handle player vs player damage (direct hit; projectiles logged separately)
+            if (!(event.getEntity() instanceof Player)) {
+                return;
+            }
+            if (!(event.getDamager() instanceof Player)) {
+                // #region agent log
+                if (event.getDamager() != null) {
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H3", "CombatEventListener.java:onEntityDamage",
+                            "skipped_non_player_damager", java.util.Map.of(
+                                    "damagerType", event.getDamager().getClass().getSimpleName(),
+                                    "victim", ((Player) event.getEntity()).getName()));
+                }
+                // #endregion
                 return;
             }
 
@@ -156,6 +167,14 @@ public class CombatEventListener implements Listener {
             }
 
             // 1. Start or reset combat state FIRST
+            // #region agent log
+            boolean neitherInCombat = !combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender);
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H4", "CombatEventListener.java:onEntityDamage",
+                    "combat_damage_branch", java.util.Map.of(
+                            "neitherInCombat", neitherInCombat,
+                            "attacker", attacker.getName(),
+                            "defender", defender.getName()));
+            // #endregion
             if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
                 // Switch creative mode players to survival
                 if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
@@ -478,6 +497,12 @@ public class CombatEventListener implements Listener {
         if (!wasTracked) {
             // Resume combat state from cache if exists
             Object combatState = cacheManager.get("combat-state", player.getUniqueId().toString());
+            // #region agent log
+            com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H6", "CombatEventListener.java:onPlayerJoin",
+                    "join_resume_cache", java.util.Map.of(
+                            "wasTracked", wasTracked,
+                            "combatStatePresent", combatState != null));
+            // #endregion
             if (combatState != null) {
                 player.sendMessage(ChatColor.GREEN + "Combat session resumed from previous session!");
             }

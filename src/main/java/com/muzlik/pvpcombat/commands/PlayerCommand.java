@@ -53,6 +53,8 @@ public class PlayerCommand {
                     return handleStatusCommand(player);
                 case "summary":
                     return handleSummaryCommand(player);
+                case "stats":
+                    return handleStatsCommand(player);
                 case "toggle-style":
                     return handleToggleStyleCommand(player);
                 default:
@@ -174,6 +176,18 @@ public class PlayerCommand {
             player.sendMessage("§cFailed to show combat summary.");
             return true;
         }
+    }
+
+    /**
+     * Opens the player's own combat stats GUI.
+     */
+    private boolean handleStatsCommand(Player player) {
+        if (plugin.getGuiManager() != null) {
+            plugin.getGuiManager().openMainStatsGUI(player);
+        } else {
+            player.sendMessage("§cStats GUI is not available.");
+        }
+        return true;
     }
 
     /**

@@ -55,6 +55,20 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
 
             String subCommand = args[0].toLowerCase();
 
+            // /combat stats: admins → server overview, players → own stats GUI
+            if ("stats".equals(subCommand)) {
+                if (player.hasPermission("pvpcombat.admin")) {
+                    return adminCommand.onCommand(player, null, label, args);
+                } else {
+                    return playerCommand.handleCommand(player, args);
+                }
+            }
+
+            // Admins: /combat summary alone = own stats GUI (same as players). /combat summary <player> stays admin.
+            if (player.hasPermission("pvpcombat.admin") && "summary".equals(subCommand) && args.length == 1) {
+                return playerCommand.handleCommand(player, args);
+            }
+
             // Delegate to appropriate handler based on permissions and command type
             if (player.hasPermission("pvpcombat.admin") && isAdminCommand(subCommand)) {
                 return adminCommand.onCommand(player, null, label, args);
@@ -91,7 +105,7 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
      * @return true if it's a player command, false otherwise
      */
     private boolean isPlayerCommand(String subCommand) {
-        return Arrays.asList("status", "summary", "toggle-style").contains(subCommand);
+        return Arrays.asList("status", "summary", "stats", "toggle-style").contains(subCommand);
     }
 
     /**
@@ -103,14 +117,15 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
         try {
             player.sendMessage("§6=== Combat Commands ===");
             player.sendMessage("§e/combat status §7- Shows your combat state");
+            player.sendMessage("§e/combat stats §7- Opens your combat statistics");
             player.sendMessage("§e/combat summary §7- Shows your latest PvP fight summary");
             player.sendMessage("§e/combat toggle-style §7- Choose message and theme styles");
 
             if (player.hasPermission("pvpcombat.admin")) {
                 player.sendMessage("§c=== Admin Commands ===");
                 player.sendMessage("§e/combat inspect <player> §7- View real-time combat info");
-                player.sendMessage("§e/combat summary <player> §7- Access last combat stats");
-                player.sendMessage("§e/combat stats §7- View server-wide statistics");
+                player.sendMessage("§e/combat summary <player> §7- Open stats GUI for that player");
+                player.sendMessage("§e/combatadmin stats §7- Open server-wide statistics GUI");
                 player.sendMessage("§e/combat clear <player> §7- Force-end combat");
                 player.sendMessage("§e/combat reload §7- Reload configuration");
                 player.sendMessage("§e/combat debug §7- Toggle debug mode");
@@ -139,6 +154,7 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
                 // Complete subcommands based on permissions
                 completions.add("status");
                 completions.add("summary");
+                completions.add("stats");
                 completions.add("toggle-style");
 
                 if (player.hasPermission("pvpcombat.admin")) {

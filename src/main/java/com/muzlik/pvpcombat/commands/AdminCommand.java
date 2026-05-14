@@ -86,15 +86,18 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     if (args.length > 1) {
                         return handleAdminStatsCommand(sender, args);
                     }
-                    return false;
+                    if (plugin.getGuiManager() != null) {
+                        plugin.getGuiManager().openServerStatsGUI(player);
+                        player.sendMessage("§aOpened server combat overview.");
+                        return true;
+                    }
+                    return handleStatsCommand(player);
                 case "debug":
                     return handleDebugCommand(player, args);
                 case "logging":
                     return handleLoggingCommand(player, args);
                 case "protection":
                     return handleProtectionCommand(player, args);
-                case "stats_server":
-                    return handleStatsCommand(player);
                 case "clear":
                     return handleClearCommand(player, args);
                 default:
@@ -210,6 +213,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
             if (target == null) {
                 player.sendMessage("§cPlayer '" + targetName + "' is not online.");
+                return true;
+            }
+
+            if (plugin.getGuiManager() != null) {
+                plugin.getGuiManager().openMainStatsGUI(player, target.getUniqueId());
+                player.sendMessage("§aOpening combat statistics for §e" + target.getName() + "§a.");
                 return true;
             }
 
