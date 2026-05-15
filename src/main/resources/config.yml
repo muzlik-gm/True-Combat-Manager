@@ -105,33 +105,99 @@ combat:
   # Higher = More sessions allowed | 0 = No limit
   max-sessions: 100
 
-  # Combat logging protection
-  # Prevents abuse where players crash opponents to force combat log
+  # ========================================
+  # DISCONNECT PROTECTION
+  # Prevents abuse of combat-logging (disconnecting during combat).
+  # Two separate grace periods: one for bad internet, one for intentional logout.
+  # ========================================
   disconnect-protection:
-    # Enable disconnect tracking (recommended: true)
-    # When enabled, players who disconnect during combat have time to reconnect
-    # Only punished if they don't reconnect before combat timer expires
+    # Master switch – set to false to disable all grace periods (instant punishment)
     enabled: true
-    
-    # How to display grace period countdown to opponent
-    # Options: actionbar, bossbar, scoreboard
-    # actionbar = Shows above hotbar (recommended)
-    # bossbar = Shows as boss bar at top of screen
-    # scoreboard = Shows as title message
+
+    # ── How to show the countdown to the opponent ──────────────────────────
+    # Options: actionbar | bossbar | scoreboard
     display-mode: "actionbar"
-    
-    # Grace period countdown format
-    # Placeholders: {player} = disconnected player name, {time} = remaining seconds
-    grace-period-format: "&e{player} &7has &c{time}s &7to reconnect"
-    
-    # Message shown to opponent when player disconnects
-    disconnect-message: "&e{player} &cdisconnected during combat! They have &e{time} seconds &cto reconnect or they will be punished."
-    
-    # Message shown to player when they reconnect in time
-    reconnect-success-message: "&aYou reconnected in time! No combat logging penalty applied."
-    
-    # Message broadcast when player is punished for not reconnecting
-    punishment-broadcast: "&c{player} &ecombat logged and was punished for not reconnecting in time!"
+
+    # Countdown format shown to the opponent.
+    # Placeholders: {player} {time} {type}
+    # {type} = "bad internet" or "intentional"
+    grace-period-format: "&e{player} &7has &c{time}s &7to reconnect &8({type})"
+
+    # ── Bad-internet grace period ──────────────────────────────────────────
+    # Applies when the player's connection timed out / dropped unexpectedly.
+    # Detected by the quit reason containing "timed out" or "lost connection",
+    # or when the quit message is empty (server-side kick / network drop).
+    bad-internet:
+      # Enable this grace period type
+      enabled: true
+
+      # Seconds the player has to reconnect before being punished
+      # Recommended: 30–60s (generous, since it's not their fault)
+      grace-seconds: 30
+
+      # Message sent to the opponent when the player drops
+      # Placeholders: {player} {time}
+      disconnect-message: "&e{player} &clost connection! They have &e{time}s &cto reconnect."
+
+      # Message sent to the player when they reconnect in time
+      reconnect-message: "&aYou reconnected in time! No penalty applied."
+
+    # ── Intentional logout grace period ───────────────────────────────────
+    # Applies when the player pressed Disconnect or closed the game window.
+    intentional:
+      # Enable this grace period type
+      enabled: true
+
+      # Seconds the player has to reconnect before being punished
+      # Recommended: 10–15s (shorter, since it was deliberate)
+      grace-seconds: 10
+
+      # Message sent to the opponent when the player disconnects
+      # Placeholders: {player} {time}
+      disconnect-message: "&e{player} &cdisconnected! They have &e{time}s &cto reconnect or be punished."
+
+      # Message sent to the player when they reconnect in time
+      reconnect-message: "&aYou reconnected in time! No penalty applied."
+
+    # ── Repeat-logout abuse prevention ────────────────────────────────────
+    # If a player disconnects more than max-count times within window-seconds,
+    # they are killed immediately on the next logout (no grace period).
+    repeat-logout:
+      # Enable repeat-logout detection
+      enabled: true
+
+      # Maximum number of disconnects allowed within the window before kill-on-logout
+      # Example: 2 means the 3rd disconnect within the window triggers instant kill
+      max-count: 2
+
+      # Rolling time window in seconds
+      # Example: 240 = 4 minutes
+      window-seconds: 240
+
+      # Message sent to the offending player when they are killed on login
+      kill-message: "&cYou were killed for repeatedly combat-logging!"
+
+      # Message sent to the opponent when the offender is killed
+      # Placeholders: {player}
+      opponent-message: "&a{player} &ewas killed for repeatedly combat-logging!"
+
+    # ── Punishment (when grace period expires without reconnect) ──────────
+    punishment:
+      # Drop the player's inventory at their disconnect location
+      drop-inventory: true
+
+      # Kill the player when they next log in (in addition to dropping inventory)
+      # Useful for servers that want a harsher penalty
+      kill-on-punish: false
+
+      # Bypass the Totem of Undying when killing a combat logger.
+      # true  = setHealth(0) — totem cannot save them (recommended for anti-cheat)
+      # false = deal lethal damage — totem can proc and save them
+      bypass-totem: true
+
+      # Broadcast message when a player is punished
+      # Placeholders: {player}
+      broadcast: "&c{player} &ecombat-logged and was punished!"
 
   # Damage settings
   damage:

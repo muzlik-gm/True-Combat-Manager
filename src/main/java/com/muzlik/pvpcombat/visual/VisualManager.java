@@ -1,14 +1,25 @@
 package com.muzlik.pvpcombat.visual;
 
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
+import com.muzlik.pvpcombat.data.VisualPreferences;
 import com.muzlik.pvpcombat.interfaces.IConfigManager;
+import com.muzlik.pvpcombat.interfaces.IDatabaseManager;
 import com.muzlik.pvpcombat.interfaces.IVisualManager;
 import org.bukkit.entity.Player;
 import org.bukkit.Sound;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Main visual manager implementing IVisualManager interface.
  * Coordinates bossbar, action bar, and sound management.
+ *
+ * <p>Also owns the per-player {@link VisualPreferences} cache so that theme
+ * selections persist across sessions and work even when the player is not
+ * currently in combat.</p>
  */
 public class VisualManager implements IVisualManager {
 
@@ -18,6 +29,9 @@ public class VisualManager implements IVisualManager {
     private final SoundManager soundManager;
     private final ThemeManager themeManager;
     private volatile MessageFormatter messageFormatter;
+
+    /** In-memory cache of per-player visual preferences. */
+    private final Map<UUID, VisualPreferences> preferencesCache = new ConcurrentHashMap<>();
 
     public VisualManager(PvPCombatPlugin plugin, IConfigManager configManager) {
         this.plugin = plugin;
@@ -89,26 +103,124 @@ public class VisualManager implements IVisualManager {
     }
 
     /**
-      * Gets the message formatter for advanced message processing.
-      */
-     public MessageFormatter getMessageFormatter() {
-         // Lazy initialization for thread safety
-         if (messageFormatter == null) {
-             synchronized (this) {
-                 if (messageFormatter == null) {
-                     messageFormatter = new MessageFormatter(plugin);
-                 }
-             }
-         }
-         return messageFormatter;
-     }
+     * Gets the message formatter for advanced message processing.
+     */
+    public MessageFormatter getMessageFormatter() {
+        if (messageFormatter == null) {
+            synchronized (this) {
+                if (messageFormatter == null) {
+                    messageFormatter = new MessageFormatter(plugin);
+                }
+            }
+        }
+        return messageFormatter;
+    }
+
+    // ── Per-player preferences ────────────────────────────────────────────
+
+    /**
+     * Returns the cached preferences for a player, loading from DB if needed.
+     * Never returns null – falls back to defaults.
+     */
+    public VisualPreferences getPreferences(UUID playerId) {
+        return preferencesCache.computeIfAbsent(playerId, id -> {
+            IDatabaseManager db = getDatabase();
+            if (db != null) {
+                try {
+                    return db.loadVisualPreferences(id);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("[VisualManager] Could not load preferences for "
+                        + id + ": " + e.getMessage());
+                }
+            }
+            return new VisualPreferences(id);
+        });
+    }
+
+    /**
+     * Saves preferences to the cache and asynchronously persists to DB.
+     */
+    public void savePreferences(UUID playerId, VisualPreferences prefs) {
+        preferencesCache.put(playerId, prefs);
+        IDatabaseManager db = getDatabase();
+        if (db != null) {
+            org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                try {
+                    db.saveVisualPreferences(playerId, prefs);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("[VisualManager] Could not save preferences for "
+                        + playerId + ": " + e.getMessage());
+                }
+            });
+        }
+    }
+
+    /**
+     * Sets the player's preferred theme, persists it, and applies it to any
+     * active combat session immediately.
+     *
+     * @param player    the player
+     * @param themeName the theme to apply
+     * @return true if the theme exists and was applied
+     */
+    public boolean setPlayerTheme(Player player, String themeName) {
+        // Validate theme exists
+        if (themeManager.getTheme(themeName) == null) {
+            return false;
+        }
+
+        UUID id = player.getUniqueId();
+        VisualPreferences prefs = getPreferences(id);
+        prefs.setSelectedTheme(themeName);
+        savePreferences(id, prefs);
+
+        // Apply to active session if the player is in combat
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player)) {
+            com.muzlik.pvpcombat.combat.CombatManager cm =
+                (com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager();
+            for (com.muzlik.pvpcombat.data.CombatSession s : cm.getActiveSessions().values()) {
+                if (s.involvesPlayer(player)) {
+                    bossBarManager.applyTheme(s.getSessionId().toString(), themeName, true);
+                    s.setCurrentTheme(themeName);
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the list of available themes from config, with a sensible default.
+     */
+    public List<String> getAvailableThemes() {
+        List<String> themes = plugin.getConfig().getStringList("visual.themes.available");
+        if (themes == null || themes.isEmpty()) {
+            return java.util.Arrays.asList("minimal", "fire", "ice", "neon", "dark", "clean");
+        }
+        return themes;
+    }
+
+    /**
+     * Returns the player's currently selected theme name.
+     * Falls back to the server default theme if the player has no preference set.
+     */
+    public String getPlayerTheme(UUID playerId) {
+        VisualPreferences prefs = preferencesCache.get(playerId);
+        if (prefs != null && prefs.getSelectedTheme() != null
+                && !prefs.getSelectedTheme().equals("default")) {
+            return prefs.getSelectedTheme();
+        }
+        return plugin.getConfig().getString("visual.themes.default-theme", "clean");
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
 
     /**
      * Initializes all visual managers.
      */
     public void initialize() {
         themeManager.loadThemes();
-        // SoundManager loads profiles automatically in constructor
     }
 
     /**
@@ -127,5 +239,14 @@ public class VisualManager implements IVisualManager {
         bossBarManager.reloadConfig();
         soundManager.reloadConfig();
         plugin.getLogger().info("VisualManager configuration reloaded");
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private IDatabaseManager getDatabase() {
+        if (plugin.getPluginManager() != null) {
+            return plugin.getPluginManager().getDatabaseManager();
+        }
+        return null;
     }
 }

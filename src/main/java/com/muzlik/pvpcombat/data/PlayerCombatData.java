@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import com.muzlik.pvpcombat.data.CombatEvent;
 import com.muzlik.pvpcombat.data.CombatStatistics;
 import com.muzlik.pvpcombat.data.DamageInfo;
@@ -13,24 +15,33 @@ import com.muzlik.pvpcombat.data.WeaponStats;
 
 /**
  * Model class for storing player-specific combat data and statistics.
+ *
+ * <p>All numeric counters that are updated from multiple threads
+ * (damage events, win/loss recording) use atomic types to prevent
+ * lost-update races under concurrent access.</p>
  */
 public class PlayerCombatData {
     private final UUID playerId;
-    private int totalCombats;
-    private int wins;
-    private int losses;
-    private long totalCombatTime;
-    private double totalDamageDealt;
-    private double totalDamageReceived;
+
+    // ── Atomic counters (updated from multiple threads) ───────────────────
+    private final AtomicInteger totalCombats       = new AtomicInteger(0);
+    private final AtomicInteger wins               = new AtomicInteger(0);
+    private final AtomicInteger losses             = new AtomicInteger(0);
+    private final AtomicLong    totalCombatTimeMs  = new AtomicLong(0);
+    // Doubles stored as long bits via AtomicLong for lock-free CAS updates
+    private final AtomicLong    totalDamageDealtBits    = new AtomicLong(Double.doubleToLongBits(0.0));
+    private final AtomicLong    totalDamageReceivedBits = new AtomicLong(Double.doubleToLongBits(0.0));
+    private final AtomicInteger criticalHits       = new AtomicInteger(0);
+    private final AtomicLong    lastActivityMs     = new AtomicLong(System.currentTimeMillis());
+
+    // ── Non-atomic fields (accessed on main thread only) ──────────────────
     private final Map<String, Integer> weaponUsage;
     private LocalDateTime lastCombat;
     private RestrictionData restrictionData;
     private List<CombatEvent> events = new ArrayList<>();
     private CombatStatistics stats = new CombatStatistics(null);
-    private long lastActivity = System.currentTimeMillis();
-    
-    // Enhanced tracking fields
-    private int criticalHits;
+
+    // Enhanced tracking (main-thread only)
     private int longestCombo;
     private double highestDamageInSession;
     private final Map<String, WeaponStats> weaponStats;
@@ -41,140 +52,136 @@ public class PlayerCombatData {
         this.weaponStats = new HashMap<>();
         this.lastCombat = LocalDateTime.now();
         this.restrictionData = new RestrictionData(playerId);
-        this.criticalHits = 0;
         this.longestCombo = 0;
         this.highestDamageInSession = 0.0;
     }
 
-    // Getters and setters
+    // ── Getters / setters ─────────────────────────────────────────────────
+
     public UUID getPlayerId() { return playerId; }
 
-    public int getTotalCombats() { return totalCombats; }
-    public void setTotalCombats(int totalCombats) { this.totalCombats = totalCombats; }
-    public void incrementCombats() { this.totalCombats++; }
+    // totalCombats
+    public int  getTotalCombats()              { return totalCombats.get(); }
+    public void setTotalCombats(int v)         { totalCombats.set(v); }
+    public void incrementCombats()             { totalCombats.incrementAndGet(); }
 
-    public int getWins() { return wins; }
-    public void setWins(int wins) { this.wins = wins; }
-    public void incrementWins() { this.wins++; }
+    // wins
+    public int  getWins()                      { return wins.get(); }
+    public void setWins(int v)                 { wins.set(v); }
+    public void incrementWins()                { wins.incrementAndGet(); }
 
-    public int getLosses() { return losses; }
-    public void setLosses(int losses) { this.losses = losses; }
-    public void incrementLosses() { this.losses++; }
+    // losses
+    public int  getLosses()                    { return losses.get(); }
+    public void setLosses(int v)               { losses.set(v); }
+    public void incrementLosses()              { losses.incrementAndGet(); }
 
-    public long getTotalCombatTime() { return totalCombatTime; }
-    public void setTotalCombatTime(long totalCombatTime) { this.totalCombatTime = totalCombatTime; }
-    public void addCombatTime(long time) { this.totalCombatTime += time; }
+    // totalCombatTime
+    public long getTotalCombatTime()           { return totalCombatTimeMs.get(); }
+    public void setTotalCombatTime(long v)     { totalCombatTimeMs.set(v); }
+    public void addCombatTime(long ms)         { totalCombatTimeMs.addAndGet(ms); }
 
-    public double getTotalDamageDealt() { return totalDamageDealt; }
-    public void setTotalDamageDealt(double totalDamageDealt) { this.totalDamageDealt = totalDamageDealt; }
-    public void addDamageDealt(double damage) { this.totalDamageDealt += damage; }
+    // totalDamageDealt — CAS loop for atomic double add
+    public double getTotalDamageDealt() {
+        return Double.longBitsToDouble(totalDamageDealtBits.get());
+    }
+    public void setTotalDamageDealt(double v) {
+        totalDamageDealtBits.set(Double.doubleToLongBits(v));
+    }
+    public void addDamageDealt(double damage) {
+        totalDamageDealtBits.updateAndGet(bits ->
+            Double.doubleToLongBits(Double.longBitsToDouble(bits) + damage));
+    }
 
-    public double getTotalDamageReceived() { return totalDamageReceived; }
-    public void setTotalDamageReceived(double totalDamageReceived) { this.totalDamageReceived = totalDamageReceived; }
-    public void addDamageReceived(double damage) { this.totalDamageReceived += damage; }
+    // totalDamageReceived
+    public double getTotalDamageReceived() {
+        return Double.longBitsToDouble(totalDamageReceivedBits.get());
+    }
+    public void setTotalDamageReceived(double v) {
+        totalDamageReceivedBits.set(Double.doubleToLongBits(v));
+    }
+    public void addDamageReceived(double damage) {
+        totalDamageReceivedBits.updateAndGet(bits ->
+            Double.doubleToLongBits(Double.longBitsToDouble(bits) + damage));
+    }
+
+    // criticalHits
+    public int  getCriticalHits()              { return criticalHits.get(); }
+    public void setCriticalHits(int v)         { criticalHits.set(v); }
+    public void incrementCriticalHits()        { criticalHits.incrementAndGet(); }
+
+    // lastActivity
+    public long getLastActivity()              { return lastActivityMs.get(); }
+    public void updateLastActivity(long time)  { lastActivityMs.set(time); }
+
+    // ── Non-atomic fields ─────────────────────────────────────────────────
 
     public Map<String, Integer> getWeaponUsage() { return weaponUsage; }
     public void incrementWeaponUsage(String weaponType) {
-        weaponUsage.put(weaponType, weaponUsage.getOrDefault(weaponType, 0) + 1);
+        weaponUsage.merge(weaponType, 1, Integer::sum);
     }
 
-    public LocalDateTime getLastCombat() { return lastCombat; }
-    public void setLastCombat(LocalDateTime lastCombat) { this.lastCombat = lastCombat; }
+    public LocalDateTime getLastCombat()                    { return lastCombat; }
+    public void setLastCombat(LocalDateTime lastCombat)     { this.lastCombat = lastCombat; }
 
-    public RestrictionData getRestrictionData() { return restrictionData; }
-    public void setRestrictionData(RestrictionData restrictionData) { this.restrictionData = restrictionData; }
+    public RestrictionData getRestrictionData()             { return restrictionData; }
+    public void setRestrictionData(RestrictionData r)       { this.restrictionData = r; }
 
-    public List<CombatEvent> getEvents() { return events; }
-
-    public CombatStatistics getStats() { return stats; }
-
-    public long getLastActivity() { return lastActivity; }
-
-    public void updateLastActivity(long time) { this.lastActivity = time; }
+    public List<CombatEvent> getEvents()                    { return events; }
+    public CombatStatistics  getStats()                     { return stats; }
 
     public void clearRestrictions() {
-        if (restrictionData != null) {
-            restrictionData.clearAllRestrictions();
-        }
+        if (restrictionData != null) restrictionData.clearAllRestrictions();
     }
-    
-    // Enhanced tracking getters and setters
-    public int getCriticalHits() { return criticalHits; }
-    public void setCriticalHits(int criticalHits) { this.criticalHits = criticalHits; }
-    public void incrementCriticalHits() { this.criticalHits++; }
-    
-    public int getLongestCombo() { return longestCombo; }
-    public void setLongestCombo(int longestCombo) { this.longestCombo = longestCombo; }
+
+    // longestCombo
+    public int  getLongestCombo()              { return longestCombo; }
+    public void setLongestCombo(int v)         { this.longestCombo = v; }
     public void updateLongestCombo(int combo) {
-        if (combo > this.longestCombo) {
-            this.longestCombo = combo;
-        }
+        if (combo > longestCombo) longestCombo = combo;
     }
-    
-    public double getHighestDamageInSession() { return highestDamageInSession; }
-    public void setHighestDamageInSession(double highestDamageInSession) { 
-        this.highestDamageInSession = highestDamageInSession; 
+
+    // highestDamageInSession
+    public double getHighestDamageInSession()          { return highestDamageInSession; }
+    public void   setHighestDamageInSession(double v)  { this.highestDamageInSession = v; }
+    public void   updateHighestDamage(double damage) {
+        if (damage > highestDamageInSession) highestDamageInSession = damage;
     }
-    public void updateHighestDamage(double damage) {
-        if (damage > this.highestDamageInSession) {
-            this.highestDamageInSession = damage;
-        }
-    }
-    
-    // Weapon stats methods
-    public Map<String, WeaponStats> getWeaponStats() {
-        return weaponStats;
-    }
-    
+
+    // weaponStats
+    public Map<String, WeaponStats> getWeaponStats()           { return weaponStats; }
     public WeaponStats getWeaponStats(String weaponMaterial) {
         return weaponStats.computeIfAbsent(weaponMaterial, WeaponStats::new);
     }
-    
+
     public void recordDamageWithWeapon(DamageInfo damageInfo) {
-        String material = damageInfo.getWeaponMaterial() != null ? damageInfo.getWeaponMaterial().name() : "AIR";
-        WeaponStats stats = getWeaponStats(material);
-        stats.recordHit(damageInfo.getAmount(), damageInfo.isCritical());
-        
-        if (damageInfo.isCritical()) {
-            incrementCriticalHits();
-        }
-        
+        String material = damageInfo.getWeaponMaterial() != null
+            ? damageInfo.getWeaponMaterial().name() : "AIR";
+        WeaponStats ws = getWeaponStats(material);
+        ws.recordHit(damageInfo.getAmount(), damageInfo.isCritical());
+        if (damageInfo.isCritical()) incrementCriticalHits();
         addDamageDealt(damageInfo.getAmount());
         updateHighestDamage(damageInfo.getAmount());
     }
-    
+
     public void recordKillWithWeapon(String weaponMaterial) {
-        WeaponStats stats = getWeaponStats(weaponMaterial);
-        stats.recordKill();
+        getWeaponStats(weaponMaterial).recordKill();
     }
-    
-    /**
-     * Calculates and returns the K/D ratio.
-     */
+
+    // ── Computed stats ────────────────────────────────────────────────────
+
     public double getKDRatio() {
-        if (losses == 0) {
-            return wins;
-        }
-        return (double) wins / losses;
+        int l = losses.get();
+        return l == 0 ? wins.get() : (double) wins.get() / l;
     }
-    
-    /**
-     * Calculates and returns the win rate percentage.
-     */
+
     public double getWinRate() {
-        if (totalCombats == 0) {
-            return 0.0;
-        }
-        return ((double) wins / totalCombats) * 100.0;
+        int tc = totalCombats.get();
+        return tc == 0 ? 0.0 : ((double) wins.get() / tc) * 100.0;
     }
-    
-    /**
-     * Calculates and returns the damage ratio (dealt/received).
-     */
+
     public double getDamageRatio() {
-        if (totalDamageReceived == 0) {
-            return totalDamageDealt > 0 ? totalDamageDealt : 0.0;
-        }
-        return totalDamageDealt / totalDamageReceived;
+        double recv = getTotalDamageReceived();
+        double dealt = getTotalDamageDealt();
+        return recv == 0 ? (dealt > 0 ? dealt : 0.0) : dealt / recv;
     }
 }

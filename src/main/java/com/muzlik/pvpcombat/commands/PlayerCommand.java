@@ -192,83 +192,58 @@ public class PlayerCommand {
 
     /**
      * Handles the toggle-style subcommand.
+     * Works both in and out of combat. The chosen theme is persisted per-player.
      */
     private boolean handleToggleStyleCommand(Player player) {
         try {
-            // Get available themes from config
-            java.util.List<String> availableThemes = plugin.getConfig().getStringList("visual.themes.available");
-            
-            if (availableThemes.isEmpty()) {
-                availableThemes = java.util.Arrays.asList("minimal", "fire", "ice", "neon", "dark", "clean");
-            }
-
-            // Check if player is in combat
-            if (!plugin.getCombatManager().isInCombat(player)) {
-                player.sendMessage("§eYou are not in combat. Theme will apply when you enter combat.");
-                player.sendMessage("§7Available styles: §f" + String.join(", ", availableThemes));
-                
-                // Show theme preview
-                String defaultTheme = plugin.getConfig().getString("visual.themes.default-theme", "clean");
-                int currentIndex = availableThemes.indexOf(defaultTheme);
-                if (currentIndex == -1) currentIndex = 0;
-                int nextIndex = (currentIndex + 1) % availableThemes.size();
-                String nextTheme = availableThemes.get(nextIndex);
-                
-                // Update default theme in config for next combat
-                plugin.getConfig().set("visual.themes.default-theme", nextTheme);
-                
-                player.sendMessage("§aNext combat will use theme: §e" + nextTheme);
+            com.muzlik.pvpcombat.visual.VisualManager vm = getVisualManager();
+            if (vm == null) {
+                player.sendMessage("§cVisual system is not available.");
                 return true;
             }
 
-            // Get player's current session
-            com.muzlik.pvpcombat.data.CombatSession session = null;
-            for (com.muzlik.pvpcombat.data.CombatSession s : ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager()).getActiveSessions().values()) {
-                if (s.involvesPlayer(player)) {
-                    session = s;
-                    break;
-                }
-            }
-            
-            if (session == null) {
-                player.sendMessage("§cCould not find your combat session!");
-                return true;
-            }
+            java.util.List<String> availableThemes = vm.getAvailableThemes();
 
-            // Get current theme from session
-            String currentTheme = session.getCurrentTheme();
-            if (currentTheme == null || currentTheme.isEmpty()) {
-                currentTheme = plugin.getConfig().getString("visual.themes.default-theme", "clean");
-            }
-            
-            // Find next theme in the list
+            // Determine current theme for this player
+            String currentTheme = vm.getPlayerTheme(player.getUniqueId());
             int currentIndex = availableThemes.indexOf(currentTheme);
-            if (currentIndex == -1) {
-                currentIndex = 0; // Default to first theme if current not found
-            }
+            if (currentIndex == -1) currentIndex = 0;
+
+            // Cycle to next theme
             int nextIndex = (currentIndex + 1) % availableThemes.size();
             String nextTheme = availableThemes.get(nextIndex);
 
-            // Apply the new theme
-            com.muzlik.pvpcombat.visual.BossBarManager bossBarManager = 
-                ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager()).getVisualManager().getBossBarManager();
-            bossBarManager.applyTheme(session.getSessionId().toString(), nextTheme, true);
-            session.setCurrentTheme(nextTheme);
-
-            // Get theme details to show what changed
-            com.muzlik.pvpcombat.visual.ThemeManager.Theme theme = 
-                ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager()).getVisualManager()
-                    .getThemeManager().getTheme(nextTheme);
-            
-            // Send confirmation message with theme details
-            player.sendMessage("§6=== Theme Changed ===");
-            player.sendMessage("§aNew Theme: §e" + nextTheme);
-            if (theme != null) {
-                player.sendMessage("§7Color: §f" + theme.getBossBarColor().name());
-                player.sendMessage("§7Style: §f" + theme.getBossBarStyle().name());
+            // Apply + persist via VisualManager
+            boolean applied = vm.setPlayerTheme(player, nextTheme);
+            if (!applied) {
+                player.sendMessage("§cTheme '" + nextTheme + "' is not available.");
+                return true;
             }
-            player.sendMessage("§7Available: §f" + String.join(", ", availableThemes));
-            
+
+            // Get theme details for the confirmation message
+            com.muzlik.pvpcombat.visual.ThemeManager.Theme theme = vm.getThemeManager().getTheme(nextTheme);
+
+            boolean inCombat = plugin.getCombatManager() != null
+                && plugin.getCombatManager().isInCombat(player);
+
+            player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+            player.sendMessage("§e§lTheme Changed");
+            player.sendMessage("");
+            player.sendMessage("§7Theme:  §f" + nextTheme);
+            if (theme != null) {
+                player.sendMessage("§7Color:  §f" + theme.getBossBarColor().name());
+                player.sendMessage("§7Style:  §f" + theme.getBossBarStyle().name());
+                player.sendMessage("§7Sound:  §f" + theme.getSoundProfile());
+            }
+            player.sendMessage("");
+            if (inCombat) {
+                player.sendMessage("§a✓ Applied to your active combat session.");
+            } else {
+                player.sendMessage("§a✓ Saved. Will apply when you enter combat.");
+            }
+            player.sendMessage("§7Available: §f" + String.join("§7, §f", availableThemes));
+            player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+
             return true;
         } catch (Exception e) {
             plugin.getLogger().severe("Error toggling style: " + e.getMessage());
@@ -276,5 +251,13 @@ public class PlayerCommand {
             player.sendMessage("§cFailed to toggle style.");
             return true;
         }
+    }
+
+    /** Safely retrieves the VisualManager, returning null if unavailable. */
+    private com.muzlik.pvpcombat.visual.VisualManager getVisualManager() {
+        if (plugin.getVisualManager() instanceof com.muzlik.pvpcombat.visual.VisualManager) {
+            return (com.muzlik.pvpcombat.visual.VisualManager) plugin.getVisualManager();
+        }
+        return null;
     }
 }

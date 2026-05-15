@@ -181,6 +181,14 @@ public class CombatManager implements ICombatManager {
                 // Register session with lag manager for performance monitoring
                 lagManager.registerSession(sessionId);
 
+                // Apply player's saved theme preference to the session
+                VisualManager vm = visualManager;
+                if (vm != null) {
+                    String attackerTheme = vm.getPlayerTheme(attacker.getUniqueId());
+                    // Use attacker's theme as the session theme (attacker initiated combat)
+                    session.setCurrentTheme(attackerTheme);
+                }
+
                 // Start timer task asynchronously
                 AsyncUtils.runAsync(plugin, () -> startTimerTask(session), "combat-processing");
 
@@ -286,11 +294,20 @@ public class CombatManager implements ICombatManager {
                     }
 
                     // Clear visual elements (keep on main thread)
+                    // Guard against offline players (e.g. after grace period expires)
                     AsyncUtils.runSync(plugin, () -> {
-                        visualManager.clearVisuals(session.getAttacker());
-                        visualManager.clearVisuals(session.getDefender());
-                        visualManager.getSoundManager().playCombatEndSound(session.getAttacker());
-                        visualManager.getSoundManager().playCombatEndSound(session.getDefender());
+                        Player attacker = session.getAttacker();
+                        Player defender = session.getDefender();
+                        if (attacker.isOnline()) {
+                            visualManager.clearVisuals(attacker);
+                            visualManager.getSoundManager().playCombatEndSound(attacker);
+                        }
+                        if (defender.isOnline()) {
+                            visualManager.clearVisuals(defender);
+                            visualManager.getSoundManager().playCombatEndSound(defender);
+                        }
+                        // Always clear the bossbar by session ID regardless of online status
+                        visualManager.getBossBarManager().clearBossBar(sessionId.toString());
                     });
 
                     // Fire CombatEndEvent
@@ -310,13 +327,17 @@ public class CombatManager implements ICombatManager {
                     }
 
                     // Log combat end and generate summaries asynchronously
-                    // Pass session data before it's removed
+                    // Only send summaries to players who are currently online
                     final CombatSession finalSession = session;
                     AsyncUtils.runAsync(plugin, () -> {
                         combatLogger.logCombatEnd(finalSession.getSessionId(), finalSession.getAttacker(),
                                                   finalSession.getDefender(), "Combat ended");
-                        combatLogger.generateSummary(finalSession.getSessionId(), finalSession.getAttacker(), finalSession);
-                        combatLogger.generateSummary(finalSession.getSessionId(), finalSession.getDefender(), finalSession);
+                        if (finalSession.getAttacker().isOnline()) {
+                            combatLogger.generateSummary(finalSession.getSessionId(), finalSession.getAttacker(), finalSession);
+                        }
+                        if (finalSession.getDefender().isOnline()) {
+                            combatLogger.generateSummary(finalSession.getSessionId(), finalSession.getDefender(), finalSession);
+                        }
                     }, "combat-processing");
 
                     plugin.getLogger().info("Combat ended for player " + playerId + " (Duration: " + (combatDuration / 1000) + "s)");
@@ -552,6 +573,44 @@ public class CombatManager implements ICombatManager {
             globalStats.setKills(globalStats.getKills() + sessionStats.getKills());
             globalStats.setCriticalHits(globalStats.getCriticalHits() + sessionStats.getCriticalHits());
         }
+    }
+
+    /**
+     * Silently removes a single player from the active sessions map without
+     * triggering end-of-combat logic (no summary, no stat recording).
+     *
+     * Clears the old session's bossbar so it doesn't stack when combat restarts.
+     * The opponent's action bar is left running (grace period countdown).
+     */
+    public void silentlyRemovePlayer(UUID playerId) {
+        withWriteLock(() -> {
+            CombatSession session = activeSessions.remove(playerId);
+            if (session != null) {
+                // Cancel the timer task so it stops ticking
+                BukkitTask timerTask = sessionTimers.remove(session.getSessionId());
+                if (timerTask != null) {
+                    timerTask.cancel();
+                }
+
+                // Remove the old bossbar so it doesn't stack when combat restarts.
+                // The action bar task self-cancels because isInCombat() returns false
+                // for the quitting player after silentlyRemovePlayer runs.
+                final String sessionIdStr = session.getSessionId().toString();
+                AsyncUtils.runSync(plugin, () ->
+                    visualManager.getBossBarManager().clearBossBar(sessionIdStr));
+
+                plugin.getLogger().info("[CombatManager] Silently removed " + playerId
+                    + " from session " + session.getSessionId() + " (disconnect protection active)");
+            }
+        });
+    }
+
+    /**
+     * Called by DisconnectTracker when the grace period resolves (either the player
+     * reconnected or the timer expired). Fully ends the session for the remaining player.
+     */
+    public void endCombatAfterGracePeriod(UUID remainingPlayerId) {
+        endCombat(remainingPlayerId);
     }
 
     /**

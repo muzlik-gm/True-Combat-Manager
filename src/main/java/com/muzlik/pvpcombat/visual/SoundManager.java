@@ -1,23 +1,32 @@
 package com.muzlik.pvpcombat.visual;
 
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
+import com.muzlik.pvpcombat.interfaces.IConfigManager;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Handles audio cues for combat events with theme-based sound profiles.
+ *
+ * <p>Reads sound configuration from {@link IConfigManager#getMainConfig()} so that
+ * hot-reloads via {@code /combat reload} are reflected immediately without a restart.</p>
  */
 public class SoundManager {
 
     private final PvPCombatPlugin plugin;
+    private final IConfigManager configManager;
     private final Map<String, SoundProfile> soundProfiles;
 
     public SoundManager(PvPCombatPlugin plugin) {
         this.plugin = plugin;
+        // Resolve ConfigManager so we read from the reloadable FileConfiguration
+        IConfigManager cm = plugin.getConfigManager();
+        this.configManager = cm;
         this.soundProfiles = new HashMap<>();
         loadSoundProfiles();
     }
@@ -30,17 +39,22 @@ public class SoundManager {
     }
 
     /**
-     * Plays a sound for a specific event using the given profile.
+     * Plays a sound for a specific event using the active profile.
+     * Reads the active profile name from the reloadable config each call so
+     * in-game profile changes take effect without a restart.
      */
     public void playSoundForEvent(Player player, String eventType) {
-        if (!plugin.getConfig().getBoolean("visual.sounds.enabled", true)) {
+        // Use ConfigManager's FileConfiguration so reloads are respected
+        FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
+            ? configManager.getMainConfig()
+            : plugin.getConfig();
+
+        if (!cfg.getBoolean("visual.sounds.enabled", true)) {
             return;
         }
 
-        // Get sound profile (default to "default" if not specified)
-        String profileName = plugin.getConfig().getString("visual.sounds.profile", "default");
+        String profileName = cfg.getString("visual.sounds.profile", "default");
         SoundProfile profile = soundProfiles.get(profileName);
-
         if (profile == null) {
             profile = soundProfiles.get("default");
         }
@@ -49,7 +63,7 @@ public class SoundManager {
             SoundEvent soundEvent = profile.getSoundEvent(eventType);
             if (soundEvent != null) {
                 player.playSound(player.getLocation(), soundEvent.getSound(),
-                               soundEvent.getVolume(), soundEvent.getPitch());
+                    soundEvent.getVolume(), soundEvent.getPitch());
             }
         }
     }
@@ -86,10 +100,9 @@ public class SoundManager {
      * Generic sound playing method.
      */
     public void playSound(Player player, Sound sound) {
-        if (!plugin.getConfig().getBoolean("visual.sounds.enabled", true)) {
-            return;
-        }
-
+        FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
+            ? configManager.getMainConfig() : plugin.getConfig();
+        if (!cfg.getBoolean("visual.sounds.enabled", true)) return;
         player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
     }
 
@@ -97,35 +110,47 @@ public class SoundManager {
      * Plays sound with custom volume and pitch.
      */
     public void playSound(Player player, Sound sound, float volume, float pitch) {
-        if (!plugin.getConfig().getBoolean("visual.sounds.enabled", true)) {
-            return;
-        }
-
+        FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
+            ? configManager.getMainConfig() : plugin.getConfig();
+        if (!cfg.getBoolean("visual.sounds.enabled", true)) return;
         player.playSound(player.getLocation(), sound, volume, pitch);
     }
 
     /**
      * Loads sound profiles from configuration.
+     * Always registers built-in profiles first so they are available as fallbacks,
+     * then overlays any profiles defined in config (allowing overrides).
      */
     private void loadSoundProfiles() {
         soundProfiles.clear();
 
-        // Load sound profiles from config
-        ConfigurationSection profilesSection = plugin.getConfig().getConfigurationSection("visual.sounds.profiles");
+        // Register built-ins first so they are always available
+        createBuiltInSoundProfiles();
+
+        // Overlay with config-defined profiles (allows admins to override built-ins)
+        FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
+            ? configManager.getMainConfig()
+            : plugin.getConfig();
+
+        ConfigurationSection profilesSection = cfg.getConfigurationSection("visual.sounds.profiles");
         if (profilesSection != null) {
             for (String profileName : profilesSection.getKeys(false)) {
                 ConfigurationSection profileConfig = profilesSection.getConfigurationSection(profileName);
                 if (profileConfig != null) {
                     SoundProfile profile = loadSoundProfileFromConfig(profileName, profileConfig);
-                    soundProfiles.put(profileName, profile);
+                    // Only replace built-in if the config profile has at least one valid event
+                    if (!profile.getAllSoundEvents().isEmpty()) {
+                        soundProfiles.put(profileName, profile);
+                    } else {
+                        plugin.getLogger().warning("[SoundManager] Profile '" + profileName
+                            + "' has no valid sound events – keeping built-in fallback.");
+                    }
                 }
             }
         }
 
-        // Create built-in profiles if not loaded
-        if (soundProfiles.isEmpty()) {
-            createBuiltInSoundProfiles();
-        }
+        plugin.getLogger().fine("[SoundManager] Loaded " + soundProfiles.size() + " sound profiles: "
+            + soundProfiles.keySet());
     }
 
     /**

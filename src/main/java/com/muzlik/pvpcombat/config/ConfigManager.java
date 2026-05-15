@@ -39,6 +39,7 @@ public class ConfigManager implements IConfigManager {
     private LoggingConfig loggingConfig;
     private AntiCheatConfig antiCheatConfig;
     private ReplayConfig replayConfig;
+    private DisconnectConfig disconnectConfig;
 
     // Reload listeners
     private final List<Runnable> reloadListeners;
@@ -128,6 +129,9 @@ public class ConfigManager implements IConfigManager {
     public void reloadConfig() {
         isReloading = true;
         try {
+            // Reload Bukkit's own config cache first so plugin.getConfig() stays in sync
+            plugin.reloadConfig();
+
             // Reload main configs
             mainConfig = YamlConfiguration.loadConfiguration(mainConfigFile);
             messagesConfig = YamlConfiguration.loadConfiguration(messagesConfigFile);
@@ -169,6 +173,13 @@ public class ConfigManager implements IConfigManager {
                 // Reload logging manager
                 if (plugin.getLoggingManager() != null) {
                     plugin.getLoggingManager().reloadConfig();
+                }
+
+                // Reload disconnect tracker
+                if (plugin.getCombatManager() instanceof com.muzlik.pvpcombat.combat.CombatManager) {
+                    com.muzlik.pvpcombat.combat.DisconnectTracker dt =
+                        ((com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager()).getDisconnectTracker();
+                    if (dt != null) dt.reloadConfig();
                 }
             }
 
@@ -235,7 +246,8 @@ public class ConfigManager implements IConfigManager {
             integrationConfig = new IntegrationConfig(validator, mainConfig),
             loggingConfig = new LoggingConfig(validator, mainConfig),
             antiCheatConfig = new AntiCheatConfig(validator, mainConfig),
-            replayConfig = new ReplayConfig(validator, mainConfig)
+            replayConfig = new ReplayConfig(validator, mainConfig),
+            disconnectConfig = new DisconnectConfig(validator, mainConfig)
         );
 
         // Sort by load priority and load
@@ -316,6 +328,10 @@ public class ConfigManager implements IConfigManager {
 
     public ReplayConfig getReplayConfig() {
         return replayConfig;
+    }
+
+    public DisconnectConfig getDisconnectConfig() {
+        return disconnectConfig;
     }
 
     /**

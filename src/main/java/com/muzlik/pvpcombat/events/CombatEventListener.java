@@ -292,54 +292,63 @@ public class CombatEventListener implements Listener {
         try {
             Player player = event.getPlayer();
 
-            if (combatManager.isInCombat(player)) {
-                Player opponent = combatManager.getOpponent(player);
-                
-                // Check if disconnect protection is enabled
-                boolean disconnectProtection = plugin.getConfig().getBoolean("combat.disconnect-protection.enabled", true);
-                
-                if (disconnectProtection) {
-                    // Get remaining combat time from session
-                    CombatSession session = combatManager.getActiveSessions().get(player.getUniqueId());
-                    int remainingTime = session != null ? session.getRemainingTime() : 
-                        plugin.getConfig().getInt("combat.duration", 10);
-                    
-                    if (opponent != null) {
-                        // Get message from config
-                        String message = plugin.getConfig().getString("combat.disconnect-protection.disconnect-message",
-                            "&e{player} &cdisconnected during combat! They have &e{time} seconds &cto reconnect or they will be punished.");
-                        message = ChatColor.translateAlternateColorCodes('&', message
-                            .replace("{player}", player.getName())
-                            .replace("{time}", String.valueOf(remainingTime)));
-                        opponent.sendMessage(message);
-                        
-                        plugin.getLoggingManager().log(String.format("%s disconnected during combat with %s. Tracking for %d seconds.",
-                            player.getName(), opponent.getName(), remainingTime));
-                    }
-                    
-                    // Track the disconnect instead of instantly punishing
-                    combatManager.getDisconnectTracker().onPlayerDisconnect(player, opponent, remainingTime);
-                    
-                    // End combat session (but don't punish yet)
-                    AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
-                } else {
-                    // Old behavior - instant punishment
-                    combatManager.getCombatTracker().recordLoss(player);
-                    
-                    String forfeitMessage = ChatColor.RED + player.getName() + ChatColor.YELLOW + " forfeited by logging out during combat and died!";
-                    
-                    if (opponent != null) {
-                        combatManager.getCombatTracker().recordWin(opponent);
-                        plugin.getLoggingManager().log(player.getName() + " forfeited combat. " + opponent.getName() + " wins!");
-                        opponent.sendMessage(ChatColor.GREEN + "You won! " + ChatColor.YELLOW + player.getName() + " forfeited by logging out.");
-                    }
-                    
-                    plugin.getServer().broadcastMessage(forfeitMessage);
-                    player.setHealth(0.0);
-                    plugin.getLoggingManager().log(player.getName() + " was killed for combat logging.");
-                    
-                    AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
+            if (!combatManager.isInCombat(player)) return;
+
+            Player opponent = combatManager.getOpponent(player);
+
+            // ── Determine disconnect type ─────────────────────────────────
+            // getQuitMessage() returns the chat leave message, e.g. "Steve left the game".
+            // We inspect it for network-drop keywords; anything else is intentional.
+            com.muzlik.pvpcombat.combat.DisconnectTracker.DisconnectType disconnectType;
+            String quitMsg = event.getQuitMessage() != null ? event.getQuitMessage().toLowerCase() : "";
+            if (quitMsg.contains("timed out") || quitMsg.contains("lost connection")
+                    || quitMsg.contains("disconnect.timeout") || quitMsg.contains("disconnect.genericReason")) {
+                disconnectType = com.muzlik.pvpcombat.combat.DisconnectTracker.DisconnectType.BAD_INTERNET;
+            } else {
+                // "left the game" = intentional disconnect
+                disconnectType = com.muzlik.pvpcombat.combat.DisconnectTracker.DisconnectType.INTENTIONAL;
+            }
+
+            // ── Check master switch ───────────────────────────────────────
+            boolean disconnectProtection = plugin.getConfig().getBoolean(
+                "combat.disconnect-protection.enabled", true);
+
+            if (disconnectProtection) {
+                CombatSession session = combatManager.getActiveSessions().get(player.getUniqueId());
+                int remainingTime = session != null ? session.getRemainingTime()
+                    : plugin.getConfig().getInt("combat.duration", 10);
+
+                plugin.getLoggingManager().log(String.format(
+                    "%s disconnected (%s) during combat with %s. Remaining: %ds.",
+                    player.getName(), disconnectType.name(),
+                    opponent != null ? opponent.getName() : "none", remainingTime));
+
+                // Hand off to DisconnectTracker BEFORE ending the session so the
+                // opponent reference and session data are still valid.
+                combatManager.getDisconnectTracker().onPlayerDisconnect(
+                    player, opponent, remainingTime, disconnectType);
+
+                // Silently remove only the quitting player from the session map.
+                // Called directly (we're already on the main thread in a Bukkit event).
+                // The opponent's session entry, boss bar, and action bar stay intact.
+                combatManager.silentlyRemovePlayer(player.getUniqueId());
+
+            } else {
+                // Protection disabled – instant punishment
+                combatManager.getCombatTracker().recordLoss(player);
+
+                if (opponent != null) {
+                    combatManager.getCombatTracker().recordWin(opponent);
+                    plugin.getLoggingManager().log(player.getName() + " forfeited. " + opponent.getName() + " wins!");
+                    opponent.sendMessage(ChatColor.GREEN + "You won! " + ChatColor.YELLOW
+                        + player.getName() + " forfeited by logging out.");
                 }
+
+                plugin.getServer().broadcastMessage(ChatColor.RED + player.getName()
+                    + ChatColor.YELLOW + " forfeited by logging out during combat!");
+                plugin.getLoggingManager().log(player.getName() + " was killed for combat logging.");
+
+                AsyncUtils.runSync(plugin, () -> combatManager.endCombat(player.getUniqueId()));
             }
         } finally {
             performanceMonitor.endOperation("player-quit-event");
