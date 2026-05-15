@@ -7,6 +7,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-05-15
+
+### 🖥️ Interactive GUI System
+
+This release introduces a full inventory-based GUI system for viewing combat statistics.
+
+---
+
+### ✨ New Features
+
+#### Player Stats GUI
+- `/combat stats` opens your personal combat statistics GUI
+- Displays overall record (wins, losses, K/D ratio, win rate)
+- Displays damage statistics (dealt, received, ratio, highest burst)
+- Displays combat statistics (total combats, critical hits, longest combo)
+- Weapon stats button navigates to per-weapon breakdown
+
+#### Weapon Stats GUI
+- Per-weapon breakdown organized by category
+- **Swords:** Netherite, Diamond, Iron, Stone, Golden
+- **Axes:** Netherite, Diamond, Iron
+- **Ranged:** Bow, Crossbow, Trident
+- Each weapon shows total damage, kills, uses, and average damage per hit
+- Back button returns to main stats screen
+
+#### Server Overview GUI (Admin)
+- `/combatadmin stats` opens the server-wide statistics GUI
+- Network Snapshot: tracked players, active sessions, total combats, global win rate
+- Server Damage Totals: dealt, received, total combat time
+- W/L Overview: server-wide wins and losses
+- Per-Player Averages: combats per player, damage per player
+- Weapon stats button for server-wide weapon data
+- Close button (BARRIER item)
+
+#### GUI Configuration (gui.yml)
+- Fully configurable layouts, materials, slot positions, and colors
+- Filler pane customization (material, name)
+- All item names and lore support `&` color codes
+- Placeholder support in all lore lines
+
+---
+
+### 🔧 Command Changes
+
+#### `/combat stats`
+- **Players:** Opens personal combat stats GUI
+- **Admins:** Opens server-wide statistics GUI (use `/combatadmin stats` instead for server overview)
+
+#### `/combatadmin stats`
+- Opens server-wide statistics GUI (admin only)
+
+#### `/combat summary <player>` (admin)
+- Opens the target player's stats GUI directly
+
+---
+
+### 🛠️ Technical Changes
+
+#### New Files
+- `GUIManager.java` - Core GUI rendering and navigation
+- `GUIListener.java` - Click event handling and navigation routing
+- `StatsGuiHolder.java` - Inventory holder for player stat screens
+- `ServerStatsGuiHolder.java` - Inventory holder for server overview
+- `gui.yml` - GUI layout and item configuration
+
+#### Modified Files
+- `CombatCommand.java` - Added `stats` routing for players and admins
+- `PlayerCommand.java` - Added `handleStatsCommand` for player GUI
+- `AdminCommand.java` - `stats` subcommand opens server GUI
+- `PluginManager.java` - Registers GUIManager and GUIListener
+
+---
+
+### 🐛 Bug Fixes
+
+- Some Minor Bug Fixes
+
+---
+
+### 🌍 Compatibility
+
+Same as 1.1.0:
+- **Paper** 1.18.x - 1.21.x (recommended)
+- **Spigot** 1.18.x - 1.21.x (supported)
+- **Java**: 17+ (21 recommended)
+
+---
+
+### 🔮 Migration Guide
+
+#### From 1.1.0 or Earlier
+
+1. Stop your server
+2. Replace the plugin JAR with `truecombatmanager-1.2.0.jar`
+3. Delete `plugins/TrueCombatManager/gui.yml` if it exists (will regenerate with new layout)
+4. Start your server
+
+No database changes required. All existing statistics are preserved.
+
+---
+
+**Current Version**: 1.2.0  
+**Released**: May 15, 2026  
+**Author**: muzlik  
+**Support**: https://github.com/muzlik-gm/True-Combat-Manager/issues
+
+---
+
+
 ## [1.0.2] - 2025-12-04
 
 ### 🛡️ Anti-Abuse & Combat Logging Fix

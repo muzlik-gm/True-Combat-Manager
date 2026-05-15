@@ -1,6 +1,6 @@
 # True Combat Manager
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/muzlik-gm/True-Combat-Manager)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/muzlik-gm/True-Combat-Manager)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.18--1.21-green.svg)](https://www.spigotmc.org/)
 [![Java](https://img.shields.io/badge/java-17+-orange.svg)](https://adoptium.net/)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)
@@ -63,15 +63,16 @@ For detailed setup instructions, see [INSTALLATION.md](INSTALLATION.md)
 
 ---
 
-## 📊 What's New in v1.1.0
+## 📊 What's New in v1.2.0
 
-▸ Added SQLite/MySQL database for persistent statistics  
-▸ Fixed config reload bug - all settings update instantly  
-▸ Optimized JAR size by 83.5% (14.6MB → 2.4MB)  
-▸ Enhanced admin tools and commands  
-▸ Improved default configuration  
-▸ Fixed memory leaks and performance issues  
-▸ Added more PvP settings and restrictions
+▸ **NEW: Interactive GUI System** - Full inventory-based stats interface  
+▸ **NEW: Player Stats GUI** - `/combat stats` opens your personal combat overview  
+▸ **NEW: Weapon Stats GUI** - Per-weapon breakdown (swords, axes, ranged)  
+▸ **NEW: Server Overview GUI** - `/combatadmin stats` opens admin network panel  
+▸ **NEW: GUI Navigation** - Back buttons and weapon stats button in all menus  
+▸ **NEW: gui.yml** - Fully configurable GUI layouts, materials, and colors  
+▸ Fixed server stats GUI layout (items were scattered, now properly centered)  
+▸ Improved command routing (`/combat stats` vs `/combatadmin stats`)  
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
@@ -82,6 +83,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 ### Player Commands
 ```
 /combat status          - View your combat status
+/combat stats           - Open your combat statistics GUI
 /combat summary         - View your combat statistics
 /combat toggle-style    - Change visual theme
 ```
@@ -91,7 +93,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 /combat reload                      - Reload configuration in real-time
 /combat inspect <player>            - Inspect player combat status
 /combat clear <player>              - Force-end combat
-/combat stats                       - View server statistics
+/combatadmin stats                  - View server statistics GUI
 /combat logging <on|off>            - Toggle console logging
 /combat protection <player> <time>  - Grant timed immunity
 /replay view <session-id>           - View combat replay

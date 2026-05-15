@@ -3,24 +3,53 @@
 
 [SIZE=7][B]True Combat Manager[/B][/SIZE]
 
-[SIZE=4]Professional combat tracking designed for performance, reliability, and modern Minecraft servers.[/SIZE]
+[SIZE=4]Professional combat tracking with interactive GUIs, persistent statistics, and modern Minecraft server optimization.[/SIZE]
 
-[IMG]https://img.shields.io/badge/Minecraft-1.18--1.21-3fb950?style=for-the-badge&logo=minecraft[/IMG] [IMG]https://img.shields.io/badge/Java-17+-f39c12?style=for-the-badge&logo=openjdk[/IMG] [IMG]https://img.shields.io/badge/Platform-Paper%20%7C%20Spigot-3498db?style=for-the-badge[/IMG] [IMG]https://img.shields.io/badge/Status-Stable-success?style=for-the-badge[/IMG]
+[IMG]https://img.shields.io/badge/Version-1.2.0-brightgreen?style=for-the-badge[/IMG] [IMG]https://img.shields.io/badge/Minecraft-1.18--1.21-3fb950?style=for-the-badge&logo=minecraft[/IMG] [IMG]https://img.shields.io/badge/Java-17+-f39c12?style=for-the-badge&logo=openjdk[/IMG] [IMG]https://img.shields.io/badge/Platform-Paper%20%7C%20Spigot-3498db?style=for-the-badge[/IMG] [IMG]https://img.shields.io/badge/Status-Stable-success?style=for-the-badge[/IMG]
 [/CENTER]
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 
 [SIZE=6][B]Overview[/B][/SIZE]
 
-True Combat Manager is a lightweight combat management system designed for competitive Minecraft PvP servers.
+True Combat Manager is a feature-rich combat management system designed for competitive Minecraft PvP servers.
 
 It focuses on:
 
 • accurate combat detection
 • preventing PvP abuse
 • providing clear player feedback
+• interactive statistics GUIs
+• persistent data tracking
 
 The plugin is optimized for performance and stability even on busy PvP servers.
+
+[IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
+
+[SIZE=6][B]✨ What's New in v1.2.0[/B][/SIZE]
+
+[SIZE=5][B]Interactive GUI System[/B][/SIZE]
+
+• [B]Player Stats GUI[/B] - Beautiful inventory interface showing combat statistics
+• [B]Weapon Stats GUI[/B] - Per-weapon breakdown with damage, kills, and usage
+• [B]Server Overview GUI[/B] - Admin panel with network-wide combat statistics
+• [B]Fully Customizable[/B] - Configure colors, materials, layouts via gui.yml
+• [B]Click Navigation[/B] - Seamless navigation between stat screens with back buttons
+• [B]Real-time Updates[/B] - Live data from database
+
+[SIZE=5][B]Enhanced Commands[/B][/SIZE]
+
+• [ICODE]/combat stats[/ICODE] - Opens your personal combat stats GUI
+• [ICODE]/combatadmin stats[/ICODE] - Opens server-wide statistics GUI (admins)
+• Weapon stats button in main GUI
+• Back buttons for easy navigation
+
+[SIZE=5][B]Improved UX[/B][/SIZE]
+
+• Clean, modern GUI layouts with proper spacing
+• Color-coded statistics (wins = green, losses = red)
+• Organized weapon categories (swords, axes, ranged)
+• Glass pane borders for visual clarity
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 
@@ -40,6 +69,7 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 • MySQL support for larger networks
 • Persistent player combat statistics
 • Weapon-specific combat tracking
+• Automatic database migration
 
 [SIZE=5][B]Smart Restrictions[/B][/SIZE]
 
@@ -52,11 +82,50 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 
 [SIZE=5][B]Visual Interface[/B][/SIZE]
 
+• [B]NEW:[/B] Interactive statistics GUIs
 • BossBar combat indicators
 • ActionBar status display
-• Multiple UI themes
+• Multiple UI themes (6 built-in)
 • HEX color customization
 • Configurable sound profiles
+
+[SIZE=5][B]Protection Systems[/B][/SIZE]
+
+• Newbie protection for unarmored players
+• Timed immunity system with admin commands
+• WorldGuard safe zone integration
+• Configurable bypass permissions
+
+[IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
+
+[SIZE=6][B]GUI System[/B][/SIZE]
+
+[SIZE=5][B]Player Stats GUI[/B][/SIZE]
+
+Shows comprehensive combat statistics:
+• Overall record (wins, losses, K/D ratio, win rate)
+• Damage statistics (dealt, received, ratio, highest burst)
+• Combat statistics (total combats, critical hits, longest combo)
+• Weapon stats button to view detailed breakdown
+
+[SIZE=5][B]Weapon Stats GUI[/B][/SIZE]
+
+Per-weapon breakdown organized by category:
+• [B]Swords:[/B] Netherite, Diamond, Iron, Stone, Golden
+• [B]Axes:[/B] Netherite, Diamond, Iron
+• [B]Ranged:[/B] Bow, Crossbow, Trident
+
+Each weapon shows total damage, kills, uses, and average damage per hit.
+
+[SIZE=5][B]Server Overview GUI (Admin)[/B][/SIZE]
+
+Network-wide statistics panel:
+• Total tracked players and active sessions
+• Global win/loss ratio and win rate
+• Server damage totals and combat time
+• Per-player averages
+• Weapon stats button for server-wide weapon data
+• Close button
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 
@@ -65,21 +134,23 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 [SIZE=5][B]Player Commands[/B][/SIZE]
 
 [CODE]
-/combat status
-/combat summary
-/combat toggle-style
+/combat status              - View your combat status
+/combat stats               - Open your combat statistics GUI
+/combat summary             - View latest fight summary
+/combat toggle-style        - Change visual theme
 [/CODE]
 
 [SIZE=5][B]Admin Commands[/B][/SIZE]
 
 [CODE]
-/combat reload
-/combat inspect <player>
-/combat clear <player>
-/combat stats
-/combat protection <player> <seconds>
-/combat debug
-/combat logging <on|off>
+/combat reload              - Reload configuration
+/combat inspect <player>    - View real-time combat info
+/combat summary <player>    - Open player's stats GUI
+/combatadmin stats          - Open server statistics GUI
+/combat clear <player>      - Force-end combat
+/combat protection <player> <seconds> - Grant immunity
+/combat debug               - Toggle debug mode
+/combat logging <on|off>    - Toggle console logging
 [/CODE]
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
@@ -90,6 +161,8 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 combat:
   duration: 10
   cooldown: 5
+  disconnect-protection:
+    enabled: true
 
 database:
   type: "SQLITE"
@@ -128,6 +201,8 @@ All settings reload instantly using:
 %pvpcombat_losses%
 %pvpcombat_kd_ratio%
 %pvpcombat_win_rate%
+%pvpcombat_total_damage_dealt%
+%pvpcombat_total_damage_received%
 [/CODE]
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
@@ -140,21 +215,23 @@ All settings reload instantly using:
 4. Configure settings if needed
 5. Run [ICODE]/combat reload[/ICODE]
 
+[B]No additional setup required[/B] - SQLite database works out of the box!
+
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 
 [SIZE=6][B]Requirements[/B][/SIZE]
 
 Minecraft [B]1.18+[/B]
-Java [B]17+[/B]
+Java [B]17+[/B] (21 recommended)
 Server software: [B]Paper or Spigot[/B]
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 
 [SIZE=6][B]Optional Integrations[/B][/SIZE]
 
-• PlaceholderAPI
-• WorldGuard
-• ProtocolLib
+• PlaceholderAPI - For placeholder support
+• WorldGuard - For safe zone protection
+• ProtocolLib - For enhanced visual effects
 
 [IMG]https://i.imgur.com/9Zy4QZX.png[/IMG]
 

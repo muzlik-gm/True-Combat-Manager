@@ -3,8 +3,9 @@
 
 # True Combat Manager
 
-Professional combat tracking designed for performance, reliability, and modern Minecraft servers.
+Professional combat tracking with interactive GUIs, persistent statistics, and modern Minecraft server optimization.
 
+<img src="https://img.shields.io/badge/Version-1.2.0-brightgreen?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/Minecraft-1.18--1.21-3fb950?style=for-the-badge&logo=minecraft"/>
 <img src="https://img.shields.io/badge/Java-17+-f39c12?style=for-the-badge&logo=openjdk"/>
 <img src="https://img.shields.io/badge/Platform-Paper%20%7C%20Spigot-3498db?style=for-the-badge"/>
@@ -16,15 +17,45 @@ Professional combat tracking designed for performance, reliability, and modern M
 
 ## Overview
 
-True Combat Manager is a lightweight combat management system designed for competitive Minecraft PvP servers.
+True Combat Manager is a feature-rich combat management system designed for competitive Minecraft PvP servers.
 
 It focuses on:
 
 • accurate combat detection  
 • preventing PvP abuse  
 • providing clear player feedback  
+• interactive statistics GUIs  
+• persistent data tracking  
 
 The plugin is optimized for performance and stability even on busy PvP servers.
+
+---
+
+## ✨ What's New in v1.2.0
+
+### Interactive GUI System
+
+- **Player Stats GUI** - Beautiful inventory interface showing combat statistics  
+- **Weapon Stats GUI** - Per-weapon breakdown with damage, kills, and usage  
+- **Server Overview GUI** - Admin panel with network-wide combat statistics  
+- **Fully Customizable** - Configure colors, materials, layouts via gui.yml  
+- **Click Navigation** - Seamless navigation between stat screens with back buttons  
+- **Real-time Updates** - Live data from database  
+
+### Enhanced Commands
+
+- `/combat stats` - Opens your personal combat stats GUI  
+- `/combatadmin stats` - Opens server-wide statistics GUI (admins)  
+- Weapon stats button in main GUI  
+- Back buttons for easy navigation  
+
+### Improved UX
+
+- Clean, modern GUI layouts with proper spacing  
+- Color-coded statistics (wins = green, losses = red)  
+- Organized weapon categories (swords, axes, ranged)  
+- Glass pane borders for visual clarity  
+- Timestamped backup system for deployments  
 
 ---
 
@@ -46,6 +77,7 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 - MySQL support for larger networks  
 - Persistent player combat statistics  
 - Weapon-specific combat tracking  
+- Automatic database migration  
 
 ---
 
@@ -62,11 +94,57 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 
 ### Visual Interface
 
+- **NEW:** Interactive statistics GUIs  
 - BossBar combat indicators  
 - ActionBar status display  
-- Multiple UI themes  
+- Multiple UI themes (6 built-in)  
 - HEX color customization  
 - Configurable sound profiles  
+
+---
+
+### Protection Systems
+
+- Newbie protection for unarmored players  
+- Timed immunity system with admin commands  
+- WorldGuard safe zone integration  
+- Configurable bypass permissions  
+
+---
+
+## GUI System
+
+### Player Stats GUI
+
+Shows comprehensive combat statistics:
+- Overall record (wins, losses, K/D ratio, win rate)  
+- Damage statistics (dealt, received, ratio, highest burst)  
+- Combat statistics (total combats, critical hits, longest combo)  
+- Weapon stats button to view detailed breakdown  
+
+### Weapon Stats GUI
+
+Per-weapon breakdown organized by category:
+- **Swords:** Netherite, Diamond, Iron, Stone, Golden  
+- **Axes:** Netherite, Diamond, Iron  
+- **Ranged:** Bow, Crossbow, Trident  
+
+Each weapon shows:
+- Total damage dealt  
+- Kills with that weapon  
+- Times used  
+- Average damage per hit  
+
+### Server Overview GUI (Admin)
+
+Network-wide statistics:
+- Total tracked players and active sessions  
+- Total combats across all players  
+- Global win/loss ratio and win rate  
+- Server damage totals and combat time  
+- Per-player averages  
+- Weapon stats button for server-wide weapon data  
+- Close button  
 
 ---
 
@@ -75,21 +153,23 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 ### Player Commands
 
 ```
-/combat status
-/combat summary
-/combat toggle-style
+/combat status              - View your combat status
+/combat stats               - Open your combat statistics GUI
+/combat summary             - View latest fight summary
+/combat toggle-style        - Change visual theme
 ```
 
 ### Admin Commands
 
 ```
-/combat reload
-/combat inspect <player>
-/combat clear <player>
-/combat stats
-/combat protection <player> <seconds>
-/combat debug
-/combat logging <on|off>
+/combat reload              - Reload configuration
+/combat inspect <player>    - View real-time combat info
+/combat summary <player>    - Open player's stats GUI
+/combatadmin stats          - Open server statistics GUI
+/combat clear <player>      - Force-end combat
+/combat protection <player> <seconds> - Grant immunity
+/combat debug               - Toggle debug mode
+/combat logging <on|off>    - Toggle console logging
 ```
 
 ---
@@ -100,6 +180,8 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 combat:
   duration: 10
   cooldown: 5
+  disconnect-protection:
+    enabled: true
 
 database:
   type: "SQLITE"
@@ -138,6 +220,8 @@ All settings reload instantly using:
 %pvpcombat_losses%
 %pvpcombat_kd_ratio%
 %pvpcombat_win_rate%
+%pvpcombat_total_damage_dealt%
+%pvpcombat_total_damage_received%
 ```
 
 ---
@@ -150,21 +234,34 @@ All settings reload instantly using:
 4. Configure settings if needed  
 5. Run `/combat reload`  
 
+**No additional setup required** - SQLite database works out of the box!
+
 ---
 
 ## Requirements
 
 Minecraft **1.18+**  
-Java **17+**  
+Java **17+** (21 recommended)  
 Server software: **Paper or Spigot**
 
 ---
 
 ## Optional Integrations
 
-PlaceholderAPI  
-WorldGuard  
-ProtocolLib  
+PlaceholderAPI - For placeholder support  
+WorldGuard - For safe zone protection  
+ProtocolLib - For enhanced visual effects  
+
+---
+
+## Performance
+
+- Optimized JAR size: 2.4 MB  
+- Zero lag with intelligent caching  
+- Thread-safe concurrent operations  
+- Efficient database connection pooling  
+- Minimal memory footprint  
+- Async operations for heavy tasks  
 
 ---
 
