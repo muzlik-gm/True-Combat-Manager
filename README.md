@@ -1,78 +1,84 @@
 # True Combat Manager
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/muzlik-gm/True-Combat-Manager)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/muzlik-gm/True-Combat-Manager)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.18--1.21-green.svg)](https://www.spigotmc.org/)
 [![Java](https://img.shields.io/badge/java-17+-orange.svg)](https://adoptium.net/)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)
 
 **Professional PvP Combat Management for Minecraft Servers**
 
-A lightweight, high-performance combat plugin with persistent statistics, real-time tracking, and comprehensive admin tools. Built for modern Minecraft servers running Spigot, Paper, or Purpur.
+A lightweight, high-performance combat plugin with persistent statistics, real-time tracking, interactive GUIs, and comprehensive admin tools. Built for modern Minecraft servers running Spigot, Paper, or Purpur.
 
 ---
 
 ## ⚡ Key Features
 
 ### ▸ Combat System
-Real-time combat tracking with configurable duration • Automatic combat tagging on player damage • Combat logging protection (instant death on logout) • Timer reset on new damage • Lag compensation system
+Real-time combat tracking with configurable duration • Automatic combat tagging on player damage • Dual grace period disconnect protection (bad-internet vs intentional) • Repeat-logout abuse prevention • Timer reset on new damage • Lag compensation system
 
 ### ▸ Database & Statistics
-SQLite database (default, zero setup) • MySQL support for multi-server networks • Persistent player statistics across restarts • Weapon-specific damage tracking • Combat history and session replays
+SQLite database (default, zero setup) • MySQL support for multi-server networks • Persistent player statistics across restarts • Weapon-specific damage tracking • Per-player theme preferences saved to DB
+
+### ▸ Interactive GUI System
+Player stats GUI with overall record, damage stats, and combat stats • Weapon stats GUI with per-weapon breakdown (swords, axes, ranged) • Server overview GUI for admins • Back buttons and navigation • Fully configurable via `gui.yml`
 
 ### ▸ Protection Systems
-Newbie protection for unarmored players • Timed immunity system with admin commands • WorldGuard safe zone integration • Configurable bypass permissions
+Dual grace period for disconnects (bad-internet / intentional, separately configurable) • Repeat-logout kill-on-login prevention • Newbie protection for unarmored players • Timed immunity system • WorldGuard safe zone integration • Bypass-totem option for punishment kills
 
 ### ▸ Visual Feedback
-Customizable BossBar with 6 themes • ActionBar timer display • Sound effects for combat events • Progress indicators • HEX color support
+6 built-in themes with per-player persistence • Theme change works in and out of combat • Customizable BossBar • ActionBar timer display • 6 sound profiles with hot-reload support • HEX color support
 
 ### ▸ Restrictions
-Block ender pearls during combat • Prevent elytra usage • Restrict trident throwing • Block golden apple consumption • Prevent command usage • Disable teleportation
+Block ender pearls during combat • Prevent elytra usage • Restrict trident throwing • Block golden apple consumption • Prevent command usage • Disable teleportation • Respawn anchor blocking
 
 ### ▸ Admin Tools
-`/combat reload` - Instant config reload without restart • `/combat protection <player> <seconds>` - Grant immunity • `/combat clear <player>` - Force-end combat • `/combat stats` - Server-wide statistics • `/combat logging <on|off>` - Toggle console logging • `/combat inspect <player>` - Real-time combat status
+`/combat reload` — instant config reload without restart • `/combat protection <player> <seconds>` — grant immunity • `/combat clear <player>` — force-end combat • `/combatadmin stats` — server-wide statistics GUI • `/combat logging <on|off>` — toggle console logging • `/combat inspect <player>` — real-time combat status
 
 ### ▸ Cross-Server Support
-BungeeCord/Velocity network sync • Prevent server-hopping during combat • Shared combat state across backend servers • Automatic plugin messaging
+BungeeCord/Velocity network sync • Prevent server-hopping during combat • Shared combat state across backend servers
 
 ---
 
 ## 📋 Requirements
 
-**Server Software:** Spigot, Paper, or Purpur  
-**Minecraft Version:** 1.18 - 1.21+  
+**Server Software:** Spigot, Paper, or Purpur
+**Minecraft Version:** 1.18 – 1.21+
 **Java Version:** 17 or higher (21 recommended)
 
-**Optional Dependencies:**  
-▸ PlaceholderAPI 2.11+ - For placeholder support  
-▸ WorldGuard 7.0+ - For safe zone protection  
-▸ ProtocolLib 5.0+ - For client-side barriers
+**Optional Dependencies:**
+▸ PlaceholderAPI 2.11+ — placeholder support
+▸ WorldGuard 7.0+ — safe zone protection
+▸ ProtocolLib 5.0+ — client-side barriers
 
 ---
 
 ## 🚀 Installation
 
-1. Download `TrueCombatManager-1.1.0.jar` (2.4 MB)
+1. Download `truecombatmanager-1.2.1.jar`
 2. Place in your server's `plugins` folder
 3. Restart your server
 4. Configure in `plugins/TrueCombatManager/config.yml`
-5. Use `/combat reload` to apply changes
+5. Use `/combat reload` to apply changes without restarting
 
-**No additional setup required** - SQLite database works out of the box!
+**No additional setup required** — SQLite database works out of the box.
 
 For detailed setup instructions, see [INSTALLATION.md](INSTALLATION.md)
 
 ---
 
-## 📊 What's New in v1.2.0
+## 📊 What's New in v1.2.1
 
-▸ **NEW: Interactive GUI System** - Full inventory-based stats interface  
-▸ **NEW: Player Stats GUI** - `/combat stats` opens your personal combat overview  
-▸ **NEW: Weapon Stats GUI** - Per-weapon breakdown (swords, axes, ranged)  
-▸ **NEW: Server Overview GUI** - `/combatadmin stats` opens admin network panel  
-▸ **NEW: GUI Navigation** - Back buttons and weapon stats button in all menus  
-▸ **NEW: gui.yml** - Fully configurable GUI layouts, materials, and colors  
-▸ Fixed server stats GUI layout (items were scattered, now properly centered)  
-▸ Improved command routing (`/combat stats` vs `/combatadmin stats`)  
+▸ **NEW: Dual Grace Period** — separate timers for bad-internet vs intentional disconnects
+▸ **NEW: Repeat-Logout Prevention** — players who disconnect too often are killed on next login
+▸ **NEW: Bypass-Totem Config** — choose whether punishment kills bypass the Totem of Undying
+▸ **NEW: Per-Player Theme Persistence** — theme saved to DB, restored across sessions
+▸ **NEW: Theme Change Out of Combat** — `/combat toggle-style` works anytime
+▸ **NEW: Sound Profile Hot-Reload** — `/combat reload` now correctly updates sound profiles
+▸ **FIXED: Inventory duplication** — armor was dropped twice due to `getContents()` including armor slots
+▸ **FIXED: Double bossbar on reconnect** — old session bossbar now cleared before new one is created
+▸ **FIXED: Player not killed after grace period** — config was loaded before ConfigManager was ready
+▸ **FIXED: Concurrent update race** — `PlayerCombatData` now uses atomic fields
+▸ **FIXED: `plugin.getConfig()` stale after reload** — `plugin.reloadConfig()` now called on `/combat reload`
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
@@ -85,7 +91,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 /combat status          - View your combat status
 /combat stats           - Open your combat statistics GUI
 /combat summary         - View your combat statistics
-/combat toggle-style    - Change visual theme
+/combat toggle-style    - Change visual theme (works in and out of combat)
 ```
 
 ### Admin Commands
@@ -96,7 +102,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 /combatadmin stats                  - View server statistics GUI
 /combat logging <on|off>            - Toggle console logging
 /combat protection <player> <time>  - Grant timed immunity
-/replay view <session-id>           - View combat replay
+/combat summary <player>            - Open player's stats GUI
 ```
 
 ---
@@ -104,115 +110,104 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 ## 🔐 Permissions
 
 ### Player Permissions (default: true)
-▸ `pvpcombat.command.status` - Use /combat status  
-▸ `pvpcombat.command.summary` - View statistics  
-▸ `pvpcombat.command.toggle-style` - Change theme
+▸ `pvpcombat.command.status` — use /combat status
+▸ `pvpcombat.command.summary` — view statistics
+▸ `pvpcombat.command.toggle-style` — change theme
 
 ### Admin Permissions (default: op)
-▸ `pvpcombat.admin` - All admin commands  
-▸ `pvpcombat.admin.inspect` - Inspect players  
-▸ `pvpcombat.admin.debug` - Debug mode
+▸ `pvpcombat.admin` — all admin commands
+▸ `pvpcombat.admin.inspect` — inspect players
+▸ `pvpcombat.admin.debug` — debug mode
 
 ### Bypass Permissions (default: op)
-▸ `pvpcombat.bypass.combatlog` - Bypass combat logging  
-▸ `pvpcombat.bypass.restrictions` - Bypass all restrictions  
-▸ `pvpcombat.bypass.newbie` - Bypass newbie protection  
-▸ `pvpcombat.bypass.server-switch` - Bypass server switch prevention
+▸ `pvpcombat.bypass.combatlog` — bypass combat logging
+▸ `pvpcombat.bypass.restrictions` — bypass all restrictions
+▸ `pvpcombat.bypass.newbie` — bypass newbie protection
+▸ `pvpcombat.bypass.server-switch` — bypass server switch prevention
 
 ---
 
-## 🔧 Configuration
+## 🔧 Configuration Highlights
 
-The plugin includes comprehensive configuration with 100+ options:
-
-### Combat Settings
+### Dual Grace Period
 ```yaml
 combat:
-  duration: 30                    # Combat duration in seconds
-  allow-flight: false             # Allow flight during combat
-  cancel-on-death: true           # End combat on death
+  disconnect-protection:
+    enabled: true
+    display-mode: "actionbar"   # actionbar | bossbar | scoreboard
+
+    bad-internet:
+      enabled: true
+      grace-seconds: 30         # generous — not their fault
+
+    intentional:
+      enabled: true
+      grace-seconds: 10         # shorter — deliberate disconnect
+
+    repeat-logout:
+      enabled: true
+      max-count: 2              # 3rd disconnect in window = instant kill
+      window-seconds: 240       # 4-minute rolling window
+
+    punishment:
+      drop-inventory: true
+      bypass-totem: true        # true = setHealth(0), totem can't save them
+      broadcast: "&c{player} &ecombat-logged and was punished!"
 ```
 
-### Newbie Protection
+### Visual Themes
 ```yaml
-newbie-protection:
-  enabled: true
-  prevent-damage-dealing: true    # Newbies can't attack
-  prevent-damage-receiving: true  # Newbies can't be attacked
-  xp-level-threshold: 3           # Players with >3 XP not protected
-  require-any-armor: true         # Need at least 1 armor piece
+visual:
+  themes:
+    default-theme: "clean"      # minimal, fire, ice, neon, dark, clean
+  sounds:
+    profile: "default"          # default, subtle, intense, calm, electronic, clean
 ```
 
-### Database Configuration
+### Database
 ```yaml
 database:
-  type: "SQLITE"                  # SQLITE or MYSQL
+  type: "sqlite"                # sqlite or mysql
   mysql:
     host: "localhost"
     port: 3306
     database: "pvpcombat"
     username: "root"
-    password: "password"
+    password: ""
 ```
 
-### Restrictions
-```yaml
-restrictions:
-  trident:
-    enabled: true                 # Block tridents in combat
-  enderpearl:
-    enabled: true
-    cooldown: 10                  # Base cooldown (seconds)
-    combat-cooldown-multiplier: 2.0
-  golden-apple:
-    cooldown: 3
-    combat-cooldown-multiplier: 1.5
-  teleport:
-    enabled: true
-    blocked-commands:
-      - "tp"
-      - "home"
-      - "spawn"
-      - "warp"
-```
+All settings reload instantly with `/combat reload` — no restart needed.
 
-### Visual System
-```yaml
-visual:
-  themes:
-    default-theme: "default"      # default, minimal, intense, elegant, neon, retro
-  bossbar:
-    enabled: true
-  actionbar:
-    enabled: true
-  sounds:
-    profile: "default"            # default, subtle, intense, calm, electronic
-```
+---
 
-All settings reload instantly with `/combat reload` - no restart needed!
+## 🎨 Visual Themes
+
+Players can switch between 6 built-in themes with `/combat toggle-style`. The choice is saved and restored automatically:
+
+| Theme | BossBar Color | Sound Profile |
+|-------|--------------|---------------|
+| minimal | White | subtle |
+| fire | Red | intense |
+| ice | Blue | calm |
+| neon | Pink | electronic |
+| dark | White | subtle |
+| clean | Green | clean |
 
 ---
 
 ## 📊 PlaceholderAPI
 
-### Combat Status
-▸ `%pvpcombat_in_combat%` - true/false  
-▸ `%pvpcombat_time_left%` - Remaining seconds  
-▸ `%pvpcombat_opponent%` - Opponent name
-
-### Lifetime Statistics
-▸ `%pvpcombat_wins%` - Total wins  
-▸ `%pvpcombat_losses%` - Total losses  
-▸ `%pvpcombat_total_combats%` - Total combats  
-▸ `%pvpcombat_kd_ratio%` - K/D ratio  
-▸ `%pvpcombat_win_rate%` - Win rate percentage  
-▸ `%pvpcombat_total_damage_dealt%` - Total damage dealt  
-▸ `%pvpcombat_total_damage_received%` - Total damage received
-
-### Session Statistics
-▸ `%pvpcombat_session_damage_dealt%` - Damage in current fight  
-▸ `%pvpcombat_session_damage_received%` - Damage received  
-▸ `%pvpcombat_knockback_exchanges%` - Knockback exchanges
+```
+%pvpcombat_in_combat%           - true/false
+%pvpcombat_time_left%           - remaining seconds
+%pvpcombat_opponent%            - opponent name
+%pvpcombat_wins%                - total wins
+%pvpcombat_losses%              - total losses
+%pvpcombat_kd_ratio%            - K/D ratio
+%pvpcombat_win_rate%            - win rate percentage
+%pvpcombat_total_damage_dealt%  - total damage dealt
+%pvpcombat_total_damage_received% - total damage received
+```
 
 ---
 
@@ -225,97 +220,47 @@ For multi-server networks:
 3. Enable cross-server sync in config:
    ```yaml
    integration:
-     cross-server:
+     cross-server-sync:
        enabled: true
    ```
 4. Plugin automatically syncs through BungeeCord/Velocity
-
-**Note:** Plugin runs on backend servers, not on the proxy itself.
-
----
-
-## 📈 Performance
-
-▸ Optimized JAR size: 2.4 MB  
-▸ Zero lag with intelligent caching  
-▸ Thread-safe concurrent operations  
-▸ Efficient database connection pooling  
-▸ Minimal memory footprint  
-▸ Async operations for heavy tasks  
-▸ Lag compensation system (TPS monitoring)
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Server Lag?
-→ Disable console logging: `/combat logging disabled`  
-→ Check config: `logging.console-enabled: false`
+**Grace period not working?**
+→ Delete `config.yml` and let it regenerate — the new `bad-internet`/`intentional` sections must be present
+→ Check console for `[DisconnectTracker]` log lines
 
-### Newbie Protection Not Working?
-→ Check player has NO armor equipped (all 4 slots empty)  
-→ Verify player XP level ≤ threshold (default: 3)  
-→ Check player doesn't have `pvpcombat.bypass.newbie` permission
+**Double bossbar after reconnect?**
+→ Update to 1.2.1 — this was a known bug fixed in this release
 
-### Barriers Not Showing?
-→ Install ProtocolLib 5.0+  
-→ Check config: `restrictions.safezone.barrier.enabled: true`  
-→ Verify WorldGuard regions are configured
+**Sound profile changes not applying?**
+→ Use `/combat reload` — sound profiles now hot-reload correctly in 1.2.1
 
-### Config Changes Not Applying?
-→ Use `/combat reload` instead of server restart  
-→ Check console for any config errors  
-→ Verify YAML syntax is correct
+**Server lag?**
+→ Disable console logging: `/combat logging disabled`
 
----
-
-## 🎨 Visual Themes
-
-Players can switch between 6 built-in themes with `/combat toggle-style`:
-
-1. **Default** - Classic red/yellow theme
-2. **Minimal** - Clean gray theme
-3. **Intense** - Bold red/orange theme
-4. **Elegant** - Sophisticated purple theme
-5. **Neon** - Bright cyan/pink theme
-6. **Retro** - Vintage green/yellow theme
-
-All themes support full HEX color customization in the config.
+**Config changes not applying?**
+→ Use `/combat reload` — all settings reload without restart
 
 ---
 
 ## 🔗 Links
 
-**GitHub:** https://github.com/muzlik-gm/True-Combat-Manager  
-**Issues:** https://github.com/muzlik-gm/True-Combat-Manager/issues  
-**Changelog:** [CHANGELOG.md](CHANGELOG.md)  
+**GitHub:** https://github.com/muzlik-gm/True-Combat-Manager
+**Issues:** https://github.com/muzlik-gm/True-Combat-Manager/issues
+**Changelog:** [CHANGELOG.md](CHANGELOG.md)
 **Installation Guide:** [INSTALLATION.md](INSTALLATION.md)
-
----
-
-## 📞 Support
-
-Need help? Found a bug? Have a feature request?
-
-▸ Open an issue on [GitHub Issues](https://github.com/muzlik-gm/True-Combat-Manager/issues)  
-▸ Provide server version, plugin version, and config  
-▸ Include console errors if applicable  
-▸ Describe steps to reproduce
 
 ---
 
 ## 📄 License
 
-**All Rights Reserved © 2025 muzlik**
+**All Rights Reserved © 2026 muzlik**
 
 This is proprietary software. Unauthorized copying, distribution, modification, or use is strictly prohibited.
-
----
-
-## 🙏 Credits
-
-**Developer:** muzlik  
-**Special Thanks:** Paper team, ProtocolLib, WorldGuard, PlaceholderAPI
 
 ---
 

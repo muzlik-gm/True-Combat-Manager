@@ -3,9 +3,9 @@
 
 # True Combat Manager
 
-Professional combat tracking with interactive GUIs, persistent statistics, and modern Minecraft server optimization.
+Professional combat tracking with interactive GUIs, persistent statistics, dual grace period protection, and modern Minecraft server optimization.
 
-<img src="https://img.shields.io/badge/Version-1.2.0-brightgreen?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Version-1.2.1-brightgreen?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/Minecraft-1.18--1.21-3fb950?style=for-the-badge&logo=minecraft"/>
 <img src="https://img.shields.io/badge/Java-17+-f39c12?style=for-the-badge&logo=openjdk"/>
 <img src="https://img.shields.io/badge/Platform-Paper%20%7C%20Spigot-3498db?style=for-the-badge"/>
@@ -17,45 +17,47 @@ Professional combat tracking with interactive GUIs, persistent statistics, and m
 
 ## Overview
 
-True Combat Manager is a feature-rich combat management system designed for competitive Minecraft PvP servers.
-
-It focuses on:
-
-• accurate combat detection  
-• preventing PvP abuse  
-• providing clear player feedback  
-• interactive statistics GUIs  
-• persistent data tracking  
-
-The plugin is optimized for performance and stability even on busy PvP servers.
+True Combat Manager is a feature-rich combat management system designed for competitive Minecraft PvP servers. It focuses on accurate combat detection, preventing PvP abuse, providing clear player feedback, interactive statistics GUIs, and persistent data tracking.
 
 ---
 
-## ✨ What's New in v1.2.0
+## ✨ What's New in v1.2.1
 
-### Interactive GUI System
+### Dual Grace Period System
 
-- **Player Stats GUI** - Beautiful inventory interface showing combat statistics  
-- **Weapon Stats GUI** - Per-weapon breakdown with damage, kills, and usage  
-- **Server Overview GUI** - Admin panel with network-wide combat statistics  
-- **Fully Customizable** - Configure colors, materials, layouts via gui.yml  
-- **Click Navigation** - Seamless navigation between stat screens with back buttons  
-- **Real-time Updates** - Live data from database  
+The disconnect protection system has been completely overhauled.
 
-### Enhanced Commands
+- **Bad-internet grace period** — longer, more lenient window for players who lost connection unexpectedly. Detected automatically from the quit reason.
+- **Intentional grace period** — shorter window for players who pressed Disconnect or closed the game.
+- Each type has its own `grace-seconds`, messages, and can be enabled/disabled independently.
 
-- `/combat stats` - Opens your personal combat stats GUI  
-- `/combatadmin stats` - Opens server-wide statistics GUI (admins)  
-- Weapon stats button in main GUI  
-- Back buttons for easy navigation  
+### Repeat-Logout Abuse Prevention
 
-### Improved UX
+- Tracks each player's disconnect history in a rolling time window.
+- If a player disconnects too many times within the window, they are killed immediately on the next logout — no grace period.
+- Fully configurable: `max-count`, `window-seconds`, messages.
 
-- Clean, modern GUI layouts with proper spacing  
-- Color-coded statistics (wins = green, losses = red)  
-- Organized weapon categories (swords, axes, ranged)  
-- Glass pane borders for visual clarity  
-- Timestamped backup system for deployments  
+### Bypass-Totem Config
+
+- `bypass-totem: true` (default) — punishment kills bypass the Totem of Undying.
+- `bypass-totem: false` — a held totem can proc and save the player.
+
+### Per-Player Theme Persistence
+
+- Theme selections saved to the database and restored across sessions.
+- `/combat toggle-style` works both in and out of combat.
+
+### Sound Profile Hot-Reload
+
+- `/combat reload` now correctly updates sound profiles without a restart.
+
+### Bug Fixes
+
+- Fixed inventory duplication (armor dropped twice due to `getContents()` including armor slots)
+- Fixed double bossbar on reconnect
+- Fixed player not killed after grace period (config loaded before ConfigManager was ready)
+- Fixed concurrent update race in player data
+- Fixed `plugin.getConfig()` stale after reload
 
 ---
 
@@ -63,88 +65,64 @@ The plugin is optimized for performance and stability even on busy PvP servers.
 
 ### Combat System
 
-- Real-time combat detection  
-- Combat logging prevention with disconnect protection  
-- Grace period for reconnecting players  
-- Lag compensation using server TPS  
-- Thread-safe combat architecture  
+- Real-time combat detection
+- Dual grace period disconnect protection (bad-internet vs intentional)
+- Repeat-logout abuse prevention with kill-on-login
+- Lag compensation using server TPS
+- Thread-safe combat architecture
 
----
+### Interactive GUI System
+
+- **Player Stats GUI** — overall record, damage stats, combat stats
+- **Weapon Stats GUI** — per-weapon breakdown (swords, axes, ranged)
+- **Server Overview GUI** — admin panel with network-wide statistics
+- Fully configurable via `gui.yml`
+- Back buttons and seamless navigation
 
 ### Database System
 
-- SQLite support (default, no setup required)  
-- MySQL support for larger networks  
-- Persistent player combat statistics  
-- Weapon-specific combat tracking  
-- Automatic database migration  
-
----
+- SQLite (default, no setup required)
+- MySQL for larger networks
+- Persistent player statistics and theme preferences
+- Automatic database migration
 
 ### Smart Restrictions
 
-- Ender pearl cooldown control  
-- Trident usage restrictions  
-- Elytra combat limitations  
-- Golden apple cooldown system  
-- Teleport command blocking during combat  
-- Safezone protection support  
-
----
+- Ender pearl cooldown control
+- Trident usage restrictions
+- Elytra combat limitations
+- Golden apple cooldown system
+- Teleport command blocking
+- Safezone protection support
 
 ### Visual Interface
 
-- **NEW:** Interactive statistics GUIs  
-- BossBar combat indicators  
-- ActionBar status display  
-- Multiple UI themes (6 built-in)  
-- HEX color customization  
-- Configurable sound profiles  
-
----
+- 6 built-in themes with per-player persistence
+- BossBar combat indicators
+- ActionBar status display
+- 6 sound profiles with hot-reload
+- HEX color customization
 
 ### Protection Systems
 
-- Newbie protection for unarmored players  
-- Timed immunity system with admin commands  
-- WorldGuard safe zone integration  
-- Configurable bypass permissions  
+- Newbie protection for unarmored players
+- Timed immunity system with admin commands
+- WorldGuard safe zone integration
+- Configurable bypass permissions
 
 ---
 
-## GUI System
+## Disconnect Protection Flow
 
-### Player Stats GUI
+**Grace period expires, player still offline:**
+1. Inventory dropped at disconnect location immediately
+2. Win/loss recorded, opponent notified and rewarded
+3. `pendingPunishments` entry stored — player killed on next login
 
-Shows comprehensive combat statistics:
-- Overall record (wins, losses, K/D ratio, win rate)  
-- Damage statistics (dealt, received, ratio, highest burst)  
-- Combat statistics (total combats, critical hits, longest combo)  
-- Weapon stats button to view detailed breakdown  
-
-### Weapon Stats GUI
-
-Per-weapon breakdown organized by category:
-- **Swords:** Netherite, Diamond, Iron, Stone, Golden  
-- **Axes:** Netherite, Diamond, Iron  
-- **Ranged:** Bow, Crossbow, Trident  
-
-Each weapon shows:
-- Total damage dealt  
-- Kills with that weapon  
-- Times used  
-- Average damage per hit  
-
-### Server Overview GUI (Admin)
-
-Network-wide statistics:
-- Total tracked players and active sessions  
-- Total combats across all players  
-- Global win/loss ratio and win rate  
-- Server damage totals and combat time  
-- Per-player averages  
-- Weapon stats button for server-wide weapon data  
-- Close button  
+**Player rejoins with pending punishment:**
+1. Live inventory cleared
+2. Player killed (totem bypass configurable)
+3. Opponent receives reminder message
 
 ---
 
@@ -156,7 +134,7 @@ Network-wide statistics:
 /combat status              - View your combat status
 /combat stats               - Open your combat statistics GUI
 /combat summary             - View latest fight summary
-/combat toggle-style        - Change visual theme
+/combat toggle-style        - Change visual theme (works anytime)
 ```
 
 ### Admin Commands
@@ -179,34 +157,34 @@ Network-wide statistics:
 ```yaml
 combat:
   duration: 10
-  cooldown: 5
   disconnect-protection:
     enabled: true
-
-database:
-  type: "SQLITE"
-
-restrictions:
-  enderpearl:
-    cooldown: 6
-  trident:
-    cooldown: 5
-  golden-apple:
-    cooldown: 3
+    bad-internet:
+      grace-seconds: 30
+    intentional:
+      grace-seconds: 10
+    repeat-logout:
+      enabled: true
+      max-count: 2
+      window-seconds: 240
+    punishment:
+      drop-inventory: true
+      bypass-totem: true
 
 visual:
   themes:
-    default-theme: "minimal"
+    default-theme: "clean"
+  sounds:
+    profile: "default"
+
+database:
+  type: "sqlite"
 
 logging:
   console-enabled: false
 ```
 
-All settings reload instantly using:
-
-```
-/combat reload
-```
+All settings reload instantly with `/combat reload`.
 
 ---
 
@@ -228,46 +206,26 @@ All settings reload instantly using:
 
 ## Installation
 
-1. Download the plugin JAR  
-2. Place it inside the `plugins` folder  
-3. Restart the server  
-4. Configure settings if needed  
-5. Run `/combat reload`  
+1. Download the plugin JAR
+2. Place it inside the `plugins` folder
+3. Restart the server
+4. Configure settings if needed
+5. Run `/combat reload`
 
-**No additional setup required** - SQLite database works out of the box!
+**No additional setup required** — SQLite works out of the box.
 
 ---
 
 ## Requirements
 
-Minecraft **1.18+**  
-Java **17+** (21 recommended)  
-Server software: **Paper or Spigot**
+Minecraft **1.18+** · Java **17+** (21 recommended) · Paper or Spigot
 
----
-
-## Optional Integrations
-
-PlaceholderAPI - For placeholder support  
-WorldGuard - For safe zone protection  
-ProtocolLib - For enhanced visual effects  
-
----
-
-## Performance
-
-- Optimized JAR size: 2.4 MB  
-- Zero lag with intelligent caching  
-- Thread-safe concurrent operations  
-- Efficient database connection pooling  
-- Minimal memory footprint  
-- Async operations for heavy tasks  
+**Optional:** PlaceholderAPI · WorldGuard · ProtocolLib
 
 ---
 
 ## Support
 
-Issues and bug reports:  
 https://github.com/muzlik-gm/True-Combat-Manager/issues
 
 ---
@@ -275,7 +233,6 @@ https://github.com/muzlik-gm/True-Combat-Manager/issues
 <p align="center">
 <img src="https://capsule-render.vercel.app/api?type=waving&section=footer&height=120&color=0:11998e,100:1f4037"/>
 
-© 2025 muzlik  
-Made for the Minecraft PvP community
+© 2026 muzlik · Made for the Minecraft PvP community
 
 </p>
