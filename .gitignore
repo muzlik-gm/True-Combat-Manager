@@ -60,3 +60,5 @@ Desktop.ini
 # IDE
 .codex
 .cursor
+*.bat
+*.txt
