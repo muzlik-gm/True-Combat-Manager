@@ -3,7 +3,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 set "SERVER_PLUGINS=c:\Users\Alli computer\OneDrive\Desktop\Server\plugins"
-set "JAR_NAME=truecombatmanager-1.1.0.jar"
+set "JAR_NAME=truecombatmanager-1.2.1.jar"
 set "SOURCE_JAR=%CD%\target\%JAR_NAME%"
 set "DEST_JAR=%SERVER_PLUGINS%\%JAR_NAME%"
 
