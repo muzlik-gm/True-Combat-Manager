@@ -23,6 +23,9 @@ import java.util.logging.Logger;
 public class CombatTracker {
 
     private final Map<UUID, PlayerCombatData> playerData;
+    // Tracks the current consecutive-hit streak for each player during a session.
+    // Reset to 0 whenever the opponent lands a hit on them.
+    private final Map<UUID, Integer> currentCombo;
     private LagManager lagManager;
     private IDatabaseManager databaseManager;
     private final Plugin plugin;
@@ -33,6 +36,7 @@ public class CombatTracker {
 
     public CombatTracker(Plugin plugin) {
         this.playerData = new ConcurrentHashMap<>();
+        this.currentCombo = new ConcurrentHashMap<>();
         this.plugin = plugin;
         this.logger = plugin.getLogger();
     }
@@ -171,12 +175,16 @@ public class CombatTracker {
     }
 
     /**
-     * Records damage dealt in combat.
+     * Records damage dealt in combat and advances the attacker's hit streak.
      */
     public void recordDamageDealt(Player attacker, double damage) {
         PlayerCombatData data = getPlayerData(attacker.getUniqueId());
         data.addDamageDealt(damage);
         data.updateLastActivity(System.currentTimeMillis());
+
+        // Advance combo counter and keep track of the session peak
+        int streak = currentCombo.merge(attacker.getUniqueId(), 1, Integer::sum);
+        data.updateLongestCombo(streak);
 
         // Update performance data for lag detection
         if (lagManager != null) {
@@ -185,17 +193,29 @@ public class CombatTracker {
     }
 
     /**
-     * Records damage received in combat.
+     * Records damage received in combat and resets the defender's hit streak.
      */
     public void recordDamageReceived(Player defender, double damage) {
         PlayerCombatData data = getPlayerData(defender.getUniqueId());
         data.addDamageReceived(damage);
         data.updateLastActivity(System.currentTimeMillis());
 
+        // Taking a hit breaks the defender's combo streak
+        currentCombo.put(defender.getUniqueId(), 0);
+
         // Update performance data for lag detection
         if (lagManager != null) {
             lagManager.updatePlayerPing(defender);
         }
+    }
+
+    /**
+     * Returns the peak combo count recorded for a player this session and clears it.
+     * Called at end-of-combat to persist the peak into PlayerCombatData.
+     */
+    public int getAndResetCombo(UUID playerId) {
+        Integer peak = currentCombo.remove(playerId);
+        return peak != null ? peak : 0;
     }
 
     /**

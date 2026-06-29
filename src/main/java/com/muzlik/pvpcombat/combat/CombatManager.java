@@ -563,6 +563,7 @@ public class CombatManager implements ICombatManager {
         com.muzlik.pvpcombat.data.PlayerCombatData globalData = combatTracker.getPlayerData(player.getUniqueId());
         Map<String, com.muzlik.pvpcombat.data.WeaponStats> sessionWeaponStats = session.getWeaponStats(player);
 
+        int sessionCriticals = 0;
         for (Map.Entry<String, com.muzlik.pvpcombat.data.WeaponStats> entry : sessionWeaponStats.entrySet()) {
             String material = entry.getKey();
             com.muzlik.pvpcombat.data.WeaponStats sessionStats = entry.getValue();
@@ -572,7 +573,20 @@ public class CombatManager implements ICombatManager {
             globalStats.setTotalDamage(globalStats.getTotalDamage() + sessionStats.getTotalDamage());
             globalStats.setKills(globalStats.getKills() + sessionStats.getKills());
             globalStats.setCriticalHits(globalStats.getCriticalHits() + sessionStats.getCriticalHits());
+
+            // Accumulate session-level critical hits to update the global counter
+            sessionCriticals += sessionStats.getCriticalHits();
         }
+
+        // Fix: propagate session critical hits into the top-level PlayerCombatData counter
+        // so that {critical_hits} in the GUI reflects real data.
+        if (sessionCriticals > 0) {
+            globalData.setCriticalHits(globalData.getCriticalHits() + sessionCriticals);
+        }
+
+        // Fix: flush any remaining combo state for this player (combo is updated live
+        // during the session via recordDamageDealt, so just clean up the map entry).
+        combatTracker.getAndResetCombo(player.getUniqueId());
     }
 
     /**

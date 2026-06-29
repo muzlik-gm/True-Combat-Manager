@@ -36,6 +36,30 @@ public abstract class DatabaseManager implements IDatabaseManager {
      * @return configured HikariConfig
      */
     protected abstract HikariConfig createHikariConfig();
+
+    /**
+     * Returns the database-appropriate INSERT OR IGNORE SQL.
+     * SQLite: INSERT OR IGNORE INTO
+     * MySQL/MariaDB: INSERT IGNORE INTO
+     */
+    protected String insertOrIgnore(String table, String columns, String values) {
+        if ("MySQL".equals(databaseType)) {
+            return "INSERT IGNORE INTO " + table + " " + columns + " VALUES " + values;
+        }
+        return "INSERT OR IGNORE INTO " + table + " " + columns + " VALUES " + values;
+    }
+
+    /**
+     * Returns the database-appropriate INSERT OR REPLACE SQL.
+     * SQLite: INSERT OR REPLACE INTO
+     * MySQL/MariaDB: REPLACE INTO
+     */
+    protected String insertOrReplace(String table, String columns, String values) {
+        if ("MySQL".equals(databaseType)) {
+            return "REPLACE INTO " + table + " " + columns + " VALUES " + values;
+        }
+        return "INSERT OR REPLACE INTO " + table + " " + columns + " VALUES " + values;
+    }
     
     @Override
     public void initialize() throws SQLException {
@@ -161,7 +185,7 @@ public abstract class DatabaseManager implements IDatabaseManager {
             );
 
             // Insert initial schema version if not exists
-            stmt.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (1)");
+            stmt.execute(insertOrIgnore("schema_version", "(version)", "(1)"));
             
             logger.info("Database tables created successfully");
         }
@@ -169,10 +193,10 @@ public abstract class DatabaseManager implements IDatabaseManager {
     
     @Override
     public void savePlayerData(UUID playerId, PlayerCombatData data) {
-        String sql = "INSERT OR REPLACE INTO player_stats " +
+        String sql = insertOrReplace("player_stats",
                     "(player_id, wins, losses, total_damage_dealt, total_damage_received, " +
-                    "total_combat_time, last_combat, critical_hits, longest_combo, highest_damage_in_session) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "total_combat_time, last_combat, critical_hits, longest_combo, highest_damage_in_session)",
+                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -199,9 +223,9 @@ public abstract class DatabaseManager implements IDatabaseManager {
     }
 
     private void saveWeaponStats(Connection conn, UUID playerId, Map<String, com.muzlik.pvpcombat.data.WeaponStats> weaponStats) throws SQLException {
-        String sql = "INSERT OR REPLACE INTO player_weapon_stats " +
-                    "(player_id, weapon_material, uses, total_damage, kills, critical_hits) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = insertOrReplace("player_weapon_stats",
+                    "(player_id, weapon_material, uses, total_damage, kills, critical_hits)",
+                    "(?, ?, ?, ?, ?, ?)");
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             for (Map.Entry<String, com.muzlik.pvpcombat.data.WeaponStats> entry : weaponStats.entrySet()) {
@@ -264,10 +288,10 @@ public abstract class DatabaseManager implements IDatabaseManager {
             return;
         }
         
-        String sql = "INSERT OR REPLACE INTO player_stats " +
+        String sql = insertOrReplace("player_stats",
                     "(player_id, wins, losses, total_damage_dealt, total_damage_received, " +
-                    "total_combat_time, last_combat, critical_hits, longest_combo, highest_damage_in_session) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "total_combat_time, last_combat, critical_hits, longest_combo, highest_damage_in_session)",
+                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -355,10 +379,10 @@ public abstract class DatabaseManager implements IDatabaseManager {
     
     @Override
     public void saveVisualPreferences(UUID playerId, VisualPreferences preferences) {
-        String sql = "INSERT OR REPLACE INTO visual_preferences " +
+        String sql = insertOrReplace("visual_preferences",
                     "(player_id, selected_theme, selected_sound_profile, selected_message_style, " +
-                    "animations_enabled, sounds_enabled, bossbar_enabled, actionbar_enabled) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "animations_enabled, sounds_enabled, bossbar_enabled, actionbar_enabled)",
+                    "(?, ?, ?, ?, ?, ?, ?, ?)");
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

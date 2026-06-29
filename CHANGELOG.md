@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0-alpha] - 2026-06-29
+
+### ✨ Improvements & Testing
+
+- Thread-safe combat session management with ReadWriteLock
+- Lag-aware combat timer with dynamic extension
+- Weapon statistics tracking and persistence
+- Database schema v2 with weapon stats table
+- Comprehensive test suite added
+- GitHub Actions CI workflow
+
+---
+
 ## [1.2.1] - 2026-05-16
 
 ### 🛡️ Dual Grace Period System & Major Bug Fixes
