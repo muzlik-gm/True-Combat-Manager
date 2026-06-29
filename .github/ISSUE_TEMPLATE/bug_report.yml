@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report a reproducible bug or crash
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps someone else can follow to reproduce the issue.
+      placeholder: |
+        1. Run /pvp command...
+        2. Enter combat with...
+        3. See error...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Plugin Version
+      description: Version from the JAR filename or plugin.yml
+      placeholder: e.g. 1.2.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database Type
+      options:
+        - SQLite
+        - MySQL / MariaDB
+    validations:
+      required: true
+
+  - type: input
+    id: server
+    attributes:
+      label: Server Software & Version
+      description: e.g. Paper 1.20.4, Purpur 1.21
+      placeholder: Paper 1.20.4
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Console Errors
+      description: Paste the full error from the console (no screenshots).
+      render: text
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have checked for existing issues (open & closed) about this bug
+          required: true
+        - label: I am running the latest version of the plugin
+          required: false
