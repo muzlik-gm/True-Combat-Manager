@@ -1,4 +1,4 @@
-# Installation Guide — True Combat Manager v1.2.1
+# Installation Guide — True Combat Manager v1.3.0-alpha
 
 ## Quick Start
 
@@ -29,7 +29,7 @@ Drop the JAR in your plugins folder and restart. That's it — SQLite works out 
 
 ## Installation Steps
 
-1. Download `truecombatmanager-1.2.1.jar`
+1. Download `truecombatmanager-1.3.0-alpha.jar`
 2. Place it in your server's `plugins/` folder
 3. Start or restart your server
 4. The plugin generates its config files automatically:
@@ -117,10 +117,10 @@ Players' combat state and statistics are shared across the network.
 
 ---
 
-## Upgrading from v1.2.0
+## Upgrading from v1.2.x
 
 1. Stop your server
-2. Replace the JAR with `truecombatmanager-1.2.1.jar`
+2. Replace the JAR with `truecombatmanager-1.3.0-alpha.jar`
 3. **Recommended:** Delete `plugins/TrueCombatManager/config.yml` so it regenerates with the new `disconnect-protection` structure. Your database and statistics are unaffected.
    - Alternatively, manually add the new sections — see [CHANGELOG.md](CHANGELOG.md) for the exact YAML.
 4. Start your server
