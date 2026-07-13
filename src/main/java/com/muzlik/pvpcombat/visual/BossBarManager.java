@@ -45,9 +45,55 @@ public class BossBarManager {
             Player attacker = session.getAttacker();
             Player defender = session.getDefender();
 
-            bossBar.addPlayer(attacker);
-            bossBar.addPlayer(defender);
+            boolean attackerEnabled = true;
+            boolean defenderEnabled = true;
+            if (plugin.getVisualManager() != null) {
+                attackerEnabled = ((VisualManager) plugin.getVisualManager()).getPreferences(attacker.getUniqueId()).isBossBarEnabled();
+                defenderEnabled = ((VisualManager) plugin.getVisualManager()).getPreferences(defender.getUniqueId()).isBossBarEnabled();
+            }
+            if (attackerEnabled) bossBar.addPlayer(attacker);
+            if (defenderEnabled) bossBar.addPlayer(defender);
             activeBossBars.put(sessionId, bossBar);
+        }
+    }
+
+    /**
+     * Refreshes active bossbars for players involved, checking their custom preferences.
+     */
+    public void refreshPlayerParticipation(String sessionId) {
+        BossBar bossBar = activeBossBars.get(sessionId);
+        CombatSession session = ((CombatManager) plugin.getCombatManager()).getSessionById(sessionId);
+        if (bossBar == null || session == null) return;
+
+        Player attacker = session.getAttacker();
+        Player defender = session.getDefender();
+
+        if (attacker != null) {
+            boolean enabled = true;
+            if (plugin.getVisualManager() != null) {
+                enabled = ((VisualManager) plugin.getVisualManager()).getPreferences(attacker.getUniqueId()).isBossBarEnabled();
+            }
+            if (enabled) {
+                if (!bossBar.getPlayers().contains(attacker)) {
+                    bossBar.addPlayer(attacker);
+                }
+            } else {
+                bossBar.removePlayer(attacker);
+            }
+        }
+
+        if (defender != null) {
+            boolean enabled = true;
+            if (plugin.getVisualManager() != null) {
+                enabled = ((VisualManager) plugin.getVisualManager()).getPreferences(defender.getUniqueId()).isBossBarEnabled();
+            }
+            if (enabled) {
+                if (!bossBar.getPlayers().contains(defender)) {
+                    bossBar.addPlayer(defender);
+                }
+            } else {
+                bossBar.removePlayer(defender);
+            }
         }
     }
 

@@ -105,7 +105,7 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
      * @return true if it's a player command, false otherwise
      */
     private boolean isPlayerCommand(String subCommand) {
-        return Arrays.asList("status", "summary", "stats", "toggle-style").contains(subCommand);
+        return Arrays.asList("status", "summary", "stats", "toggle-style", "toggle-sounds", "toggle-bossbar", "toggle-actionbar").contains(subCommand);
     }
 
     /**
@@ -120,6 +120,9 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
             player.sendMessage("§e/combat stats §7- Opens your combat statistics");
             player.sendMessage("§e/combat summary §7- Shows your latest PvP fight summary");
             player.sendMessage("§e/combat toggle-style §7- Choose message and theme styles");
+            player.sendMessage("§e/combat toggle-sounds §7- Toggle combat sound cues (Accessibility)");
+            player.sendMessage("§e/combat toggle-bossbar §7- Toggle combat boss bar (Accessibility)");
+            player.sendMessage("§e/combat toggle-actionbar §7- Toggle combat action bar (Accessibility)");
 
             if (player.hasPermission("pvpcombat.admin")) {
                 player.sendMessage("§c=== Admin Commands ===");
@@ -156,6 +159,9 @@ public class CombatCommand implements CommandExecutor, TabCompleter {
                 completions.add("summary");
                 completions.add("stats");
                 completions.add("toggle-style");
+                completions.add("toggle-sounds");
+                completions.add("toggle-bossbar");
+                completions.add("toggle-actionbar");
 
                 if (player.hasPermission("pvpcombat.admin")) {
                     completions.add("inspect");

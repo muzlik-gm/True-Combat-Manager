@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/muzlik-gm/True-Combat-Manager)
 [![Minecraft](https://img.shields.io/badge/minecraft-1.18--1.21-green.svg)](https://www.spigotmc.org/)
 [![Java](https://img.shields.io/badge/java-17+-orange.svg)](https://adoptium.net/)
-[![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 **Professional PvP Combat Management for Minecraft Servers**
 
@@ -258,9 +258,13 @@ For multi-server networks:
 
 ## 📄 License
 
-**All Rights Reserved © 2026 muzlik**
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the [LICENSE](LICENSE) file for the full license text.
 
-This is proprietary software. Unauthorized copying, distribution, modification, or use is strictly prohibited.
+### Why GPLv3?
+We chose the **GNU General Public License v3.0** for **True Combat Manager** because it is the industry standard for open-source Minecraft plugin development, aligning with the licensing of major platforms like SpigotMC and PaperMC. GPLv3 is a strong copyleft license that ensures:
+1. **End-User Freedom:** Players and server administrators have the freedom to run, study, share, and modify the software.
+2. **Copyleft Protection:** Any modified versions or derivatives of this plugin must also be open-sourced under the GPLv3. This prevents third parties from taking our work, making minor proprietary modifications, and selling it under a closed-source license.
+3. **Patent Protections:** GPLv3 contains explicit patent grants, protecting users and contributors from patent litigation.
 
 ---
 
