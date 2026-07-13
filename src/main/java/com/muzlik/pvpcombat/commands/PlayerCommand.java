@@ -55,6 +55,12 @@ public class PlayerCommand {
                     return handleSummaryCommand(player);
                 case "stats":
                     return handleStatsCommand(player);
+                case "toggle-sounds":
+                    return handleToggleSoundsCommand(player);
+                case "toggle-bossbar":
+                    return handleToggleBossBarCommand(player);
+                case "toggle-actionbar":
+                    return handleToggleActionBarCommand(player);
                 case "toggle-style":
                     return handleToggleStyleCommand(player);
                 default:
@@ -249,6 +255,108 @@ public class PlayerCommand {
             plugin.getLogger().severe("Error toggling style: " + e.getMessage());
             e.printStackTrace();
             player.sendMessage("§cFailed to toggle style.");
+            return true;
+        }
+    }
+
+    /**
+     * Handles the toggle-sounds subcommand.
+     */
+    private boolean handleToggleSoundsCommand(Player player) {
+        try {
+            com.muzlik.pvpcombat.visual.VisualManager vm = getVisualManager();
+            if (vm == null) {
+                player.sendMessage("§cVisual system is not available.");
+                return true;
+            }
+
+            java.util.UUID id = player.getUniqueId();
+            com.muzlik.pvpcombat.data.VisualPreferences prefs = vm.getPreferences(id);
+            boolean newVal = !prefs.isSoundsEnabled();
+            prefs.setSoundsEnabled(newVal);
+            vm.savePreferences(id, prefs);
+
+            if (newVal) {
+                player.sendMessage("§aCombat sounds have been enabled.");
+            } else {
+                player.sendMessage("§cCombat sounds have been disabled.");
+            }
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error toggling sounds: " + e.getMessage());
+            player.sendMessage("§cFailed to toggle sounds.");
+            return true;
+        }
+    }
+
+    /**
+     * Handles the toggle-bossbar subcommand.
+     */
+    private boolean handleToggleBossBarCommand(Player player) {
+        try {
+            com.muzlik.pvpcombat.visual.VisualManager vm = getVisualManager();
+            if (vm == null) {
+                player.sendMessage("§cVisual system is not available.");
+                return true;
+            }
+
+            java.util.UUID id = player.getUniqueId();
+            com.muzlik.pvpcombat.data.VisualPreferences prefs = vm.getPreferences(id);
+            boolean newVal = !prefs.isBossBarEnabled();
+            prefs.setBossBarEnabled(newVal);
+            vm.savePreferences(id, prefs);
+
+            // If player is in active combat, we must apply this instantly by adding or removing them
+            if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player)) {
+                com.muzlik.pvpcombat.combat.CombatManager cm =
+                    (com.muzlik.pvpcombat.combat.CombatManager) plugin.getCombatManager();
+                for (com.muzlik.pvpcombat.data.CombatSession s : cm.getActiveSessions().values()) {
+                    if (s.involvesPlayer(player)) {
+                        vm.getBossBarManager().refreshPlayerParticipation(s.getSessionId().toString());
+                        break;
+                    }
+                }
+            }
+
+            if (newVal) {
+                player.sendMessage("§aCombat bossbar has been enabled.");
+            } else {
+                player.sendMessage("§cCombat bossbar has been disabled.");
+            }
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error toggling bossbar: " + e.getMessage());
+            player.sendMessage("§cFailed to toggle bossbar.");
+            return true;
+        }
+    }
+
+    /**
+     * Handles the toggle-actionbar subcommand.
+     */
+    private boolean handleToggleActionBarCommand(Player player) {
+        try {
+            com.muzlik.pvpcombat.visual.VisualManager vm = getVisualManager();
+            if (vm == null) {
+                player.sendMessage("§cVisual system is not available.");
+                return true;
+            }
+
+            java.util.UUID id = player.getUniqueId();
+            com.muzlik.pvpcombat.data.VisualPreferences prefs = vm.getPreferences(id);
+            boolean newVal = !prefs.isActionBarEnabled();
+            prefs.setActionBarEnabled(newVal);
+            vm.savePreferences(id, prefs);
+
+            if (newVal) {
+                player.sendMessage("§aCombat action bar has been enabled.");
+            } else {
+                player.sendMessage("§cCombat action bar has been disabled.");
+            }
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error toggling actionbar: " + e.getMessage());
+            player.sendMessage("§cFailed to toggle actionbar.");
             return true;
         }
     }

@@ -37,6 +37,11 @@ public class ActionBarManager {
         if (!plugin.getConfig().getBoolean("visual.actionbar.enabled", true)) {
             return;
         }
+        if (plugin.getVisualManager() != null) {
+            if (!((VisualManager) plugin.getVisualManager()).getPreferences(player.getUniqueId()).isActionBarEnabled()) {
+                return;
+            }
+        }
 
         String formattedMessage = formatMessage(message, player);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(formattedMessage));
@@ -64,10 +69,28 @@ public class ActionBarManager {
                     return;
                 }
 
-                String message1 = buildActionBarMessage(player1, player2);
-                String message2 = buildActionBarMessage(player2, player1);
-                sendActionBar(player1, message1);
-                sendActionBar(player2, message2);
+                boolean player1Enabled = true;
+                boolean player2Enabled = true;
+                if (plugin.getVisualManager() != null) {
+                    player1Enabled = ((VisualManager) plugin.getVisualManager()).getPreferences(player1.getUniqueId()).isActionBarEnabled();
+                    player2Enabled = ((VisualManager) plugin.getVisualManager()).getPreferences(player2.getUniqueId()).isActionBarEnabled();
+                }
+
+                if (player1Enabled) {
+                    String message1 = buildActionBarMessage(player1, player2);
+                    sendActionBar(player1, message1);
+                } else {
+                    // Clear if it was turned off during combat
+                    player1.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
+                }
+
+                if (player2Enabled) {
+                    String message2 = buildActionBarMessage(player2, player1);
+                    sendActionBar(player2, message2);
+                } else {
+                    // Clear if it was turned off during combat
+                    player2.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
+                }
             }
         };
 

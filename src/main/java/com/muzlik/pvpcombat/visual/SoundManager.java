@@ -44,6 +44,11 @@ public class SoundManager {
      * in-game profile changes take effect without a restart.
      */
     public void playSoundForEvent(Player player, String eventType) {
+        if (plugin.getVisualManager() != null) {
+            if (!((VisualManager) plugin.getVisualManager()).getPreferences(player.getUniqueId()).isSoundsEnabled()) {
+                return;
+            }
+        }
         // Use ConfigManager's FileConfiguration so reloads are respected
         FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
             ? configManager.getMainConfig()
@@ -100,6 +105,11 @@ public class SoundManager {
      * Generic sound playing method.
      */
     public void playSound(Player player, Sound sound) {
+        if (plugin.getVisualManager() != null) {
+            if (!((VisualManager) plugin.getVisualManager()).getPreferences(player.getUniqueId()).isSoundsEnabled()) {
+                return;
+            }
+        }
         FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
             ? configManager.getMainConfig() : plugin.getConfig();
         if (!cfg.getBoolean("visual.sounds.enabled", true)) return;
@@ -110,6 +120,11 @@ public class SoundManager {
      * Plays sound with custom volume and pitch.
      */
     public void playSound(Player player, Sound sound, float volume, float pitch) {
+        if (plugin.getVisualManager() != null) {
+            if (!((VisualManager) plugin.getVisualManager()).getPreferences(player.getUniqueId()).isSoundsEnabled()) {
+                return;
+            }
+        }
         FileConfiguration cfg = (configManager != null && configManager.getMainConfig() != null)
             ? configManager.getMainConfig() : plugin.getConfig();
         if (!cfg.getBoolean("visual.sounds.enabled", true)) return;
