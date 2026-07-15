@@ -58,16 +58,17 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: truecombatmanager-shaded-jar
-        path: target/truecombatmanager-*.jar
+        path: target/truecombatmanager-${{ steps.pom-info.outputs.pom_version }}.jar
         if-no-files-found: error
 
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
-        files: target/truecombatmanager-*.jar
+        files: target/truecombatmanager-${{ steps.pom-info.outputs.pom_version }}.jar
         draft: false
-        prerelease: ${{ steps.pom-info.outputs.is_prerelease }}
+        prerelease: ${{ steps.pom-info.outputs.is_prerelease == 'true' }}
+        fail_on_unmatched_files: true
         name: Release ${{ steps.pom-info.outputs.pom_version }}
         body: |
           Welcome to the release of **True Combat Manager v${{ steps.pom-info.outputs.pom_version }}**!
@@ -78,7 +79,7 @@ jobs:
           * **Commit:** `${{ github.sha }}`
 
           ### 📦 Installation
-          1. Download the attached `truecombatmanager-*.jar` file below.
+          1. Download the attached `truecombatmanager-${{ steps.pom-info.outputs.pom_version }}.jar` file below.
           2. Place the JAR in your Spigot/Paper server's `plugins/` directory.
           3. Restart or reload your server.
       env:
