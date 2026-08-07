@@ -1,0 +1,296 @@
+name: Release Manager
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.3.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      is_prerelease: ${{ steps.check-prerelease.outputs.is_prerelease }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Version
+        id: get-version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+            # Remove 'v' prefix if present
+            VERSION="${VERSION#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Using workflow dispatch version: $VERSION"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+            VERSION="${TAG_NAME#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Using tag version: $VERSION"
+          fi
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Parse POM Version
+        id: pom-version
+        run: |
+          POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "pom_version=$POM_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate Tag Matches POM
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${{ steps.get-version.outputs.version }}"
+          POM_VERSION="${{ steps.pom-version.outputs.pom_version }}"
+          
+          if [ "$TAG_VERSION" != "$POM_VERSION" ]; then
+            echo "::error::Git tag version ($TAG_VERSION) does not match pom.xml version ($POM_VERSION)"
+            echo "::error::Please update pom.xml to version $TAG_VERSION before releasing"
+            exit 1
+          fi
+          echo "✓ Version validation passed: $TAG_VERSION"
+
+      - name: Check if Pre-release
+        id: check-prerelease
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          if echo "$VERSION" | grep -iqE "snapshot|alpha|beta|rc"; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "Pre-release detected: $VERSION"
+          elif [ "${{ inputs.prerelease }}" = "true" ]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "Pre-release forced by workflow input"
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "Stable release: $VERSION"
+          fi
+
+  build-release:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    needs: validate-release
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Release
+        run: mvn clean package -B -DskipTests -Dmaven.test.skip=true
+
+      - name: Verify Build
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          JAR_FILE="target/truecombatmanager-${VERSION}.jar"
+          
+          if [ ! -f "$JAR_FILE" ]; then
+            echo "::error::Build artifact not found: $JAR_FILE"
+            ls -la target/
+            exit 1
+          fi
+          
+          echo "Build successful: $JAR_FILE"
+          file "$JAR_FILE"
+          ls -lh "$JAR_FILE"
+
+      - name: Generate Checksums
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          cd target
+          sha256sum truecombatmanager-${VERSION}.jar > truecombatmanager-${VERSION}.jar.sha256
+          md5sum truecombatmanager-${VERSION}.jar > truecombatmanager-${VERSION}.jar.md5
+          cat truecombatmanager-${VERSION}.jar.sha256
+          cat truecombatmanager-${VERSION}.jar.md5
+
+      - name: Upload Release JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-jar
+          path: target/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar
+          retention-days: 90
+
+      - name: Upload Checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: |
+            target/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar.sha256
+            target/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar.md5
+          retention-days: 90
+
+      - name: Upload Sources and Javadoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: additional-artifacts
+          path: |
+            target/truecombatmanager-${{ needs.validate-release.outputs.version }}-sources.jar
+            target/truecombatmanager-${{ needs.validate-release.outputs.version }}-javadoc.jar
+          retention-days: 90
+          if-no-files-found: ignore
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-release]
+    
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*'
+          merge-multiple: true
+          path: ./release-artifacts
+
+      - name: List Artifacts
+        run: ls -la ./release-artifacts/
+
+      - name: Generate Changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configurationJson: |
+            {
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Bug Fixes",
+                  "labels": ["bug", "fix"]
+                },
+                {
+                  "title": "## 📝 Documentation",
+                  "labels": ["documentation"]
+                },
+                {
+                  "title": "## 🔒 Security",
+                  "labels": ["security"]
+                },
+                {
+                  "title": "## Other Changes"
+                }
+              ],
+              "ignore_labels": ["dependencies", "chore"],
+              "pr_template": "- ${{PullRequest.title}} (#${{PullRequest.number}})",
+              "empty_template": "- No changes"
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release Notes
+        id: release-notes
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          IS_PRERELEASE="${{ needs.validate-release.outputs.is_prerelease }}"
+          
+          cat > release-notes.md << EOF
+          # True Combat Manager v${VERSION}
+          
+          ${IS_PRERELEASE == 'true' && '⚠️ **This is a pre-release version**\n\n' || ''}
+          
+          ## What's Changed
+          
+          ${{ steps.changelog.outputs.changelog }}
+          
+          ## Installation
+          
+          1. Download the \`truecombatmanager-${VERSION}.jar\` file
+          2. Place it in your server's \`plugins/\` directory
+          3. Restart your server
+          
+          ## Verification
+          
+          Verify the integrity of your download:
+          \`\`\`bash
+          sha256sum -c truecombatmanager-${VERSION}.jar.sha256
+          \`\`\`
+          
+          ---
+          
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}
+          EOF
+          
+          echo "Release notes generated"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar
+            release-artifacts/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar.sha256
+            release-artifacts/truecombatmanager-${{ needs.validate-release.outputs.version }}.jar.md5
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ needs.validate-release.outputs.is_prerelease == 'true' }}
+          fail_on_unmatched_files: true
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-maven:
+    name: Publish to Maven Repository
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    if: ${{ needs.validate-release.outputs.is_prerelease == 'false' }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Configure Git for Maven
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Publish to GitHub Packages
+        run: mvn deploy -B -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Notify Success
+        run: |
+          echo "✅ Successfully published v${{ needs.validate-release.outputs.version }} to Maven repository"

@@ -1,0 +1,222 @@
+# Development Workflow - Feature Branch Testing
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      run_integration_tests:
+        description: 'Run integration tests'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Check PR Title Convention
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate PR Description
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if [ -z "$PR_BODY" ] || [ "$PR_BODY" = "null" ]; then
+            echo "::warning::PR description is empty. Consider adding more context."
+          else
+            echo "✓ PR has a description"
+          fi
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile Project
+        run: mvn clean compile -B
+
+      - name: Run PMD Analysis
+        run: mvn pmd:check -B || echo "Warning: PMD found issues"
+        continue-on-error: true
+
+      - name: Run SpotBugs Analysis
+        run: mvn spotbugs:check -B || echo "Warning: SpotBugs found issues"
+        continue-on-error: true
+
+      - name: Upload Static Analysis Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: static-analysis-reports
+          path: |
+            target/pmd.xml
+            target/spotbugsXml.xml
+          if-no-files-found: ignore
+
+  test-matrix:
+    name: Test Matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: [unit, integration]
+        include:
+          - test-type: unit
+            maven-profile: ""
+          - test-type: integration
+            maven-profile: "-Pintegration-tests"
+      fail-fast: false
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run ${{ matrix.test-type }} Tests
+        id: tests
+        run: |
+          if [ "${{ matrix.test-type }}" = "integration" ] && [ "${{ github.event.inputs.run_integration_tests || 'false' }}" != "true" ] && [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Skipping integration tests for PR (enable via workflow_dispatch)"
+            exit 0
+          fi
+          mvn clean test ${{ matrix.maven-profile }} -B
+
+      - name: Collect Coverage
+        if: matrix.test-type == 'unit'
+        run: mvn jacoco:report -B
+
+      - name: Upload Coverage Report
+        if: matrix.test-type == 'unit'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  performance-check:
+    name: Performance Regression Check
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'performance') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run JMH Benchmarks
+        run: mvn clean verify -Pbenchmarks -B || echo "No benchmarks configured or benchmark failure"
+        continue-on-error: true
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: target/jmh-results.json
+          if-no-files-found: ignore
+
+  docker-test:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'docker')
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: truecombatmanager:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [code-quality, test-matrix]
+    if: always()
+    
+    steps:
+      - name: Check Job Statuses
+        run: |
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Test Matrix: ${{ needs.test-matrix.result }}"
+          
+          if [ "${{ needs.code-quality.result }}" != "success" ] && [ "${{ needs.code-quality.result }}" != "skipped" ]; then
+            echo "::error::Code quality checks failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.test-matrix.result }}" != "success" ] && [ "${{ needs.test-matrix.result }}" != "skipped" ]; then
+            echo "::error::Tests failed"
+            exit 1
+          fi
+          
+          echo "✓ All quality gates passed"
