@@ -513,7 +513,7 @@ public class CombatLogger {
             ChatColor.GRAY + "Attacks: " + summary.getTotalAttacks(),
             ChatColor.YELLOW + "Accuracy: " + String.format("%.1f%%", summary.getAccuracy())
         ));
-        hitsMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        hitsMeta.addEnchant(Enchantment.DURABILITY, 1, true);
         hitsItem.setItemMeta(hitsMeta);
         inv.setItem(10, hitsItem);
 

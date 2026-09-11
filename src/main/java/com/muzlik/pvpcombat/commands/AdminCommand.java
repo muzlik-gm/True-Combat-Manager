@@ -5,6 +5,7 @@ import com.muzlik.pvpcombat.admin.CombatInspector;
 import com.muzlik.pvpcombat.admin.DebugManager;
 import com.muzlik.pvpcombat.combat.CombatTracker;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -600,11 +601,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         try {
             if (args.length < 2) {
                 // Show current status and usage
-                boolean isPvPEnabled = player.getWorld().isPVP();
+                Boolean isPvPEnabled = player.getWorld().getPvP();
                 player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
                 player.sendMessage("§e§lPvP Status - " + player.getWorld().getName());
                 player.sendMessage("");
-                player.sendMessage("§7Current Status: " + (isPvPEnabled ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
+                player.sendMessage("§7Current Status: " + (isPvPEnabled != null && isPvPEnabled ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
                 player.sendMessage("");
                 player.sendMessage("§7Usage:");
                 player.sendMessage("  §e/combat pvp enable §8- §7Enable PvP in this world");
@@ -652,12 +653,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     
                 case "status":
                 case "check":
-                    boolean status = player.getWorld().isPVP();
+                    Boolean status = player.getWorld().getPvP();
                     player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
                     player.sendMessage("§e§lPvP Status");
                     player.sendMessage("");
                     player.sendMessage("§7World: §e" + player.getWorld().getName());
-                    player.sendMessage("§7Status: " + (status ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
+                    player.sendMessage("§7Status: " + (status != null && status ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
                     player.sendMessage("");
                     player.sendMessage("§7When disabled, players cannot engage in combat.");
                     player.sendMessage("§7The plugin will prevent combat tagging in this world.");

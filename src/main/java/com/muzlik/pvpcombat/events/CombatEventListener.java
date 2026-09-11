@@ -14,6 +14,7 @@ import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
 import org.bukkit.Material;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -89,7 +90,11 @@ public class CombatEventListener implements Listener {
             Player defender = (Player) event.getEntity();
             
             // FIX: Check if PvP is enabled in this world BEFORE any other checks
-            if (!attacker.getWorld().isPVP()) {
+            // Note: In newer Spigot versions, use getGameRuleValue(GameRule.PVP) instead
+            // For 1.20.4 compatibility, we'll use the legacy isPVP() method through reflection if needed
+            // But setPVP still works in World interface
+            Boolean pvpEnabled = attacker.getWorld().getPvP();
+            if (pvpEnabled != null && !pvpEnabled) {
                 return;
             }
             

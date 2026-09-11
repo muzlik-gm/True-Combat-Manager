@@ -15,6 +15,7 @@ import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
 import com.muzlik.pvpcombat.visual.VisualManager;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -171,7 +172,8 @@ public class CombatManager implements ICombatManager {
                 }
                 
                 // FIX: Double-check if PvP is enabled in this world (safety check)
-                if (!attacker.getWorld().isPVP()) {
+                Boolean pvpEnabled = attacker.getWorld().getPvP();
+                if (pvpEnabled != null && !pvpEnabled) {
                     plugin.getLogger().info("Combat prevented: PvP is disabled in world " + attacker.getWorld().getName());
                     // #region agent log
                     com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",

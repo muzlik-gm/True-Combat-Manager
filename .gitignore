@@ -1,34 +1,27 @@
 ```
 # Compiled and build artifacts
 *.class
-*.jar
-*.war
-*.ear
+*.o
+*.obj
+*.out
+build/
 target/
 
 # Dependencies
+.gradle/
 lib/
-libs/
-dependency/
-dependencies/
 
 # Logs and temp files
 *.log
 *.tmp
-*.temp
+*.swp
 
 # Editors
 .vscode/
 .idea/
-*.iml
-*.iws
-*.ipr
 
-# System
-.DS_Store
-Thumbs.db
-
-# Gradle (if used)
-.gradle/
-build/
+# Environment
+.env
+.env.local
+*.env.*
 ```
