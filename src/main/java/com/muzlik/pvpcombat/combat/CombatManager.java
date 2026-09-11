@@ -15,6 +15,7 @@ import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
 import com.muzlik.pvpcombat.visual.VisualManager;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
