@@ -5,6 +5,8 @@ import com.muzlik.pvpcombat.admin.CombatInspector;
 import com.muzlik.pvpcombat.admin.DebugManager;
 import com.muzlik.pvpcombat.combat.CombatTracker;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -82,6 +84,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                         plugin.getGuiManager().loadConfig();
                     }
                     return result;
+                case "pvp":
+                    return handlePvPCommand(player, args);
                 case "stats":
                     if (args.length > 1) {
                         return handleAdminStatsCommand(sender, args);
@@ -587,6 +591,96 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     }
     
     /**
+     * Handles PvP toggle command to enable/disable PvP in current world.
+     *
+     * @param player The admin player executing the command
+     * @param args The command arguments
+     * @return true if command executed successfully
+     */
+    private boolean handlePvPCommand(Player player, String[] args) {
+        try {
+            if (args.length < 2) {
+                // Show current status and usage
+                Boolean isPvPEnabled = isPvPEnabled(player.getWorld());
+                player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                player.sendMessage("§e§lPvP Status - " + player.getWorld().getName());
+                player.sendMessage("");
+                player.sendMessage("§7Current Status: " + (isPvPEnabled != null && isPvPEnabled ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
+                player.sendMessage("");
+                player.sendMessage("§7Usage:");
+                player.sendMessage("  §e/combat pvp enable §8- §7Enable PvP in this world");
+                player.sendMessage("  §e/combat pvp disable §8- §7Disable PvP in this world");
+                player.sendMessage("  §e/combat pvp status §8- §7Show current PvP status");
+                player.sendMessage("");
+                player.sendMessage("§7Note: This changes the world's PvP setting via Bukkit API.");
+                player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                return true;
+            }
+
+            String action = args[1].toLowerCase();
+            
+            switch (action) {
+                case "enable":
+                case "on":
+                case "true":
+                    player.getWorld().setPVP(true);
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    player.sendMessage("§e§lPvP Enabled");
+                    player.sendMessage("");
+                    player.sendMessage("§a✓ PvP has been enabled in §e" + player.getWorld().getName() + "§a!");
+                    player.sendMessage("");
+                    player.sendMessage("§7Players can now engage in combat in this world.");
+                    player.sendMessage("§7Use §e/combat pvp disable §7to turn it off.");
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    plugin.getLogger().info("[ADMIN] " + player.getName() + " enabled PvP in world: " + player.getWorld().getName());
+                    break;
+                    
+                case "disable":
+                case "off":
+                case "false":
+                    player.getWorld().setPVP(false);
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    player.sendMessage("§e§lPvP Disabled");
+                    player.sendMessage("");
+                    player.sendMessage("§c✗ PvP has been disabled in §e" + player.getWorld().getName() + "§c!");
+                    player.sendMessage("");
+                    player.sendMessage("§7Players cannot engage in combat in this world anymore.");
+                    player.sendMessage("§7Any ongoing combat will be prevented from continuing.");
+                    player.sendMessage("§7Use §e/combat pvp enable §7to turn it back on.");
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    plugin.getLogger().info("[ADMIN] " + player.getName() + " disabled PvP in world: " + player.getWorld().getName());
+                    break;
+                    
+                case "status":
+                case "check":
+                    Boolean status = isPvPEnabled(player.getWorld());
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    player.sendMessage("§e§lPvP Status");
+                    player.sendMessage("");
+                    player.sendMessage("§7World: §e" + player.getWorld().getName());
+                    player.sendMessage("§7Status: " + (status != null && status ? "§a§lENABLED ✓" : "§c§lDISABLED ✗"));
+                    player.sendMessage("");
+                    player.sendMessage("§7When disabled, players cannot engage in combat.");
+                    player.sendMessage("§7The plugin will prevent combat tagging in this world.");
+                    player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+                    break;
+                    
+                default:
+                    player.sendMessage("§cInvalid option. Use: enable, disable, or status");
+                    return true;
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error in PvP command: " + e.getMessage());
+            e.printStackTrace();
+            player.sendMessage("§cFailed to execute PvP command. Check console for details.");
+            return true;
+        }
+    }
+
+    /**
      * Force-ends combat for a specific player.
      *
      * @param player The admin player executing the command
@@ -667,10 +761,18 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
             if (args.length == 1) {
                 String input = args[0].toLowerCase();
-                List<String> commands = Arrays.asList("inspect", "summary", "reload", "debug", "logging", "protection", "stats", "clear");
+                List<String> commands = Arrays.asList("inspect", "summary", "reload", "pvp", "debug", "logging", "protection", "stats", "clear");
                 for (String cmd : commands) {
                     if (cmd.toLowerCase().startsWith(input)) {
                         completions.add(cmd);
+                    }
+                }
+            } else if (args.length == 2 && "pvp".equals(args[0].toLowerCase())) {
+                String input = args[1].toLowerCase();
+                List<String> options = Arrays.asList("enable", "disable", "status");
+                for (String opt : options) {
+                    if (opt.startsWith(input)) {
+                        completions.add(opt);
                     }
                 }
             } else if (args.length == 2 && "logging".equals(args[0].toLowerCase())) {

@@ -56,7 +56,7 @@ public class PerformanceMonitor {
      * Starts timing an operation.
      */
     public void startOperation(String operationName) {
-        operationStartTimes.put(operationName + Thread.currentThread().threadId(),
+        operationStartTimes.put(operationName + Thread.currentThread().getId(),
                                System.nanoTime());
     }
 
@@ -64,7 +64,7 @@ public class PerformanceMonitor {
      * Ends timing an operation and records the metrics.
      */
     public void endOperation(String operationName) {
-        String key = operationName + Thread.currentThread().threadId();
+        String key = operationName + Thread.currentThread().getId();
         Long startTime = operationStartTimes.remove(key);
 
         if (startTime != null) {

@@ -15,6 +15,8 @@ import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
 import com.muzlik.pvpcombat.visual.VisualManager;
+import org.bukkit.GameRule;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -167,6 +169,18 @@ public class CombatManager implements ICombatManager {
                                     "defenderSz", isInSafeZone(defender)));
                     // #endregion
                     return null; // Cannot start combat in safe zone
+                }
+                
+                // FIX: Double-check if PvP is enabled in this world (safety check)
+                Boolean pvpEnabled = isPvPEnabled(attacker.getWorld());
+                if (pvpEnabled != null && !pvpEnabled) {
+                    plugin.getLogger().info("Combat prevented: PvP is disabled in world " + attacker.getWorld().getName());
+                    // #region agent log
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                            "blocked_pvp_disabled", java.util.Map.of(
+                                    "world", attacker.getWorld().getName()));
+                    // #endregion
+                    return null; // Cannot start combat when PvP is disabled
                 }
 
                 UUID sessionId = UUID.randomUUID();
@@ -729,5 +743,27 @@ public class CombatManager implements ICombatManager {
         
         // Clear all sessions
         activeSessions.clear();
+}
+    /**
+     * Checks if PvP is enabled in a world using reflection for compatibility
+     * @param world The world to check
+     * @return true if PvP is enabled, false otherwise
+     */
+    private Boolean isPvPEnabled(World world) {
+        try {
+            // Try the newer getPvP method first (1.20.5+)
+            java.lang.reflect.Method getPvPMethod = world.getClass().getMethod("getPvP");
+            return (Boolean) getPvPMethod.invoke(world);
+        } catch (Exception e1) {
+            try {
+                // Fall back to legacy isPVP method (older versions)
+                java.lang.reflect.Method isPVPMethod = world.getClass().getMethod("isPVP");
+                return (Boolean) isPVPMethod.invoke(world);
+            } catch (Exception e2) {
+                // If both fail, assume PvP is enabled (default behavior)
+                plugin.getLogger().warning("Could not determine PvP status for world: " + world.getName());
+                return true;
+            }
+        }
     }
 }

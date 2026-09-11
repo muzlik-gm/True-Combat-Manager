@@ -6,6 +6,7 @@ import com.muzlik.pvpcombat.events.InterferenceDetectedEvent;
 import com.muzlik.pvpcombat.interfaces.ICombatManager;
 import com.muzlik.pvpcombat.visual.ActionBarManager;
 import com.muzlik.pvpcombat.visual.SoundManager;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 /**
@@ -34,6 +35,18 @@ public class AntiInterferenceManager {
         Player opponent = combatManager.getOpponent(target);
         if (hitter.equals(opponent)) {
             return false; // This is the legitimate opponent
+        }
+
+        // FIX: Don't flag spectators or creative players as interference
+        if (hitter.getGameMode() == GameMode.SPECTATOR || 
+            hitter.getGameMode() == GameMode.CREATIVE) {
+            return false; // These players should be blocked before reaching here
+        }
+        
+        // FIX: Don't flag if target is spectator or creative (shouldn't be in combat)
+        if (target.getGameMode() == GameMode.SPECTATOR || 
+            target.getGameMode() == GameMode.CREATIVE) {
+            return false; // These players shouldn't be in combat
         }
 
         // Interference detected - someone else is hitting a player in combat
