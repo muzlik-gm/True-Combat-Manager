@@ -168,6 +168,17 @@ public class CombatManager implements ICombatManager {
                     // #endregion
                     return null; // Cannot start combat in safe zone
                 }
+                
+                // FIX: Double-check if PvP is enabled in this world (safety check)
+                if (!attacker.getWorld().isPVP()) {
+                    plugin.getLogger().info("Combat prevented: PvP is disabled in world " + attacker.getWorld().getName());
+                    // #region agent log
+                    com.muzlik.pvpcombat.debug.AgentDebugLog.log("pre", "H2", "CombatManager.java:startCombat",
+                            "blocked_pvp_disabled", java.util.Map.of(
+                                    "world", attacker.getWorld().getName()));
+                    // #endregion
+                    return null; // Cannot start combat when PvP is disabled
+                }
 
                 UUID sessionId = UUID.randomUUID();
                 CombatSession session = new CombatSession(sessionId, attacker, defender, defaultTimerSeconds);

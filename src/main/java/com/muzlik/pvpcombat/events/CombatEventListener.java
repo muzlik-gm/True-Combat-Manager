@@ -13,6 +13,7 @@ import com.muzlik.pvpcombat.restrictions.RestrictionManager;
 import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
 import org.bukkit.Material;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -62,7 +63,7 @@ public class CombatEventListener implements Listener {
         this.newbieProtection = newbieProtection;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         performanceMonitor.startOperation("entity-damage-event");
 
@@ -86,8 +87,20 @@ public class CombatEventListener implements Listener {
             Player attacker = (Player) event.getDamager();
             Player defender = (Player) event.getEntity();
             
+            // FIX: Check if PvP is enabled in this world BEFORE any other checks
+            if (!attacker.getWorld().isPVP()) {
+                return;
+            }
+            
             // FIX: Prevent self-combat (player hitting themselves)
             if (attacker.equals(defender)) {
+                event.setCancelled(true);
+                return;
+            }
+            
+            // FIX: Check if either player is in Spectator mode (should not participate in combat)
+            if (attacker.getGameMode() == GameMode.SPECTATOR || 
+                defender.getGameMode() == GameMode.SPECTATOR) {
                 event.setCancelled(true);
                 return;
             }
@@ -176,16 +189,14 @@ public class CombatEventListener implements Listener {
                             "defender", defender.getName()));
             // #endregion
             if (!combatManager.isInCombat(attacker) && !combatManager.isInCombat(defender)) {
-                // Switch creative mode players to survival
-                if (attacker.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    attacker.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                    attacker.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
+                // FIX: Don't start combat if either player is in Creative mode (they should be blocked earlier, but double-check)
+                if (attacker.getGameMode() == GameMode.CREATIVE || 
+                    defender.getGameMode() == GameMode.CREATIVE) {
+                    // Cancel the event since creative players shouldn't be in combat
+                    event.setCancelled(true);
+                    return;
                 }
-                if (defender.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    defender.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                    defender.sendMessage(ChatColor.YELLOW + "You have been switched to Survival mode for combat!");
-                }
-
+                
                 // Start new combat synchronously
                 combatManager.startCombat(attacker, defender);
             } else {

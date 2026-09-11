@@ -1,33 +1,33 @@
 ```
-# Environment
-.env
-.env.local
-.env.*
-
-# Editors
-.vscode/
-
-# Dependencies
-node_modules/
-
-# Build artifacts
-dist/
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
 build/
 target/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Dependencies
+lib/
+libs/
+dependency-reduced-pom.xml
 
-# Logs
+# Logs and temp files
 *.log
-
-# Temp files
 *.tmp
 *.swp
-*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
 
 # OS
 .DS_Store
@@ -38,36 +38,62 @@ coverage/
 htmlcov/
 .coverage
 
-# MyPy
-.mypy_cache/
+# Package manager
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Pytest
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.nox/
 .pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+celerybeat-schedule
+celerybeat.pid
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+.recommenders
 
 # Gradle
 .gradle/
+build/
 
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Maven
+target/
+!pom.xml
+
+# Temporary folders
+temp/
+tmp/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# Sensitive files
+config.properties
+secrets.*
+passwords.*
+credentials.*
 ```
