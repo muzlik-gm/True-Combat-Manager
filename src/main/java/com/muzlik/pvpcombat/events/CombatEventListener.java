@@ -93,7 +93,7 @@ public class CombatEventListener implements Listener {
             // Note: In newer Spigot versions, use getGameRuleValue(GameRule.PVP) instead
             // For 1.20.4 compatibility, we'll use the legacy isPVP() method through reflection if needed
             // But setPVP still works in World interface
-            Boolean pvpEnabled = attacker.getWorld().getPvP();
+            Boolean pvpEnabled = isPvPEnabled(attacker.getWorld());
             if (pvpEnabled != null && !pvpEnabled) {
                 return;
             }

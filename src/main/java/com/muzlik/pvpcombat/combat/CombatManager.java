@@ -172,7 +172,7 @@ public class CombatManager implements ICombatManager {
                 }
                 
                 // FIX: Double-check if PvP is enabled in this world (safety check)
-                Boolean pvpEnabled = attacker.getWorld().getPvP();
+                Boolean pvpEnabled = isPvPEnabled(attacker.getWorld());
                 if (pvpEnabled != null && !pvpEnabled) {
                     plugin.getLogger().info("Combat prevented: PvP is disabled in world " + attacker.getWorld().getName());
                     // #region agent log
@@ -743,5 +743,27 @@ public class CombatManager implements ICombatManager {
         
         // Clear all sessions
         activeSessions.clear();
+}
+    /**
+     * Checks if PvP is enabled in a world using reflection for compatibility
+     * @param world The world to check
+     * @return true if PvP is enabled, false otherwise
+     */
+    private Boolean isPvPEnabled(World world) {
+        try {
+            // Try the newer getPvP method first (1.20.5+)
+            java.lang.reflect.Method getPvPMethod = world.getClass().getMethod("getPvP");
+            return (Boolean) getPvPMethod.invoke(world);
+        } catch (Exception e1) {
+            try {
+                // Fall back to legacy isPVP method (older versions)
+                java.lang.reflect.Method isPVPMethod = world.getClass().getMethod("isPVP");
+                return (Boolean) isPVPMethod.invoke(world);
+            } catch (Exception e2) {
+                // If both fail, assume PvP is enabled (default behavior)
+                plugin.getLogger().warning("Could not determine PvP status for world: " + world.getName());
+                return true;
+            }
+        }
     }
 }

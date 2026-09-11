@@ -601,7 +601,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         try {
             if (args.length < 2) {
                 // Show current status and usage
-                Boolean isPvPEnabled = player.getWorld().getPvP();
+                Boolean isPvPEnabled = isPvPEnabled(player.getWorld());
                 player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
                 player.sendMessage("§e§lPvP Status - " + player.getWorld().getName());
                 player.sendMessage("");
@@ -653,7 +653,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     
                 case "status":
                 case "check":
-                    Boolean status = player.getWorld().getPvP();
+                    Boolean status = isPvPEnabled(player.getWorld());
                     player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
                     player.sendMessage("§e§lPvP Status");
                     player.sendMessage("");
