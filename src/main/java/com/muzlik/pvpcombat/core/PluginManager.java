@@ -68,6 +68,7 @@ public class PluginManager {
         
         // Initialize configuration manager first as others depend on it
         this.configManager = new ConfigManager(plugin);
+        this.configManager.loadConfig();
         
         // Initialize combat tracker with plugin reference
         this.combatTracker = new CombatTracker(plugin);

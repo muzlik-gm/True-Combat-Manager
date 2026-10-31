@@ -23,6 +23,7 @@ class TPSMonitorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(plugin.getConfig()).thenReturn(config);
         when(config.getInt("lag.tps-history-length", 60)).thenReturn(60);
         when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("Test"));

@@ -33,6 +33,9 @@ class PingTrackerTest {
         MockitoAnnotations.openMocks(this);
         playerId = UUID.randomUUID();
 
+        MockitoAnnotations.openMocks(this);
+        playerId = UUID.randomUUID();
+
         when(plugin.getConfig()).thenReturn(config);
         when(config.getLong("lag.ping-update-interval-ms", 1000L)).thenReturn(1000L);
         when(config.getLong("lag.ping-cleanup-threshold-ms", 300000L)).thenReturn(300000L);
