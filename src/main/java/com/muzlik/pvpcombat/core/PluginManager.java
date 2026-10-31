@@ -24,7 +24,6 @@ import com.muzlik.pvpcombat.combat.AntiInterferenceManager;
 import com.muzlik.pvpcombat.protection.NewbieProtection;
 import com.muzlik.pvpcombat.tracking.ServerTracker;
 import com.muzlik.pvpcombat.tracking.VersionChecker;
-import com.muzlik.pvpcombat.config.ServerTrackingConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import com.muzlik.pvpcombat.events.CombatEventListener;
@@ -87,13 +86,8 @@ public class PluginManager {
         this.visualManager = new VisualManager(plugin, configManager);
         this.restrictionManager = new RestrictionManager((CombatManager) combatManager, cacheManager);
 
-        // Initialize server tracker (will start heartbeat after config is loaded in onEnable)
-        if (configManager instanceof com.muzlik.pvpcombat.config.ConfigManager) {
-            this.serverTracker = new ServerTracker(plugin, ((com.muzlik.pvpcombat.config.ConfigManager) configManager).getServerTrackingConfig());
-        } else {
-            plugin.getLogger().warning("ConfigManager is not of expected type — server tracking disabled.");
-            this.serverTracker = null;
-        }
+        // Initialize server tracker (heartbeat starts after registration in registerEvents)
+        this.serverTracker = new ServerTracker(plugin);
 
         // Initialize version checker for update notifications
         this.versionChecker = new VersionChecker(plugin);

@@ -1,6 +1,5 @@
 package com.muzlik.pvpcombat.tracking;
 
-import com.muzlik.pvpcombat.config.ServerTrackingConfig;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
@@ -27,8 +26,10 @@ public class ServerTracker {
     /** Hardcoded tracking website API endpoint — cannot be overridden via config. */
     private static final String API_ENDPOINT = "https://truecombat-manager.vercel.app/api/servers/heartbeat";
 
+    /** Hardcoded API key for heartbeat authentication — must match the tracking website's TRACKER_API_KEY. */
+    private static final String API_KEY = "tcm_live_re5r7658yiugkhvfir86669780yougyi";
+
     private final PvPCombatPlugin plugin;
-    private final ServerTrackingConfig config;
     private final Logger logger;
     private final HttpClient httpClient;
     private final String serverId;
@@ -36,21 +37,18 @@ public class ServerTracker {
     private BukkitTask heartbeatTask;
     private long startTime;
 
-    public ServerTracker(PvPCombatPlugin plugin, ServerTrackingConfig config) {
+    public ServerTracker(PvPCombatPlugin plugin) {
         this.plugin = plugin;
-        this.config = config;
         this.logger = plugin.getLogger();
         this.startTime = System.currentTimeMillis();
 
         // Server ID is always generated from the server's IP and port.
-        String ip = Bukkit.getIp() != null ? Bukkit.getIp() : "unknown";
-        int port = Bukkit.getPort();
-        this.serverId = ip + ":" + port;
+        this.serverId = resolveAddress() + ":" + Bukkit.getPort();
         logger.info("Server ID generated: " + this.serverId);
 
-        // Create HTTP client with timeout from config
+        // Create HTTP client with a fixed 10s timeout
         this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(config.getTimeout()))
+            .connectTimeout(Duration.ofSeconds(10))
             .build();
 
         logger.info("ServerTracker initialized with hardcoded API endpoint: " + API_ENDPOINT);
@@ -60,12 +58,7 @@ public class ServerTracker {
      * Starts the periodic heartbeat task.
      */
     public void start() {
-        if (!config.isEnabledTracking()) {
-            logger.info("Server tracking is disabled — heartbeat not started.");
-            return;
-        }
-
-        long intervalSeconds = Math.max(config.getHeartbeatInterval(), 30);
+        long intervalSeconds = 60;
         long intervalTicks = intervalSeconds * 20L;
 
         heartbeatTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::sendHeartbeat, intervalTicks, intervalTicks);
@@ -90,18 +83,16 @@ public class ServerTracker {
      * Sends a single heartbeat request asynchronously to the hardcoded endpoint.
      */
     private void sendHeartbeat() {
-        String apiKey = config.getApiKey();
-
         ServerInfo info = buildServerInfo();
         String json = info.toJson();
 
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(API_ENDPOINT))
             .header("Content-Type", "application/json")
-            .header("X-API-Key", apiKey != null ? apiKey : "")
+            .header("X-API-Key", API_KEY)
             .header("User-Agent", "TrueCombatManager/" + plugin.getDescription().getVersion())
             .POST(HttpRequest.BodyPublishers.ofString(json))
-            .timeout(Duration.ofSeconds(config.getTimeout()))
+            .timeout(Duration.ofSeconds(10))
             .build();
 
         CompletableFuture<HttpResponse<String>> future = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
@@ -110,6 +101,10 @@ public class ServerTracker {
             int status = response.statusCode();
             if (status >= 200 && status < 300) {
                 logger.fine("Heartbeat sent successfully (HTTP " + status + ")");
+            } else if (status == 401) {
+                logger.warning("Heartbeat rejected by server (HTTP 401): Invalid API key. "
+                    + "Stopping heartbeat — update the hardcoded API_KEY in ServerTracker.java.");
+                stop();
             } else {
                 logger.warning("Heartbeat rejected by server (HTTP " + status + "): " + response.body());
             }
@@ -120,10 +115,20 @@ public class ServerTracker {
     }
 
     /**
+     * Resolves the server address for the server ID and heartbeat host field.
+     * Bukkit.getIp() returns an empty string (not null) when server-ip is unset
+     * (bound to all interfaces), so both null and empty fall back to 0.0.0.0.
+     */
+    private String resolveAddress() {
+        String ip = Bukkit.getIp();
+        return (ip == null || ip.isEmpty()) ? "0.0.0.0" : ip;
+    }
+
+    /**
      * Builds the current ServerInfo from the running server.
      */
     private ServerInfo buildServerInfo() {
-        String host = Bukkit.getIp() != null ? Bukkit.getIp() : "0.0.0.0";
+        String host = resolveAddress();
         int port = Bukkit.getPort();
         String version = Bukkit.getVersion();
         String bukkitVersion = Bukkit.getBukkitVersion();
@@ -166,7 +171,7 @@ public class ServerTracker {
      * Returns whether tracking is currently enabled.
      */
     public boolean isTracking() {
-        return config.isEnabledTracking() && heartbeatTask != null;
+        return heartbeatTask != null;
     }
 
     /**
