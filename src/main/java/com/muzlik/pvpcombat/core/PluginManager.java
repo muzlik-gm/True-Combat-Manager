@@ -18,6 +18,8 @@ import com.muzlik.pvpcombat.combat.CombatManager;
 import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.performance.TPSMonitor;
 import com.muzlik.pvpcombat.utils.CacheManager;
+import com.muzlik.pvpcombat.utils.CompatibilityAPI;
+import com.muzlik.pvpcombat.utils.CompatibilityManager;
 import com.muzlik.pvpcombat.utils.VersionCompatibility;
 import com.muzlik.pvpcombat.restrictions.RestrictionManager;
 import com.muzlik.pvpcombat.combat.AntiInterferenceManager;
@@ -59,6 +61,9 @@ public class PluginManager {
         VersionCompatibility.detectVersion();
         VersionCompatibility.logVersionInfo();
         
+        // Initialize the version-appropriate compatibility adapter (cached statically)
+        CompatibilityAPI compatibilityAPI = CompatibilityManager.create(plugin);
+        
         // Warn if version is not supported
         if (!VersionCompatibility.isSupported()) {
             plugin.getLogger().warning("Running on an unsupported Minecraft version!");
@@ -82,7 +87,7 @@ public class PluginManager {
         PerformanceMonitor performanceMonitor = new PerformanceMonitor(plugin, tpsMonitor, cacheManager);
 
         // Initialize other managers
-        this.combatManager = new CombatManager(plugin, combatLogger, null, performanceMonitor, cacheManager, configManager);
+        this.combatManager = new CombatManager(plugin, combatLogger, null, performanceMonitor, cacheManager, configManager, compatibilityAPI);
         this.visualManager = new VisualManager(plugin, configManager);
         this.restrictionManager = new RestrictionManager((CombatManager) combatManager, cacheManager);
 

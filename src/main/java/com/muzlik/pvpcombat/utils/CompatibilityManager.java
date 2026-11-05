@@ -33,7 +33,11 @@ public class CompatibilityManager {
 
         VersionCompatibility.MinecraftVersion v = VersionCompatibility.getVersion();
 
-        if (VersionCompatibility.isAtLeast(1, 20, 0)) {
+        if (VersionCompatibility.isAtLeast(26, 0, 0)) {
+            api = new MajorReworkCompatibilityAdapter(plugin);
+            logger.info("Using MajorReworkCompatibilityAdapter (Minecraft 26.x Major Rework)");
+            logger.warning("26.x detected, using MajorRework adapter — behavior untested on this version.");
+        } else if (VersionCompatibility.isAtLeast(1, 20, 0)) {
             api = new ModernCompatibilityAdapter(plugin);
             logger.info("Using ModernCompatibilityAdapter (Minecraft 1.20+ Adventure API)");
         } else {

@@ -1,4 +1,4 @@
-# Installation Guide — True Combat Manager v1.3.0-alpha
+# Installation Guide — True Combat Manager v1.3.1
 
 ## Quick Start
 
@@ -10,8 +10,8 @@ Drop the JAR in your plugins folder and restart. That's it — SQLite works out 
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| Minecraft | 1.18.x | 1.21.x |
-| Java | 17 | 21 |
+| Minecraft | 1.19.4 (officially supported) / 26.x (untested) | 1.21.x |
+| Java | 21 | 21+ |
 | Server software | Spigot | Paper |
 
 ### Included (no download needed)
@@ -29,7 +29,7 @@ Drop the JAR in your plugins folder and restart. That's it — SQLite works out 
 
 ## Installation Steps
 
-1. Download `truecombatmanager-1.3.0-alpha.jar`
+1. Download `truecombatmanager-1.3.1.jar`
 2. Place it in your server's `plugins/` folder
 3. Start or restart your server
 4. The plugin generates its config files automatically:

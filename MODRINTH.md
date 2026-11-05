@@ -1,93 +1,74 @@
-<p align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&height=300&color=0:1f4037,50:2c7744,100:11998e&text=True%20Combat%20Manager&fontSize=56&fontColor=ffffff&fontAlignY=38&desc=High%20Performance%20Combat%20Management%20for%20Minecraft%20Servers&descSize=18&descAlignY=55"/>
-
 # True Combat Manager
 
-Professional combat tracking with interactive GUIs, persistent statistics, dual grace period protection, and modern Minecraft server optimization.
-
-<img src="https://img.shields.io/badge/Version-1.2.1-brightgreen?style=for-the-badge"/>
-<img src="https://img.shields.io/badge/Minecraft-1.18--1.21-3fb950?style=for-the-badge&logo=minecraft"/>
-<img src="https://img.shields.io/badge/Java-17+-f39c12?style=for-the-badge&logo=openjdk"/>
-<img src="https://img.shields.io/badge/Platform-Paper%20%7C%20Spigot-3498db?style=for-the-badge"/>
-<img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge"/>
-
-</p>
+Professional PvP combat management for Minecraft servers. Persistent statistics, interactive GUIs, dual grace period disconnect protection, and version-compatible text rendering (ChatColor / Adventure Component API / MajorRework adapter).
 
 ---
 
-## Overview
-
-True Combat Manager is a feature-rich combat management system designed for competitive Minecraft PvP servers. It focuses on accurate combat detection, preventing PvP abuse, providing clear player feedback, interactive statistics GUIs, and persistent data tracking.
+<img src="https://capsule-render.vercel.app/api?type=waving&height=260&color=0:1f4037,50:2c7744,100:11998e&text=True%20Combat%20Manager&fontSize=48&fontColor=ffffff&fontAlignY=38&desc=High%20Performance%20Combat%20Management&descSize=16&descAlignY=55" alt="True Combat Manager banner" width="100%" />
 
 ---
 
-## ✨ What's New in v1.2.1
+## Supported Minecraft versions & loaders
 
-### Dual Grace Period System
+| Minecraft version | Adapter / tier | Status |
+|-------------------|----------------|--------|
+| **1.19.4 – 1.19.x** | `LegacyCompatibilityAdapter` (ChatColor) | ✅ Officially supported |
+| **1.20.x – 1.21.x** | `ModernCompatibilityAdapter` (Adventure Component API) | ✅ Officially supported |
+| **1.22.x – 1.23.x** | `ModernCompatibilityAdapter` (refined ActionBar) | ✅ Officially supported |
+| **26.x (26.0.0+)** | `MajorReworkCompatibilityAdapter` | ⚠️ Loads and runs (verified on MC 26.2 Spigot), but **untested / not officially supported** |
 
-The disconnect protection system has been completely overhauled.
+**Server software:** Spigot, Paper, Purpur (Bukkit/Folia compatible)  
+**Java:** 21 or higher  
+**Modrinth loaders:** `paper`, `purpur`, `spigot`, `bukkit`, `folia`
 
-- **Bad-internet grace period** — longer, more lenient window for players who lost connection unexpectedly. Detected automatically from the quit reason.
-- **Intentional grace period** — shorter window for players who pressed Disconnect or closed the game.
-- Each type has its own `grace-seconds`, messages, and can be enabled/disabled independently.
-
-### Repeat-Logout Abuse Prevention
-
-- Tracks each player's disconnect history in a rolling time window.
-- If a player disconnects too many times within the window, they are killed immediately on the next logout — no grace period.
-- Fully configurable: `max-count`, `window-seconds`, messages.
-
-### Bypass-Totem Config
-
-- `bypass-totem: true` (default) — punishment kills bypass the Totem of Undying.
-- `bypass-totem: false` — a held totem can proc and save the player.
-
-### Per-Player Theme Persistence
-
-- Theme selections saved to the database and restored across sessions.
-- `/combat toggle-style` works both in and out of combat.
-
-### Sound Profile Hot-Reload
-
-- `/combat reload` now correctly updates sound profiles without a restart.
-
-### Bug Fixes
-
-- Fixed inventory duplication (armor dropped twice due to `getContents()` including armor slots)
-- Fixed double bossbar on reconnect
-- Fixed player not killed after grace period (config loaded before ConfigManager was ready)
-- Fixed concurrent update race in player data
-- Fixed `plugin.getConfig()` stale after reload
+**Not supported:** Sponge, BungeeCord, Velocity, Waterfall (proxy / non-Bukkit platforms).
 
 ---
 
-## Core Features
+## Requirements
 
-### Combat System
+- Minecraft **1.19.4** or newer (officially up to **1.23.x**; 26.x uses the MajorRework adapter)
+- Java **21+**
+- Server software: **Spigot**, **Paper**, or **Purpur**
 
+### Optional dependencies
+- [PlaceholderAPI](https://modrinth.com/plugin/placeholderapi) — `%pvpcombat_*%` placeholders
+- [WorldGuard](https://modrinth.com/plugin/worldguard) — region-based safe zones
+- [ProtocolLib](https://modrinth.com/plugin/protocollib) — client-side barrier rendering
+
+---
+
+## What's new in v1.3.1
+
+- **MajorRework adapter (26.x):** Added `MajorReworkCompatibilityAdapter` and a `isAtLeast(26,0,0)` branch in `CompatibilityManager.create()`; tier reports `MAJOR_REWORK (26+)` with an explicit untested-version warning.
+- **Chat color routing:** `DisconnectTracker.color()` now routes through `CompatibilityAPI.translateColor()`; `CompatibilityAPI` injected via constructor and exposed via `PvPCombatPlugin.getCompatibilityAPI()`.
+- **Deprecated `ItemStack` fixed:** Replaced single-arg `new ItemStack(Material.X)` with `new ItemStack(Material.X, 1)` across `DisconnectTracker`, `AdminGUI`, `GUIManager`, and `CombatLogger`.
+- **Validated:** 404 unit tests pass; live MC 26.2 Spigot server load + `/combat reload` verified with no TrueCombatManager exceptions.
+
+---
+
+## Core features
+
+### Combat system
 - Real-time combat detection
 - Dual grace period disconnect protection (bad-internet vs intentional)
 - Repeat-logout abuse prevention with kill-on-login
 - Lag compensation using server TPS
 - Thread-safe combat architecture
 
-### Interactive GUI System
-
-- **Player Stats GUI** — overall record, damage stats, combat stats
-- **Weapon Stats GUI** — per-weapon breakdown (swords, axes, ranged)
-- **Server Overview GUI** — admin panel with network-wide statistics
+### Interactive GUI system
+- Player Stats GUI — overall record, damage stats, combat stats
+- Weapon Stats GUI — per-weapon breakdown (swords, axes, ranged)
+- Server Overview GUI — admin panel with network-wide statistics
 - Fully configurable via `gui.yml`
-- Back buttons and seamless navigation
 
-### Database System
-
-- SQLite (default, no setup required)
+### Database system
+- SQLite (default, zero setup)
 - MySQL for larger networks
 - Persistent player statistics and theme preferences
 - Automatic database migration
 
-### Smart Restrictions
-
+### Smart restrictions
 - Ender pearl cooldown control
 - Trident usage restrictions
 - Elytra combat limitations
@@ -95,16 +76,14 @@ The disconnect protection system has been completely overhauled.
 - Teleport command blocking
 - Safezone protection support
 
-### Visual Interface
-
+### Visual interface
 - 6 built-in themes with per-player persistence
 - BossBar combat indicators
 - ActionBar status display
 - 6 sound profiles with hot-reload
 - HEX color customization
 
-### Protection Systems
-
+### Protection systems
 - Newbie protection for unarmored players
 - Timed immunity system with admin commands
 - WorldGuard safe zone integration
@@ -112,23 +91,9 @@ The disconnect protection system has been completely overhauled.
 
 ---
 
-## Disconnect Protection Flow
-
-**Grace period expires, player still offline:**
-1. Inventory dropped at disconnect location immediately
-2. Win/loss recorded, opponent notified and rewarded
-3. `pendingPunishments` entry stored — player killed on next login
-
-**Player rejoins with pending punishment:**
-1. Live inventory cleared
-2. Player killed (totem bypass configurable)
-3. Opponent receives reminder message
-
----
-
 ## Commands
 
-### Player Commands
+### Player commands
 
 ```
 /combat status              - View your combat status
@@ -137,7 +102,7 @@ The disconnect protection system has been completely overhauled.
 /combat toggle-style        - Change visual theme (works anytime)
 ```
 
-### Admin Commands
+### Admin commands
 
 ```
 /combat reload              - Reload configuration
@@ -152,7 +117,35 @@ The disconnect protection system has been completely overhauled.
 
 ---
 
-## Configuration Example
+## PlaceholderAPI support
+
+```
+%pvpcombat_in_combat%
+%pvpcombat_time_left%
+%pvpcombat_opponent%
+%pvpcombat_wins%
+%pvpcombat_losses%
+%pvpcombat_kd_ratio%
+%pvpcombat_win_rate%
+%pvpcombat_total_damage_dealt%
+%pvpcombat_total_damage_received%
+```
+
+---
+
+## Installation
+
+1. Download `truecombatmanager-1.3.1.jar` from the Files tab.
+2. Place it in your server's `plugins/` folder.
+3. Start or restart the server.
+4. Configure settings in `plugins/TrueCombatManager/config.yml` if needed.
+5. Run `/combat reload` to apply changes without restarting.
+
+SQLite works out of the box — no additional setup required.
+
+---
+
+## Configuration example
 
 ```yaml
 combat:
@@ -188,51 +181,9 @@ All settings reload instantly with `/combat reload`.
 
 ---
 
-## PlaceholderAPI Support
-
-```
-%pvpcombat_in_combat%
-%pvpcombat_time_left%
-%pvpcombat_opponent%
-%pvpcombat_wins%
-%pvpcombat_losses%
-%pvpcombat_kd_ratio%
-%pvpcombat_win_rate%
-%pvpcombat_total_damage_dealt%
-%pvpcombat_total_damage_received%
-```
-
----
-
-## Installation
-
-1. Download the plugin JAR
-2. Place it inside the `plugins` folder
-3. Restart the server
-4. Configure settings if needed
-5. Run `/combat reload`
-
-**No additional setup required** — SQLite works out of the box.
-
----
-
-## Requirements
-
-Minecraft **1.18+** · Java **17+** (21 recommended) · Paper or Spigot
-
-**Optional:** PlaceholderAPI · WorldGuard · ProtocolLib
-
----
-
 ## Support
 
-https://github.com/muzlik-gm/True-Combat-Manager/issues
-
----
-
-<p align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&section=footer&height=120&color=0:11998e,100:1f4037"/>
+- Issues: https://github.com/muzlik-gm/True-Combat-Manager/issues
+- Modrinth: https://modrinth.com/plugin/true-combat-manager
 
 © 2026 muzlik · Made for the Minecraft PvP community
-
-</p>

@@ -64,9 +64,9 @@ class VersionCheckerTest {
 
     @Test
     @Order(6)
-    @DisplayName("CURRENT_VERSION should be 1.3.0-alpha")
+    @DisplayName("CURRENT_VERSION should be 1.3.1")
     void testCurrentVersion() {
         VersionChecker checker = new VersionChecker(null);
-        assertEquals("1.3.0-alpha", checker.getCurrentVersion());
+        assertEquals("1.3.1", checker.getCurrentVersion());
     }
 }

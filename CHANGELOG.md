@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.1] - 2026-11-05
+
+### 🧩 Compatibility & API
+
+- **MajorRework adapter (26.x):** Added `MajorReworkCompatibilityAdapter` and `CompatibilityManager` 26.x branch (`isAtLeast(26,0,0)`), with an explicit untested-version warning on 26.x. `getTier()` reports `MAJOR_REWORK (26+)`.
+- **Chat color routing:** `DisconnectTracker.color()` now routes through `CompatibilityAPI.translateColor()` (all callers benefit); `CompatibilityAPI` injected via constructor, exposed on `PvPCombatPlugin.getCompatibilityAPI()`.
+- **Deprecated ItemStack usage:** Replaced single-arg `new ItemStack(Material.X)` with `new ItemStack(Material.X, 1)` across `DisconnectTracker`, `AdminGUI`, `GUIManager`, and `CombatLogger`.
+- **Validation:** Full test suite `404 tests, 0 failures`; live MC 26.2 (Spigot) server load + reload verified with no TrueCombatManager exceptions.
+
+---
+
 ## [1.3.0-alpha] - 2026-06-29
 
 ### ✨ Improvements & Testing

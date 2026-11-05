@@ -44,7 +44,7 @@ public class AdminGUI {
         // For now, create placeholder items showing no active combats
         // In full implementation, this would query the CombatManager for active sessions
 
-        ItemStack noCombatsItem = new ItemStack(Material.BARRIER);
+        ItemStack noCombatsItem = new ItemStack(Material.BARRIER, 1);
         ItemMeta meta = noCombatsItem.getItemMeta();
         if (meta != null) {
             meta.setDisplayName("§cNo Active Combats");
@@ -66,7 +66,7 @@ public class AdminGUI {
      */
     private void addNavigationItems(Inventory gui) {
         // Refresh button
-        ItemStack refreshItem = new ItemStack(Material.CLOCK);
+        ItemStack refreshItem = new ItemStack(Material.CLOCK, 1);
         ItemMeta refreshMeta = refreshItem.getItemMeta();
         if (refreshMeta != null) {
             refreshMeta.setDisplayName("§aRefresh");
@@ -76,7 +76,7 @@ public class AdminGUI {
         gui.setItem(49, refreshItem); // Bottom right
 
         // Stats button
-        ItemStack statsItem = new ItemStack(Material.BOOK);
+        ItemStack statsItem = new ItemStack(Material.BOOK, 1);
         ItemMeta statsMeta = statsItem.getItemMeta();
         if (statsMeta != null) {
             statsMeta.setDisplayName("§eCombat Statistics");
@@ -89,7 +89,7 @@ public class AdminGUI {
         gui.setItem(50, statsItem); // Bottom middle-right
 
         // Settings button
-        ItemStack settingsItem = new ItemStack(Material.REDSTONE_TORCH);
+        ItemStack settingsItem = new ItemStack(Material.REDSTONE_TORCH, 1);
         ItemMeta settingsMeta = settingsItem.getItemMeta();
         if (settingsMeta != null) {
             settingsMeta.setDisplayName("§cAdmin Settings");

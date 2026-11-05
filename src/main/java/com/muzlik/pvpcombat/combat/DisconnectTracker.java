@@ -2,7 +2,7 @@ package com.muzlik.pvpcombat.combat;
 
 import com.muzlik.pvpcombat.config.DisconnectConfig;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
-import org.bukkit.ChatColor;
+import com.muzlik.pvpcombat.utils.CompatibilityAPI;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -46,6 +46,7 @@ public class DisconnectTracker {
     // ── Dependencies ──────────────────────────────────────────────────────
     private final PvPCombatPlugin plugin;
     private final CombatManager   combatManager;
+    private final CompatibilityAPI compatibility;
 
     // ── Live config (refreshed on reload) ─────────────────────────────────
     private volatile DisconnectConfig cfg;
@@ -81,9 +82,11 @@ public class DisconnectTracker {
     private final Map<UUID, Deque<Long>> disconnectHistory = new ConcurrentHashMap<>();
 
     // ─────────────────────────────────────────────────────────────────────
-    public DisconnectTracker(PvPCombatPlugin plugin, CombatManager combatManager) {
+    public DisconnectTracker(PvPCombatPlugin plugin, CombatManager combatManager,
+                             CompatibilityAPI compatibility) {
         this.plugin        = plugin;
         this.combatManager = combatManager;
+        this.compatibility = compatibility;
         // cfg is resolved lazily on first use via cfg()
     }
 
@@ -627,7 +630,7 @@ public class DisconnectTracker {
     private void clearAllInventory(Player player) {
         org.bukkit.inventory.PlayerInventory inv = player.getInventory();
         inv.clear();
-        org.bukkit.inventory.ItemStack air = new org.bukkit.inventory.ItemStack(org.bukkit.Material.AIR);
+        org.bukkit.inventory.ItemStack air = new org.bukkit.inventory.ItemStack(org.bukkit.Material.AIR, 1);
         inv.setHelmet(air);
         inv.setChestplate(air);
         inv.setLeggings(air);
@@ -654,7 +657,7 @@ public class DisconnectTracker {
     }
 
     private String color(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
+        return compatibility.translateColor(text);
     }
 
     // ── Data class ────────────────────────────────────────────────────────

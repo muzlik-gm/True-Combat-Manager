@@ -5,6 +5,8 @@ import com.muzlik.pvpcombat.interfaces.ICombatManager;
 import com.muzlik.pvpcombat.interfaces.IConfigManager;
 import com.muzlik.pvpcombat.interfaces.IRestrictionManager;
 import com.muzlik.pvpcombat.interfaces.IVisualManager;
+import com.muzlik.pvpcombat.utils.CompatibilityAPI;
+import com.muzlik.pvpcombat.utils.CompatibilityManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -20,6 +22,7 @@ public class PvPCombatPlugin extends JavaPlugin {
     private IRestrictionManager restrictionManager;
     private IConfigManager configManager;
     private LoggingManager loggingManager;
+    private CompatibilityAPI compatibilityAPI;
     private com.muzlik.pvpcombat.gui.GUIManager guiManager;
 
     @Override
@@ -29,6 +32,9 @@ public class PvPCombatPlugin extends JavaPlugin {
         try {
             // Initialize plugin manager
             pluginManager = new PluginManager(this);
+
+            // CompatibilityManager.create() was invoked inside PluginManager (adapter cached statically)
+            compatibilityAPI = CompatibilityManager.get();
 
             // Load configurations with validation
             try {
@@ -178,6 +184,10 @@ public class PvPCombatPlugin extends JavaPlugin {
 
     public IConfigManager getConfigManager() {
         return configManager;
+    }
+
+    public CompatibilityAPI getCompatibilityAPI() {
+        return compatibilityAPI != null ? compatibilityAPI : CompatibilityManager.get();
     }
 
     public PluginManager getPluginManager() {

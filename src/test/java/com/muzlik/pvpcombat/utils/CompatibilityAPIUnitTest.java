@@ -124,4 +124,24 @@ class CompatibilityAPIUnitTest {
         VersionCompatibility.MinecraftVersion v26_0_0 = new VersionCompatibility.MinecraftVersion(26, 0, 0);
         assertFalse(v26_0_0.isAtMost(VersionCompatibility.MAX_SUPPORTED));
     }
+
+    @Test
+    @DisplayName("MajorRework adapter tier and capabilities")
+    void testMajorReworkAdapter() {
+        MajorReworkCompatibilityAdapter adapter = new MajorReworkCompatibilityAdapter(null);
+        assertEquals("MAJOR_REWORK (26+)", adapter.getTier());
+        assertTrue(adapter.usesComponentAPI());
+        assertTrue(adapter.usesRefinedActionBar());
+        assertTrue(adapter.isMajorRework());
+    }
+
+    @Test
+    @DisplayName("MajorRework adapter translateColor translates color codes")
+    void testMajorReworkTranslateColor() {
+        MajorReworkCompatibilityAdapter adapter = new MajorReworkCompatibilityAdapter(null);
+        String result = adapter.translateColor("&cHello");
+        assertNotEquals("&cHello", result);
+        assertEquals("§cHello", result);
+        assertEquals("Hello world", adapter.stripColor("&cHello &fworld"));
+    }
 }

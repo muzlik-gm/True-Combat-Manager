@@ -14,6 +14,7 @@ import com.muzlik.pvpcombat.performance.LagManager;
 import com.muzlik.pvpcombat.performance.PerformanceMonitor;
 import com.muzlik.pvpcombat.utils.AsyncUtils;
 import com.muzlik.pvpcombat.utils.CacheManager;
+import com.muzlik.pvpcombat.utils.CompatibilityAPI;
 import com.muzlik.pvpcombat.visual.VisualManager;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -42,13 +43,15 @@ public class CombatManager implements ICombatManager {
     private final NetworkSyncManager networkSyncManager;
     private final PerformanceMonitor performanceMonitor;
     private final CacheManager cacheManager;
+    private final CompatibilityAPI compatibility;
     private int defaultTimerSeconds;
 
     private final CombatTracker combatTracker;
     private final DisconnectTracker disconnectTracker;
 
     public CombatManager(PvPCombatPlugin plugin, CombatLogger combatLogger, NetworkSyncManager networkSyncManager,
-                        PerformanceMonitor performanceMonitor, CacheManager cacheManager, IConfigManager configManager) {
+                        PerformanceMonitor performanceMonitor, CacheManager cacheManager, IConfigManager configManager,
+                        CompatibilityAPI compatibility) {
         this.plugin = plugin;
         this.activeSessions = new ConcurrentHashMap<>();
         this.sessionTimers = new ConcurrentHashMap<>();
@@ -56,7 +59,8 @@ public class CombatManager implements ICombatManager {
         this.visualManager = new VisualManager(plugin, configManager);
         this.combatLogger = combatLogger;
         this.combatTracker = new CombatTracker(plugin);
-        this.disconnectTracker = new DisconnectTracker(plugin, this);
+        this.disconnectTracker = new DisconnectTracker(plugin, this, compatibility);
+        this.compatibility = compatibility;
         this.lagManager = new LagManager(plugin, performanceMonitor.getTpsMonitor(), performanceMonitor);
         this.combatTracker.setLagManager(this.lagManager);
         this.networkSyncManager = networkSyncManager;

@@ -505,7 +505,7 @@ public class CombatLogger {
         Inventory inv = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Combat Summary");
 
         // Hits Landed
-        ItemStack hitsItem = new ItemStack(Material.DIAMOND_SWORD);
+        ItemStack hitsItem = new ItemStack(Material.DIAMOND_SWORD, 1);
         ItemMeta hitsMeta = hitsItem.getItemMeta();
         hitsMeta.setDisplayName(ChatColor.GREEN + "Hits Landed");
         hitsMeta.setLore(Arrays.asList(
@@ -518,7 +518,7 @@ public class CombatLogger {
         inv.setItem(10, hitsItem);
 
         // Damage Dealt
-        ItemStack dmgDealt = new ItemStack(Material.GOLD_INGOT);
+        ItemStack dmgDealt = new ItemStack(Material.GOLD_INGOT, 1);
         ItemMeta dmgMeta = dmgDealt.getItemMeta();
         dmgMeta.setDisplayName(ChatColor.GOLD + "Damage Dealt");
         dmgMeta.setLore(Arrays.asList(ChatColor.GRAY + String.format("%.1f", summary.getTotalDamageDealt())));
@@ -526,7 +526,7 @@ public class CombatLogger {
         inv.setItem(12, dmgDealt);
 
         // Damage Received
-        ItemStack dmgRecv = new ItemStack(Material.REDSTONE_BLOCK);
+        ItemStack dmgRecv = new ItemStack(Material.REDSTONE_BLOCK, 1);
         ItemMeta recvMeta = dmgRecv.getItemMeta();
         recvMeta.setDisplayName(ChatColor.RED + "Damage Received");
         recvMeta.setLore(Arrays.asList(ChatColor.GRAY + String.format("%.1f", summary.getTotalDamageReceived())));
@@ -534,7 +534,7 @@ public class CombatLogger {
         inv.setItem(14, dmgRecv);
 
         // Duration
-        ItemStack durationItem = new ItemStack(Material.CLOCK);
+        ItemStack durationItem = new ItemStack(Material.CLOCK, 1);
         ItemMeta durMeta = durationItem.getItemMeta();
         durMeta.setDisplayName(ChatColor.AQUA + "Combat Duration");
         durMeta.setLore(Arrays.asList(ChatColor.GRAY + summary.getFormattedDuration()));

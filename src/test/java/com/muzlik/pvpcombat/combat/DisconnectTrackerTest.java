@@ -1,10 +1,13 @@
 package com.muzlik.pvpcombat.combat;
 
+import com.muzlik.pvpcombat.core.PvPCombatPlugin;
+import com.muzlik.pvpcombat.utils.CompatibilityAPI;
 import org.junit.jupiter.api.*;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DisconnectTrackerTest {
@@ -123,5 +126,24 @@ class DisconnectTrackerTest {
             DisconnectTracker.DisconnectType.BAD_INTERNET,
             DisconnectTracker.DisconnectType.INTENTIONAL
         );
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("color() delegates to CompatibilityAPI.translateColor")
+    void colorDelegatesToCompatibilityAPI() throws Exception {
+        PvPCombatPlugin plugin = mock(PvPCombatPlugin.class);
+        CombatManager combatManager = mock(CombatManager.class);
+        CompatibilityAPI compatibility = mock(CompatibilityAPI.class);
+        when(compatibility.translateColor("&cHello")).thenReturn("translated:red:Hello");
+
+        DisconnectTracker tracker = new DisconnectTracker(plugin, combatManager, compatibility);
+
+        java.lang.reflect.Method color = DisconnectTracker.class.getDeclaredMethod("color", String.class);
+        color.setAccessible(true);
+        String result = (String) color.invoke(tracker, "&cHello");
+
+        assertEquals("translated:red:Hello", result);
+        verify(compatibility).translateColor("&cHello");
     }
 }
