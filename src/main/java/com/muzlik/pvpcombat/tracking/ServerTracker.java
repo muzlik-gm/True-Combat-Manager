@@ -1,5 +1,6 @@
 package com.muzlik.pvpcombat.tracking;
 
+import com.muzlik.pvpcombat.config.ServerTrackingConfig;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
@@ -31,6 +32,7 @@ public class ServerTracker {
     private final Logger logger;
     private final HttpClient httpClient;
     private final String serverId;
+    private final String serverAddress;
 
     private static final int MAX_RETRIES = 3;
     private static final long RETRY_BASE_DELAY_MS = 1000;
@@ -38,14 +40,20 @@ public class ServerTracker {
     private BukkitTask heartbeatTask;
     private long startTime;
 
-    public ServerTracker(PvPCombatPlugin plugin) {
+    public ServerTracker(PvPCombatPlugin plugin, ServerTrackingConfig trackingConfig) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.startTime = System.currentTimeMillis();
 
-        // Server ID is always generated from the server's IP and port.
-        this.serverId = resolveAddress() + ":" + Bukkit.getPort();
-        logger.info("Server ID generated: " + this.serverId);
+        // Use configured server address (domain name) if set, otherwise auto-detect IP
+        this.serverAddress = trackingConfig.getServerAddress();
+        if (this.serverAddress != null && !this.serverAddress.isEmpty()) {
+            this.serverId = this.serverAddress + ":" + Bukkit.getPort();
+            logger.info("Server ID generated (configured address): " + this.serverId);
+        } else {
+            this.serverId = resolveAddress() + ":" + Bukkit.getPort();
+            logger.info("Server ID generated (auto-detected IP): " + this.serverId);
+        }
 
         // Create HTTP client with a longer connect timeout; Vercel serverless
         // cold starts can take several seconds on the first request.
@@ -184,7 +192,7 @@ public class ServerTracker {
      * Builds the current ServerInfo from the running server.
      */
     private ServerInfo buildServerInfo() {
-        String host = resolveAddress();
+        String host = (serverAddress != null && !serverAddress.isEmpty()) ? serverAddress : resolveAddress();
         int port = Bukkit.getPort();
         String version = Bukkit.getVersion();
         String bukkitVersion = Bukkit.getBukkitVersion();

@@ -865,6 +865,11 @@ server-tracking:
   # Generate a strong random key and keep it secret.
   api-key: "tcm_live_re5r7658yiugkhvfir86669780yougyi"
 
+  # Custom server address (domain name) shown on the tracking website.
+  # If left blank, the plugin auto-detects the server's IP address.
+  # Examples: play.pixelmc.com, mc.example.com, play.myserver.net
+  server-address: ""
+
   # Unique identifier for this server. If left blank, one is generated
   # automatically from the server's IP and port on startup.
   server-id: ""
