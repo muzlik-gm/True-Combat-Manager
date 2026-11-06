@@ -9,8 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,6 +32,9 @@ public class ServerTracker {
     private final HttpClient httpClient;
     private final String serverId;
 
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_BASE_DELAY_MS = 1000;
+
     private BukkitTask heartbeatTask;
     private long startTime;
 
@@ -46,9 +47,10 @@ public class ServerTracker {
         this.serverId = resolveAddress() + ":" + Bukkit.getPort();
         logger.info("Server ID generated: " + this.serverId);
 
-        // Create HTTP client with a fixed 10s timeout
+        // Create HTTP client with a longer connect timeout; Vercel serverless
+        // cold starts can take several seconds on the first request.
         this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(15))
             .build();
 
         logger.info("ServerTracker initialized with hardcoded API endpoint: " + API_ENDPOINT);
@@ -81,47 +83,92 @@ public class ServerTracker {
 
     /**
      * Sends a single heartbeat request asynchronously to the hardcoded endpoint.
+     * Retries with exponential backoff on transient failures (timeouts, 5xx,
+     * network errors) so a single slow Vercel cold start does not break
+     * tracking permanently.
      */
     private void sendHeartbeat() {
         ServerInfo info = buildServerInfo();
         String json = info.toJson();
+        sendHeartbeat(0, json);
+    }
 
+    private void sendHeartbeat(int attempt, String json) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(API_ENDPOINT))
             .header("Content-Type", "application/json")
             .header("X-API-Key", API_KEY)
             .header("User-Agent", "TrueCombatManager/" + plugin.getDescription().getVersion())
             .POST(HttpRequest.BodyPublishers.ofString(json))
-            .timeout(Duration.ofSeconds(10))
+            .timeout(Duration.ofSeconds(20))
             .build();
 
-        CompletableFuture<HttpResponse<String>> future = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-
-        future.thenAccept(response -> {
-            int status = response.statusCode();
-            if (status >= 200 && status < 300) {
-                logger.fine("Heartbeat sent successfully (HTTP " + status + ")");
-            } else if (status == 401) {
-                logger.warning("Heartbeat rejected by server (HTTP 401): Invalid API key. "
-                    + "Stopping heartbeat — update the hardcoded API_KEY in ServerTracker.java.");
-                stop();
-            } else {
-                logger.warning("Heartbeat rejected by server (HTTP " + status + "): " + response.body());
-            }
-        }).exceptionally(ex -> {
-            logger.log(Level.WARNING, "Failed to send heartbeat to " + API_ENDPOINT, ex);
-            return null;
-        });
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            .thenAccept(response -> {
+                int status = response.statusCode();
+                if (status >= 200 && status < 300) {
+                    logger.fine("Heartbeat sent successfully (HTTP " + status + ")");
+                } else if (status == 401) {
+                    logger.warning("Heartbeat rejected by server (HTTP 401): Invalid API key. "
+                        + "Check TRACKER_API_KEY on the tracking website.");
+                } else {
+                    logger.warning("Heartbeat rejected by server (HTTP " + status + "): " + response.body());
+                }
+            }).exceptionally(ex -> {
+                Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                if (attempt < MAX_RETRIES) {
+                    long delayMs = RETRY_BASE_DELAY_MS * (1L << attempt);
+                    logger.warning("Heartbeat attempt " + (attempt + 1) + " failed, retrying in "
+                        + delayMs + "ms: " + cause.getMessage());
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+                        sendHeartbeat(attempt + 1, json);
+                    }, delayMs / 50L);
+                    return null;
+                }
+                logger.warning("Failed to send heartbeat to " + API_ENDPOINT
+                    + " after " + (MAX_RETRIES + 1) + " attempts: " + cause.getMessage());
+                return null;
+            });
     }
 
     /**
      * Resolves the server address for the server ID and heartbeat host field.
      * Bukkit.getIp() returns an empty string (not null) when server-ip is unset
-     * (bound to all interfaces), so both null and empty fall back to 0.0.0.0.
+     * (bound to all interfaces), so we fall back to the machine's actual local
+     * IP rather than sending 0.0.0.0, which is not a connectable address.
      */
     private String resolveAddress() {
         String ip = Bukkit.getIp();
-        return (ip == null || ip.isEmpty()) ? "0.0.0.0" : ip;
+        if (ip != null && !ip.isEmpty()) return ip;
+
+        // Try InetAddress.getLocalHost() as a fallback
+        try {
+            java.net.InetAddress localhost = java.net.InetAddress.getLocalHost();
+            String host = localhost.getHostAddress();
+            if (host != null && !host.isEmpty() && !host.startsWith("127.") && !host.startsWith("0.")) {
+                return host;
+            }
+        } catch (Exception ignored) {
+        }
+
+        // Enumerate network interfaces for a non-loopback IPv4 address
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> ifaces =
+                    java.net.NetworkInterface.getNetworkInterfaces();
+            while (ifaces.hasMoreElements()) {
+                java.net.NetworkInterface iface = ifaces.nextElement();
+                if (iface == null || !iface.isUp() || iface.isLoopback() || iface.isVirtual()) continue;
+                java.util.Enumeration<java.net.InetAddress> addrs = iface.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
+                    if (addr == null || addr.isLoopbackAddress() || !(addr instanceof java.net.Inet4Address)) continue;
+                    return addr.getHostAddress();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return "0.0.0.0";
     }
 
     /**
