@@ -136,22 +136,22 @@ public class ServerTracker {
      * Bukkit.getIp() returns an empty string (not null) when server-ip is unset
      * (bound to all interfaces), so we fall back to the machine's actual local
      * IP rather than sending 0.0.0.0, which is not a connectable address.
+     * Cloud/Pterodactyl hosts often bind to 0.0.0.0, so we filter it out and
+     * only accept real unicast addresses.
      */
     private String resolveAddress() {
         String ip = Bukkit.getIp();
-        if (ip != null && !ip.isEmpty()) return ip;
+        if (isUsableIp(ip)) return ip;
 
         // Try InetAddress.getLocalHost() as a fallback
         try {
             java.net.InetAddress localhost = java.net.InetAddress.getLocalHost();
             String host = localhost.getHostAddress();
-            if (host != null && !host.isEmpty() && !host.startsWith("127.") && !host.startsWith("0.")) {
-                return host;
-            }
+            if (isUsableIp(host)) return host;
         } catch (Exception ignored) {
         }
 
-        // Enumerate network interfaces for a non-loopback IPv4 address
+        // Enumerate network interfaces for a usable non-loopback IPv4 address
         try {
             java.util.Enumeration<java.net.NetworkInterface> ifaces =
                     java.net.NetworkInterface.getNetworkInterfaces();
@@ -162,13 +162,22 @@ public class ServerTracker {
                 while (addrs.hasMoreElements()) {
                     java.net.InetAddress addr = addrs.nextElement();
                     if (addr == null || addr.isLoopbackAddress() || !(addr instanceof java.net.Inet4Address)) continue;
-                    return addr.getHostAddress();
+                    String addrStr = addr.getHostAddress();
+                    if (isUsableIp(addrStr)) return addrStr;
                 }
             }
         } catch (Exception ignored) {
         }
 
         return "0.0.0.0";
+    }
+
+    private static boolean isUsableIp(String ip) {
+        if (ip == null || ip.isEmpty()) return false;
+        if (ip.equals("0.0.0.0")) return false;
+        if (ip.startsWith("127.")) return false;
+        if (ip.startsWith("169.254.")) return false; // link-local
+        return true;
     }
 
     /**
