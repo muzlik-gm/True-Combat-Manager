@@ -170,6 +170,7 @@ public class ServerTracker {
         }
 
         // 4. External IP detection services — for cloud hosts that bind to 0.0.0.0
+        String detectedIp = null;
         String[] services = {
             "https://api.ipify.org",
             "https://icanhazip.com",
@@ -185,10 +186,26 @@ public class ServerTracker {
                 java.net.http.HttpResponse<String> res = httpClient.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
                 if (res.statusCode() == 200) {
                     String detected = res.body().trim();
-                    if (isUsableIp(detected)) return detected;
+                    if (isUsableIp(detected)) {
+                        detectedIp = detected;
+                        break;
+                    }
                 }
             } catch (Exception ignored) {
             }
+        }
+
+        if (detectedIp != null) {
+            // Try reverse DNS lookup to get a domain name (e.g. play.pixelmc.com)
+            try {
+                java.net.InetAddress addr = java.net.InetAddress.getByName(detectedIp);
+                String hostName = addr.getHostName();
+                if (hostName != null && !hostName.equals(detectedIp) && hostName.contains(".")) {
+                    return hostName;
+                }
+            } catch (Exception ignored) {
+            }
+            return detectedIp;
         }
 
         return "0.0.0.0";
