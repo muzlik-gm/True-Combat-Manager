@@ -15,7 +15,6 @@ public class ServerTrackingConfig extends SubConfig {
     private boolean enabled;
     private String apiKey;
     private String serverId;
-    private String serverAddress;
     private int heartbeatInterval;
     private int timeout;
     private boolean includeStats;
@@ -30,7 +29,6 @@ public class ServerTrackingConfig extends SubConfig {
         enabled = true;
         apiKey = getString("api-key", "");
         serverId = getString("server-id", "");
-        serverAddress = getString("server-address", "");
         heartbeatInterval = Math.max(getInt("heartbeat-interval", 60), 30);
         timeout = Math.max(getInt("timeout", 10), 5);
         includeStats = getBoolean("include-stats", true);
@@ -89,10 +87,6 @@ public class ServerTrackingConfig extends SubConfig {
 
     public String getServerId() {
         return serverId;
-    }
-
-    public String getServerAddress() {
-        return serverAddress;
     }
 
     public int getHeartbeatInterval() {

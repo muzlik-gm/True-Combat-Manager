@@ -1,6 +1,5 @@
 package com.muzlik.pvpcombat.tracking;
 
-import com.muzlik.pvpcombat.config.ServerTrackingConfig;
 import com.muzlik.pvpcombat.core.PvPCombatPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
@@ -32,7 +31,6 @@ public class ServerTracker {
     private final Logger logger;
     private final HttpClient httpClient;
     private final String serverId;
-    private final String serverAddress;
 
     private static final int MAX_RETRIES = 3;
     private static final long RETRY_BASE_DELAY_MS = 1000;
@@ -40,20 +38,14 @@ public class ServerTracker {
     private BukkitTask heartbeatTask;
     private long startTime;
 
-    public ServerTracker(PvPCombatPlugin plugin, ServerTrackingConfig trackingConfig) {
+    public ServerTracker(PvPCombatPlugin plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.startTime = System.currentTimeMillis();
 
-        // Use configured server address (domain name) if set, otherwise auto-detect IP
-        this.serverAddress = trackingConfig.getServerAddress();
-        if (this.serverAddress != null && !this.serverAddress.isEmpty()) {
-            this.serverId = this.serverAddress + ":" + Bukkit.getPort();
-            logger.info("Server ID generated (configured address): " + this.serverId);
-        } else {
-            this.serverId = resolveAddress() + ":" + Bukkit.getPort();
-            logger.info("Server ID generated (auto-detected IP): " + this.serverId);
-        }
+        // Fully automated: IP auto-detection with external IP services as fallback
+        this.serverId = resolveAddress() + ":" + Bukkit.getPort();
+        logger.info("Server ID generated: " + this.serverId);
 
         // Create HTTP client with a longer connect timeout; Vercel serverless
         // cold starts can take several seconds on the first request.
@@ -141,25 +133,25 @@ public class ServerTracker {
 
     /**
      * Resolves the server address for the server ID and heartbeat host field.
-     * Bukkit.getIp() returns an empty string (not null) when server-ip is unset
-     * (bound to all interfaces), so we fall back to the machine's actual local
-     * IP rather than sending 0.0.0.0, which is not a connectable address.
-     * Cloud/Pterodactyl hosts often bind to 0.0.0.0, so we filter it out and
-     * only accept real unicast addresses.
+     * Fully automated — no manual configuration required.
+     * <ol>
+     *   <li>Pterodactyl {@code SERVER_IP} environment variable</li>
+     *   <li>{@link Bukkit#getIp()} — if set in server.properties</li>
+     *   <li>Local network interfaces — filters out 0.0.0.0, loopback, link-local</li>
+     *   <li>External IP detection services — queries api.ipify.org, icanhazip.com, checkip.amazonaws.com</li>
+     * </ol>
+     * Only falls back to 0.0.0.0 if everything else fails.
      */
     private String resolveAddress() {
+        // 1. Pterodactyl SERVER_IP environment variable
+        String pterodactylIp = System.getenv("SERVER_IP");
+        if (isUsableIp(pterodactylIp)) return pterodactylIp;
+
+        // 2. Bukkit.getIp() — set in server.properties
         String ip = Bukkit.getIp();
         if (isUsableIp(ip)) return ip;
 
-        // Try InetAddress.getLocalHost() as a fallback
-        try {
-            java.net.InetAddress localhost = java.net.InetAddress.getLocalHost();
-            String host = localhost.getHostAddress();
-            if (isUsableIp(host)) return host;
-        } catch (Exception ignored) {
-        }
-
-        // Enumerate network interfaces for a usable non-loopback IPv4 address
+        // 3. Local network interfaces — filters out 0.0.0.0, loopback, link-local
         try {
             java.util.Enumeration<java.net.NetworkInterface> ifaces =
                     java.net.NetworkInterface.getNetworkInterfaces();
@@ -177,6 +169,28 @@ public class ServerTracker {
         } catch (Exception ignored) {
         }
 
+        // 4. External IP detection services — for cloud hosts that bind to 0.0.0.0
+        String[] services = {
+            "https://api.ipify.org",
+            "https://icanhazip.com",
+            "https://checkip.amazonaws.com"
+        };
+        for (String service : services) {
+            try {
+                java.net.URI uri = java.net.URI.create(service);
+                java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(uri)
+                    .timeout(java.time.Duration.ofSeconds(5))
+                    .build();
+                java.net.http.HttpResponse<String> res = httpClient.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (res.statusCode() == 200) {
+                    String detected = res.body().trim();
+                    if (isUsableIp(detected)) return detected;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
         return "0.0.0.0";
     }
 
@@ -192,7 +206,7 @@ public class ServerTracker {
      * Builds the current ServerInfo from the running server.
      */
     private ServerInfo buildServerInfo() {
-        String host = (serverAddress != null && !serverAddress.isEmpty()) ? serverAddress : resolveAddress();
+        String host = resolveAddress();
         int port = Bukkit.getPort();
         String version = Bukkit.getVersion();
         String bukkitVersion = Bukkit.getBukkitVersion();

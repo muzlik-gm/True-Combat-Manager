@@ -1,6 +1,5 @@
 package com.muzlik.pvpcombat.interfaces;
 
-import com.muzlik.pvpcombat.config.ServerTrackingConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 
 /**
@@ -59,11 +58,4 @@ public interface IConfigManager {
      * @param value The value to set
      */
     void setConfigValue(String path, Object value);
-
-    /**
-     * Gets the server tracking configuration.
-     *
-     * @return The server tracking config
-     */
-    ServerTrackingConfig getServerTrackingConfig();
 }
