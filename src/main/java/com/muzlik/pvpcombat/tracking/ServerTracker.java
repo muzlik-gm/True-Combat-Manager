@@ -10,6 +10,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Sends periodic heartbeat requests to the True Combat Manager tracking website.
@@ -43,7 +45,8 @@ public class ServerTracker {
         this.logger = plugin.getLogger();
         this.startTime = System.currentTimeMillis();
 
-        // Fully automated: IP auto-detection with external IP services as fallback
+        // Fully automated: resolve server address via Pterodactyl panel API (ip_alias domain),
+        // falling back to IP auto-detection if panel is not configured.
         this.serverId = resolveAddress() + ":" + Bukkit.getPort();
         logger.info("Server ID generated: " + this.serverId);
 
@@ -135,6 +138,8 @@ public class ServerTracker {
      * Resolves the server address for the server ID and heartbeat host field.
      * Fully automated — no manual configuration required.
      * <ol>
+     *   <li>Pterodactyl panel API — queries {@code /api/client/servers/{uuid}?include=allocations}
+     *       and reads {@code ip_alias} (domain name like play.pixelmc.com) from the primary allocation</li>
      *   <li>Pterodactyl {@code SERVER_IP} environment variable</li>
      *   <li>{@link Bukkit#getIp()} — if set in server.properties</li>
      *   <li>Local network interfaces — filters out 0.0.0.0, loopback, link-local</li>
@@ -143,15 +148,21 @@ public class ServerTracker {
      * Only falls back to 0.0.0.0 if everything else fails.
      */
     private String resolveAddress() {
-        // 1. Pterodactyl SERVER_IP environment variable
+        // 1. Pterodactyl panel API — read ip_alias (domain name) from primary allocation
+        String panelDomain = resolveViaPterodactylApi();
+        if (panelDomain != null && !panelDomain.isEmpty()) {
+            return panelDomain;
+        }
+
+        // 2. Pterodactyl SERVER_IP environment variable
         String pterodactylIp = System.getenv("SERVER_IP");
         if (isUsableIp(pterodactylIp)) return pterodactylIp;
 
-        // 2. Bukkit.getIp() — set in server.properties
+        // 3. Bukkit.getIp() — set in server.properties
         String ip = Bukkit.getIp();
         if (isUsableIp(ip)) return ip;
 
-        // 3. Local network interfaces — filters out 0.0.0.0, loopback, link-local
+        // 4. Local network interfaces — filters out 0.0.0.0, loopback, link-local
         try {
             java.util.Enumeration<java.net.NetworkInterface> ifaces =
                     java.net.NetworkInterface.getNetworkInterfaces();
@@ -169,7 +180,7 @@ public class ServerTracker {
         } catch (Exception ignored) {
         }
 
-        // 4. External IP detection services — for cloud hosts that bind to 0.0.0.0
+        // 5. External IP detection services — for cloud hosts that bind to 0.0.0.0
         String detectedIp = null;
         String[] services = {
             "https://api.ipify.org",
@@ -209,6 +220,130 @@ public class ServerTracker {
         }
 
         return "0.0.0.0";
+    }
+
+    /**
+     * Queries the Pterodactyl panel API for the server's allocations and returns
+     * the {@code ip_alias} (domain name) of the primary/default allocation.
+     * Requires {@code PTERODACTYL_PANEL_URL}, {@code PTERODACTYL_API_KEY}, and
+     * {@code PTERODACTYL_SERVER_UUID} environment variables to be set.
+     */
+    private String resolveViaPterodactylApi() {
+        String panelUrl = System.getenv("PTERODACTYL_PANEL_URL");
+        String apiKey = System.getenv("PTERODACTYL_API_KEY");
+        String serverUuid = System.getenv("PTERODACTYL_SERVER_UUID");
+
+        if (panelUrl == null || apiKey == null || serverUuid == null) {
+            return null;
+        }
+
+        panelUrl = panelUrl.trim().replaceAll("/+$", "");
+        String apiEndpoint = panelUrl + "/api/client/servers/" + serverUuid + "?include=allocations";
+
+        try {
+            java.net.URI uri = java.net.URI.create(apiEndpoint);
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                .uri(uri)
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Accept", "Application/vnd.pterodactyl.v1+json")
+                .timeout(java.time.Duration.ofSeconds(10))
+                .build();
+
+            java.net.http.HttpResponse<String> res = httpClient.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() != 200) {
+                logger.warning("Pterodactyl API returned HTTP " + res.statusCode() + " when fetching server allocations");
+                return null;
+            }
+
+            String body = res.body();
+            if (body == null || body.isEmpty()) {
+                return null;
+            }
+
+            // Find the allocations array in the JSON response
+            int allocIdx = body.indexOf("\"allocations\"");
+            if (allocIdx == -1) {
+                return null;
+            }
+
+            // Find the data array within allocations
+            int dataIdx = body.indexOf("\"data\"", allocIdx);
+            if (dataIdx == -1) {
+                return null;
+            }
+
+            // Extract the allocations data array
+            int arrayStart = body.indexOf("[", dataIdx);
+            int arrayEnd = body.indexOf("]", arrayStart);
+            if (arrayStart == -1 || arrayEnd == -1) {
+                return null;
+            }
+
+            String allocationsJson = body.substring(arrayStart, arrayEnd + 1);
+
+            // Split into individual allocation objects
+            String[] allocations = splitJsonArray(allocationsJson);
+            String primaryIpAlias = null;
+            String fallbackIpAlias = null;
+
+            for (String alloc : allocations) {
+                String ipAlias = extractJsonField(alloc, "ip_alias");
+                String isDefault = extractJsonField(alloc, "is_default");
+
+                if (ipAlias != null && !ipAlias.isEmpty() && !"null".equalsIgnoreCase(ipAlias)) {
+                    if ("true".equalsIgnoreCase(isDefault)) {
+                        return ipAlias; // primary allocation — use immediately
+                    }
+                    if (fallbackIpAlias == null) {
+                        fallbackIpAlias = ipAlias;
+                    }
+                }
+            }
+
+            if (fallbackIpAlias != null) {
+                return fallbackIpAlias;
+            }
+
+        } catch (Exception e) {
+            logger.warning("Pterodactyl API lookup failed: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Splits a JSON array string into individual object strings.
+     */
+    private String[] splitJsonArray(String jsonArray) {
+        java.util.ArrayList<String> items = new java.util.ArrayList<>();
+        int depth = 0;
+        int start = -1;
+        for (int i = 0; i < jsonArray.length(); i++) {
+            char c = jsonArray.charAt(i);
+            if (c == '{') {
+                if (depth == 0) start = i;
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0 && start != -1) {
+                    items.add(jsonArray.substring(start, i + 1));
+                    start = -1;
+                }
+            }
+        }
+        return items.toArray(new String[0]);
+    }
+
+    /**
+     * Extracts a JSON field value (string) from a JSON object string.
+     */
+    private String extractJsonField(String json, String field) {
+        Pattern p = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*\"([^\"]*)\"");
+        Matcher m = p.matcher(json);
+        if (m.find()) {
+            return m.group(1);
+        }
+        return null;
     }
 
     private static boolean isUsableIp(String ip) {
