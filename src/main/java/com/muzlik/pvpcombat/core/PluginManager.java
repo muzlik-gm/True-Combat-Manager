@@ -25,6 +25,7 @@ import com.muzlik.pvpcombat.restrictions.RestrictionManager;
 import com.muzlik.pvpcombat.combat.AntiInterferenceManager;
 import com.muzlik.pvpcombat.protection.NewbieProtection;
 import com.muzlik.pvpcombat.tracking.ServerTracker;
+import com.muzlik.pvpcombat.tracking.HandshakeDomainTracker;
 import com.muzlik.pvpcombat.tracking.VersionChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -49,6 +50,7 @@ public class PluginManager {
     private IDatabaseManager databaseManager;
     private CombatLogger combatLogger;
     private ServerTracker serverTracker;
+    private HandshakeDomainTracker handshakeDomainTracker;
     private VersionChecker versionChecker;
 
     public PluginManager(PvPCombatPlugin plugin) {
@@ -91,8 +93,11 @@ public class PluginManager {
         this.visualManager = new VisualManager(plugin, configManager);
         this.restrictionManager = new RestrictionManager((CombatManager) combatManager, cacheManager);
 
+        // Initialize handshake domain tracker (ProtocolLib-based, optional)
+        this.handshakeDomainTracker = new HandshakeDomainTracker(plugin);
+
         // Initialize server tracker (heartbeat starts after registration in registerEvents)
-        this.serverTracker = new ServerTracker(plugin);
+        this.serverTracker = new ServerTracker(plugin, handshakeDomainTracker);
 
         // Initialize version checker for update notifications
         this.versionChecker = new VersionChecker(plugin);

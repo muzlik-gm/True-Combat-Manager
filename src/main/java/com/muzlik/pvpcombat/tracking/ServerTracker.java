@@ -20,10 +20,16 @@ import java.util.logging.Logger;
  * submit data; the tracking website rejects all unauthenticated requests.</p>
  *
  * <p>Server address resolution is fully automated — no manual configuration required.
- * The plugin attempts (in order): Pterodactyl {@code SERVER_IP} env var,
- * {@link Bukkit#getIp()}, local network interfaces, external IP detection
- * services, and reverse DNS lookup. Only falls back to 0.0.0.0 if everything
- * fails.</p>
+ * Resolution order:
+ * <ol>
+ *   <li>Player handshake domain (via ProtocolLib) — the domain players typed, e.g. play.pixelmc.com</li>
+ *   <li>Pterodactyl {@code SERVER_IP} environment variable (auto-set by Wings)</li>
+ *   <li>{@link Bukkit#getIp()} — if set in server.properties</li>
+ *   <li>Local network interfaces — filters out 0.0.0.0, loopback, link-local</li>
+ *   <li>External IP detection services — queries api.ipify.org, icanhazip.com, checkip.amazonaws.com</li>
+ *   <li>Reverse DNS lookup — attempts to resolve a domain name from the detected IP</li>
+ * </ol>
+ * Only falls back to 0.0.0.0 if everything fails.</p>
  */
 public class ServerTracker {
 
@@ -36,6 +42,7 @@ public class ServerTracker {
     private final PvPCombatPlugin plugin;
     private final Logger logger;
     private final HttpClient httpClient;
+    private final HandshakeDomainTracker handshakeTracker;
     private final String serverId;
 
     private static final int MAX_RETRIES = 3;
@@ -44,12 +51,13 @@ public class ServerTracker {
     private BukkitTask heartbeatTask;
     private long startTime;
 
-    public ServerTracker(PvPCombatPlugin plugin) {
+    public ServerTracker(PvPCombatPlugin plugin, HandshakeDomainTracker handshakeTracker) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
+        this.handshakeTracker = handshakeTracker;
         this.startTime = System.currentTimeMillis();
 
-        // Fully automated address resolution — no manual configuration required.
+        // Fully automated address resolution — handshake domain first, then IP fallbacks
         this.serverId = resolveAddress() + ":" + Bukkit.getPort();
         logger.info("Server ID generated: " + this.serverId);
 
@@ -139,26 +147,25 @@ public class ServerTracker {
 
     /**
      * Resolves the server address for the server ID and heartbeat host field.
-     * Fully automated — no manual configuration required.
-     * <ol>
-     *   <li>Pterodactyl {@code SERVER_IP} environment variable (auto-set by Wings)</li>
-     *   <li>{@link Bukkit#getIp()} — if set in server.properties</li>
-     *   <li>Local network interfaces — filters out 0.0.0.0, loopback, link-local</li>
-     *   <li>External IP detection services — queries api.ipify.org, icanhazip.com, checkip.amazonaws.com</li>
-     *   <li>Reverse DNS lookup — attempts to resolve a domain name from the detected IP</li>
-     * </ol>
-     * Only falls back to 0.0.0.0 if everything else fails.
+     * Checks handshake domain first (actual domain players typed), then falls
+     * back to IP detection methods.
      */
     private String resolveAddress() {
-        // 1. Pterodactyl SERVER_IP environment variable (automatically set by Pterodactyl)
+        // 1. Handshake domain — the actual domain players typed in their client
+        String handshakeDomain = handshakeTracker.getMostCommonDomain();
+        if (handshakeDomain != null && !handshakeDomain.isEmpty()) {
+            return handshakeDomain;
+        }
+
+        // 2. Pterodactyl SERVER_IP environment variable (automatically set by Pterodactyl)
         String pterodactylIp = System.getenv("SERVER_IP");
         if (isUsableIp(pterodactylIp)) return pterodactylIp;
 
-        // 2. Bukkit.getIp() — set in server.properties
+        // 3. Bukkit.getIp() — set in server.properties
         String ip = Bukkit.getIp();
         if (isUsableIp(ip)) return ip;
 
-        // 3. Local network interfaces — filters out 0.0.0.0, loopback, link-local
+        // 4. Local network interfaces — filters out 0.0.0.0, loopback, link-local
         try {
             java.util.Enumeration<java.net.NetworkInterface> ifaces =
                     java.net.NetworkInterface.getNetworkInterfaces();
@@ -176,7 +183,7 @@ public class ServerTracker {
         } catch (Exception ignored) {
         }
 
-        // 4. External IP detection services — for cloud hosts that bind to 0.0.0.0
+        // 5. External IP detection services — for cloud hosts that bind to 0.0.0.0
         String detectedIp = null;
         String[] services = {
             "https://api.ipify.org",
@@ -203,7 +210,7 @@ public class ServerTracker {
         }
 
         if (detectedIp != null) {
-            // 5. Reverse DNS lookup — try to resolve a domain name from the IP
+            // 6. Reverse DNS lookup — try to resolve a domain name from the IP
             try {
                 java.net.InetAddress addr = java.net.InetAddress.getByName(detectedIp);
                 String hostName = addr.getHostName();
