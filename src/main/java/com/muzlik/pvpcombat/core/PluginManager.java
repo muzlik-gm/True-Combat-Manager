@@ -180,6 +180,7 @@ public class PluginManager {
         // Start server tracking heartbeat after config is loaded
         if (serverTracker != null) {
             serverTracker.start();
+            serverTracker.registerListeners();
         }
 
         // Check for plugin updates after config is loaded
